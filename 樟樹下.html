@@ -1,0 +1,1406 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>樟樹下活動統計系統</title>
+  <style>
+    :root {
+      --bg: #f5f9ff;
+      --panel: #ffffff;
+      --ink: #0f172a;
+      --muted: #64748b;
+      --line: #dbe7f3;
+      --blue: #2563eb;
+      --blue-soft: #eaf4ff;
+      --green: #059669;
+      --green-soft: #e9fbf1;
+      --amber-soft: #fff7df;
+      --shadow: 0 18px 42px rgba(37, 99, 235, 0.10);
+      --radius: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(191, 219, 254, 0.75), transparent 34%),
+        linear-gradient(135deg, #f8fafc 0%, #eff6ff 48%, #f0f9ff 100%);
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible {
+      outline: 3px solid rgba(37, 99, 235, 0.35);
+      outline-offset: 2px;
+    }
+
+    .app {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 40px 0;
+    }
+
+    .header {
+      display: grid;
+      justify-items: center;
+      gap: 14px;
+      margin-bottom: 32px;
+      text-align: center;
+    }
+
+    .title-badge {
+      display: grid;
+      place-items: center;
+      width: 78px;
+      height: 78px;
+      border-radius: 24px;
+      color: #fff;
+      font-size: 38px;
+      background: linear-gradient(135deg, #60a5fa 0%, #2563eb 56%, #1d4ed8 100%);
+      box-shadow: 0 18px 32px rgba(37, 99, 235, 0.22);
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: 36px;
+      line-height: 1.2;
+      font-weight: 900;
+    }
+
+    .subtitle {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 18px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 5fr 7fr;
+      gap: 28px;
+      align-items: start;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-top: 4px solid #38bdf8;
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.96);
+      box-shadow: var(--shadow);
+    }
+
+    .form-card {
+      padding: 28px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 22px;
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    label,
+    .label {
+      color: #475569;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    input,
+    select {
+      width: 100%;
+      min-width: 0;
+      height: 46px;
+      padding: 0 14px;
+      border: 1px solid #cfe0f1;
+      border-radius: 14px;
+      color: var(--ink);
+      background: #f8fbff;
+    }
+
+    input[type="number"] {
+      text-align: center;
+      font-weight: 800;
+    }
+
+    .split-input {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 8px;
+      height: 46px;
+      padding: 0 10px;
+      border: 1px solid #cfe0f1;
+      border-radius: 14px;
+      background: #f8fbff;
+    }
+
+    .split-input input {
+      height: 38px;
+      padding: 0 6px;
+      border: 0;
+      background: transparent;
+    }
+
+    .hint {
+      color: #94a3b8;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .subpanel {
+      margin-top: 18px;
+      padding: 18px;
+      border: 1px solid #c7f0df;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #ecfdf5 0%, #eefcf8 100%);
+    }
+
+    .seat-panel {
+      border-color: #ddd6fe;
+      background: linear-gradient(135deg, #f5f3ff 0%, #eff6ff 100%);
+    }
+
+    .subpanel h3 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+      font-size: 15px;
+      font-weight: 900;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 48px;
+      padding: 0 18px;
+      border-radius: 14px;
+      color: #fff;
+      font-weight: 800;
+      box-shadow: 0 10px 24px rgba(37, 99, 235, 0.12);
+    }
+
+    .btn-primary {
+      flex: 1;
+      background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+    }
+
+    .btn-secondary {
+      background: #e2e8f0;
+      color: #334155;
+      box-shadow: none;
+    }
+
+    .btn-green {
+      background: #059669;
+    }
+
+    .btn-slate {
+      background: #475569;
+    }
+
+    .message {
+      display: none;
+      margin-top: 16px;
+      padding: 13px 14px;
+      border-radius: 14px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .message.show {
+      display: block;
+    }
+
+    .message.error {
+      color: #9f1239;
+      background: #fff1f2;
+    }
+
+    .message.ok {
+      color: #075985;
+      background: #e0f2fe;
+    }
+
+    .message.warn {
+      color: #92400e;
+      background: #fffbeb;
+    }
+
+    .summary {
+      padding: 28px;
+      border-radius: 24px;
+      background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 50%, #a7f3d0 100%);
+      box-shadow: var(--shadow);
+    }
+
+    .summary-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 22px;
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .summary-item {
+      display: grid;
+      align-content: center;
+      gap: 6px;
+      min-height: 118px;
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.76);
+      box-shadow: 0 10px 24px rgba(16, 185, 129, 0.10);
+      overflow: hidden;
+    }
+
+    .summary-item.highlight {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    }
+
+    .summary-item.seats {
+      background: linear-gradient(135deg, #dcfce7 0%, #86efac 100%);
+    }
+
+    .summary-label {
+      color: #047857;
+      font-size: 12px;
+      font-weight: 900;
+      line-height: 1.35;
+    }
+
+    .summary-number {
+      font-size: 32px;
+      line-height: 1.1;
+      font-weight: 900;
+      overflow-wrap: anywhere;
+    }
+
+    .summary-note {
+      color: #475569;
+      font-size: 11px;
+      line-height: 1.45;
+    }
+
+    .tools {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin: 18px 0;
+    }
+
+    .file-input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .table-card {
+      overflow: hidden;
+    }
+
+    .table-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(90deg, #eff6ff 0%, #f0f9ff 100%);
+      font-weight: 900;
+    }
+
+    .empty {
+      padding: 64px 16px;
+      color: #94a3b8;
+      text-align: center;
+      font-weight: 700;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: 14px;
+    }
+
+    th,
+    td {
+      padding: 14px 10px;
+      border-top: 1px solid #e2e8f0;
+      text-align: center;
+      vertical-align: top;
+      overflow-wrap: anywhere;
+    }
+
+    thead th {
+      border-top: 0;
+      color: #172554;
+      background: #eff6ff;
+      font-weight: 900;
+    }
+
+    .small {
+      margin-top: 4px;
+      color: #64748b;
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .edit-row {
+      background: #fff7ed;
+    }
+
+    .edit-btn {
+      min-height: 34px;
+      padding: 0 12px;
+      border-radius: 11px;
+      color: #334155;
+      background: #f1f5f9;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .print-title {
+      display: none;
+    }
+
+    .footer {
+      margin-top: 36px;
+      padding-top: 22px;
+      border-top: 1px solid #dbe7f3;
+      color: #94a3b8;
+      text-align: center;
+      font-size: 12px;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .app {
+        width: min(100% - 20px, 1120px);
+        padding: 22px 0;
+      }
+
+      h1 {
+        font-size: 30px;
+      }
+
+      .form-card,
+      .summary {
+        padding: 20px;
+      }
+
+      .form-grid,
+      .summary-grid,
+      .tools {
+        grid-template-columns: 1fr;
+      }
+
+      .actions {
+        flex-direction: column;
+      }
+
+      th,
+      td {
+        padding: 12px 6px;
+        font-size: 13px;
+      }
+    }
+
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 9mm;
+      }
+
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      body {
+        background: #fff !important;
+      }
+
+      .app {
+        width: 100%;
+        padding: 0;
+      }
+
+      .no-print,
+      .header,
+      .form-card,
+      .tools,
+      .footer {
+        display: none !important;
+      }
+
+      .layout {
+        display: block;
+      }
+
+      .print-title {
+        display: block;
+        margin-bottom: 8px;
+        text-align: center;
+      }
+
+      .print-title h1 {
+        font-size: 20px;
+      }
+
+      .print-title p {
+        margin-top: 4px;
+        color: #475569;
+        font-size: 12px;
+      }
+
+      .summary {
+        padding: 10px;
+        border: 1px solid #cbd5e1;
+        border-radius: 12px;
+        box-shadow: none;
+        page-break-inside: avoid;
+      }
+
+      .summary-title {
+        margin-bottom: 8px;
+        font-size: 14px;
+      }
+
+      .summary-grid {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 6px;
+      }
+
+      .summary-item {
+        min-height: 58px;
+        padding: 7px 6px;
+        border: 1px solid #dbe7f3;
+        border-radius: 9px;
+        box-shadow: none;
+      }
+
+      .summary-label {
+        text-align: center;
+        font-size: 8.5px;
+      }
+
+      .summary-number {
+        text-align: center;
+        font-size: 18px;
+      }
+
+      .summary-note {
+        display: none;
+      }
+
+      .table-card {
+        margin-top: 8px;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        box-shadow: none;
+        page-break-inside: auto;
+      }
+
+      .table-head {
+        padding: 8px 10px;
+        font-size: 13px;
+      }
+
+      table {
+        font-size: 11px;
+      }
+
+      thead {
+        display: table-header-group;
+      }
+
+      tr {
+        page-break-inside: avoid;
+      }
+
+      th,
+      td {
+        padding: 6px 5px;
+        border: 1px solid #cbd5e1;
+      }
+
+      .small {
+        font-size: 9px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="header">
+      <div class="title-badge" aria-hidden="true">📋</div>
+      <div>
+        <h1>5/30 樟樹下活動</h1>
+        <p class="subtitle">座位與用餐統計</p>
+      </div>
+    </header>
+
+    <div class="layout">
+      <section class="card form-card no-print" aria-labelledby="formTitle">
+        <div class="section-title"><span aria-hidden="true">📝</span><h2 id="formTitle">班級數據填報</h2></div>
+        <form id="classForm" novalidate>
+          <div class="form-grid">
+            <div class="field">
+              <label for="classUnit">選擇統計班級</label>
+              <select id="classUnit" name="classUnit"></select>
+            </div>
+
+            <div class="field">
+              <span class="label">應到 / 實到人數</span>
+              <div class="split-input">
+                <input id="classSize" name="classSize" type="number" min="0" placeholder="應到" aria-label="應到人數">
+                <span aria-hidden="true">/</span>
+                <input id="actualCount" name="actualCount" type="number" min="0" placeholder="實到" aria-label="實到人數">
+              </div>
+            </div>
+
+            <div class="field full">
+              <label for="absentStudents">缺席座號 / 姓名</label>
+              <input id="absentStudents" name="absentStudents" type="text" placeholder="例：1/王小明，8/林小華，23/陳小安">
+              <p class="hint">最多 3 位，請用逗號、頓號或換行分隔。</p>
+            </div>
+
+            <div class="field">
+              <label for="parentCount">家長參加人數</label>
+              <input id="parentCount" name="parentCount" type="number" min="0" placeholder="人數">
+            </div>
+
+            <div class="field">
+              <span class="label">素食座號 / 姓名</span>
+              <div class="split-input">
+                <input id="vegSeatNumber" name="vegSeatNumber" type="text" placeholder="座號" aria-label="素食座號">
+                <span aria-hidden="true">/</span>
+                <input id="vegStudentName" name="vegStudentName" type="text" placeholder="姓名" aria-label="素食姓名">
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="nonVegCount">葷食份數</label>
+              <input id="nonVegCount" name="nonVegCount" type="number" min="0" placeholder="份">
+            </div>
+
+            <div class="field">
+              <label for="vegCount">素食份數</label>
+              <input id="vegCount" name="vegCount" type="number" min="0" placeholder="份">
+            </div>
+          </div>
+
+          <div id="formError" class="message error" role="alert"></div>
+          <div id="formWarning" class="message warn" role="status"></div>
+          <div id="formSuccess" class="message ok" role="status"></div>
+
+          <div class="actions">
+            <button class="btn btn-primary" type="submit" id="submitButton">新增此班數據</button>
+            <button class="btn btn-secondary" type="button" id="cancelEditButton" hidden>取消編輯</button>
+          </div>
+
+          <section class="subpanel seat-panel" aria-labelledby="seatTitle">
+            <h3 id="seatTitle"><span aria-hidden="true">🪑</span>其他座位區</h3>
+            <div class="form-grid">
+              <div class="field">
+                <label for="vipSeats">貴賓</label>
+                <input id="vipSeats" name="vipSeats" type="number" min="0" placeholder="座位">
+              </div>
+              <div class="field">
+                <label for="kindergartenTeacherSeats">幼兒園老師</label>
+                <input id="kindergartenTeacherSeats" name="kindergartenTeacherSeats" type="number" min="0" placeholder="座位">
+              </div>
+              <div class="field">
+                <label for="elementaryTeacherSeats">小學老師</label>
+                <input id="elementaryTeacherSeats" name="elementaryTeacherSeats" type="number" min="0" placeholder="座位">
+              </div>
+            </div>
+            <p class="hint">其他座位區會自動存入本機，並納入右側「總計座位」。</p>
+          </section>
+
+          <section class="subpanel" aria-labelledby="mealTitle">
+            <h3 id="mealTitle"><span aria-hidden="true">🍽️</span>其他用餐區</h3>
+            <div class="form-grid">
+              <div class="field">
+                <label for="staffCount">教職員</label>
+                <input id="staffCount" name="staffCount" type="number" min="0" placeholder="人數">
+              </div>
+              <div class="field">
+                <label for="vendorCount">廠商</label>
+                <input id="vendorCount" name="vendorCount" type="number" min="0" placeholder="人數">
+              </div>
+              <div class="field">
+                <label for="extraNonVegCount">葷食份數</label>
+                <input id="extraNonVegCount" name="extraNonVegCount" type="number" min="0" placeholder="份">
+              </div>
+              <div class="field">
+                <label for="extraVegCount">素食份數</label>
+                <input id="extraVegCount" name="extraVegCount" type="number" min="0" placeholder="份">
+              </div>
+              <div class="field full">
+                <label for="extraMealNames">姓名</label>
+                <input id="extraMealNames" name="extraMealNames" type="text" placeholder="例：王老師、陳先生、林小姐">
+                <p class="hint">請用頓號或逗號分隔。</p>
+              </div>
+            </div>
+            <p class="hint">其他用餐區會自動存入本機，並加到右側「葷食 / 素食總計」。</p>
+          </section>
+        </form>
+      </section>
+
+      <section>
+        <div class="print-title">
+          <h1>5/30 樟樹下活動統計表</h1>
+          <p id="printDate"></p>
+        </div>
+
+        <section class="summary" aria-labelledby="summaryTitle">
+          <div class="summary-title"><span aria-hidden="true">📊</span><h2 id="summaryTitle">座位與用餐統計</h2></div>
+          <div class="summary-grid">
+            <div class="summary-item">
+              <p class="summary-label">已繳回班級</p>
+              <p class="summary-number" id="totalClasses">0</p>
+            </div>
+            <div class="summary-item">
+              <p class="summary-label">應到 / 實到總計</p>
+              <p class="summary-number"><span id="totalStudents">0</span> / <span id="totalActual">0</span></p>
+            </div>
+            <div class="summary-item">
+              <p class="summary-label">家長參加人數</p>
+              <p class="summary-number" id="totalParents">0</p>
+            </div>
+            <div class="summary-item highlight">
+              <p class="summary-label">葷食 / 素食總計</p>
+              <p class="summary-number"><span id="totalNonVeg">0</span> / <span id="totalVeg">0</span></p>
+              <p class="summary-note" id="mealBreakdown"></p>
+            </div>
+            <div class="summary-item seats">
+              <p class="summary-label">總計座位</p>
+              <p class="summary-number" id="totalSeats">0</p>
+              <p class="summary-note" id="seatBreakdown"></p>
+            </div>
+          </div>
+        </section>
+
+        <div class="tools no-print">
+          <input class="file-input" id="csvInput" type="file" accept=".csv,text/csv">
+          <button class="btn btn-green" type="button" id="importButton">📥 匯入 CSV</button>
+          <button class="btn btn-primary" type="button" id="exportButton">⬇️ 匯出 Excel(CSV)</button>
+          <button class="btn btn-slate" type="button" id="printButton">🖨️ 列印 PDF</button>
+        </div>
+
+        <section class="card table-card">
+          <div class="table-head"><span aria-hidden="true">👥</span><h3>資料細項</h3></div>
+          <div id="emptyState" class="empty">尚未填入任何資料</div>
+          <div id="tableWrap" hidden>
+            <table>
+              <thead>
+                <tr>
+                  <th>班級</th>
+                  <th>應到 / 實到</th>
+                  <th>家長參加</th>
+                  <th>訂餐</th>
+                  <th class="no-print">管理</th>
+                </tr>
+              </thead>
+              <tbody id="dataBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+    </div>
+
+    <footer class="footer no-print">已啟用本機自動儲存，資料會保存在目前這台電腦與瀏覽器中。</footer>
+  </main>
+
+  <script>
+    (function () {
+      "use strict";
+
+      const storageKeys = {
+        classes: "classMealData",
+        seats: "extraSeatData",
+        meals: "extraMealData"
+      };
+
+      const defaultForm = {
+        classUnit: "",
+        classSize: "",
+        actualCount: "",
+        absentStudents: "",
+        parentCount: "",
+        nonVegCount: "",
+        vegCount: "",
+        vegSeatNumber: "",
+        vegStudentName: ""
+      };
+
+      const defaultSeats = {
+        vipSeats: "",
+        kindergartenTeacherSeats: "",
+        elementaryTeacherSeats: ""
+      };
+
+      const defaultMeals = {
+        staffCount: "",
+        vendorCount: "",
+        extraNonVegCount: "",
+        extraVegCount: "",
+        extraMealNames: ""
+      };
+
+      let allClassData = readList(storageKeys.classes).map(normalizeClassRecord);
+      let extraSeats = Object.assign({}, defaultSeats, readObject(storageKeys.seats));
+      let extraMealData = Object.assign({}, defaultMeals, readObject(storageKeys.meals));
+      let editingId = null;
+      let successTimer = null;
+
+      const form = document.getElementById("classForm");
+      const formTitle = document.getElementById("formTitle");
+      const submitButton = document.getElementById("submitButton");
+      const cancelEditButton = document.getElementById("cancelEditButton");
+      const formError = document.getElementById("formError");
+      const formWarning = document.getElementById("formWarning");
+      const formSuccess = document.getElementById("formSuccess");
+      const csvInput = document.getElementById("csvInput");
+
+      const fields = {};
+      Object.keys(defaultForm).forEach(name => fields[name] = document.getElementById(name));
+      Object.keys(defaultSeats).forEach(name => fields[name] = document.getElementById(name));
+      Object.keys(defaultMeals).forEach(name => fields[name] = document.getElementById(name));
+
+      initClassOptions();
+      setForm(defaultForm);
+      setExtraFields();
+      bindEvents();
+      render();
+
+      function bindEvents() {
+        form.addEventListener("submit", handleSubmit);
+        cancelEditButton.addEventListener("click", resetForm);
+        document.getElementById("importButton").addEventListener("click", () => csvInput.click());
+        document.getElementById("exportButton").addEventListener("click", exportCSV);
+        document.getElementById("printButton").addEventListener("click", () => window.print());
+        csvInput.addEventListener("change", event => importCSV(event.target.files[0]));
+
+        Object.keys(defaultSeats).forEach(name => {
+          fields[name].addEventListener("input", () => {
+            extraSeats[name] = normalizeNumberInput(fields[name].value);
+            writeObject(storageKeys.seats, extraSeats);
+            render();
+          });
+        });
+
+        Object.keys(defaultMeals).forEach(name => {
+          fields[name].addEventListener("input", () => {
+            extraMealData[name] = name === "extraMealNames"
+              ? fields[name].value
+              : normalizeNumberInput(fields[name].value);
+            writeObject(storageKeys.meals, extraMealData);
+            render();
+          });
+        });
+      }
+
+      function initClassOptions() {
+        const select = fields.classUnit;
+        const options = ["", "幼兒園"];
+        ["一", "二", "三", "四", "五", "六"].forEach(grade => {
+          ["甲", "乙"].forEach(unit => options.push(`${grade}年${unit}班`));
+        });
+
+        select.innerHTML = "";
+        options.forEach(value => {
+          const option = document.createElement("option");
+          option.value = value;
+          option.textContent = value || "請點選班級...";
+          select.appendChild(option);
+        });
+      }
+
+      function handleSubmit(event) {
+        event.preventDefault();
+        clearMessages();
+
+        const data = getFormData();
+        const size = toNumber(data.classSize);
+        const actual = toNumber(data.actualCount);
+        const parents = toNumber(data.parentCount);
+        const nonVeg = toNumber(data.nonVegCount);
+        const veg = toNumber(data.vegCount);
+        const absentees = parseAbsenteesText(data.absentStudents);
+        const absentFields = splitAbsentFields(data.absentStudents);
+
+        if (!data.classUnit) return showError("請選擇班級");
+        if (size <= 0) return showError("應到人數必須大於 0");
+        if (actual > size) return showError("實到人數不可大於應到人數");
+        if (absentees.length > 3) return showError("缺席學生最多請輸入 3 位，格式例：1/王小明，8/林小華");
+        if (veg > 0 && !data.vegSeatNumber && !data.vegStudentName) return showError("有素食份數時，請填寫素食座號或姓名");
+
+        const duplicate = allClassData.some(item => item.classUnit === data.classUnit && item.id !== editingId);
+        if (duplicate) return showError(`${data.classUnit} 已有填報紀錄`);
+
+        const pendingWarning = parents > 0 && nonVeg + veg !== parents
+          ? `提醒：葷食加素食目前為 ${nonVeg + veg} 份，家長參加人數為 ${parents} 人。`
+          : "";
+
+        const nextRecord = {
+          id: editingId || Date.now(),
+          classUnit: data.classUnit,
+          classSize: size,
+          actualCount: actual,
+          absentStudents: absentFields.absentStudents,
+          studentSeatNumber: absentFields.studentSeatNumber,
+          studentName: absentFields.studentName,
+          parentCount: parents,
+          nonVegCount: nonVeg,
+          vegCount: veg,
+          vegSeatNumber: data.vegSeatNumber.trim(),
+          vegStudentName: data.vegStudentName.trim()
+        };
+
+        const wasEditing = Boolean(editingId);
+
+        if (editingId) {
+          allClassData = allClassData.map(item => item.id === editingId ? Object.assign({}, item, nextRecord) : item);
+        } else {
+          allClassData = allClassData.concat(nextRecord);
+        }
+
+        writeList(storageKeys.classes, allClassData);
+        resetForm();
+        if (pendingWarning) showWarning(pendingWarning);
+        showSuccess(wasEditing ? "已更新統計資料" : "成功加入統計列表");
+        render();
+      }
+
+      function startEditRecord(id) {
+        const item = allClassData.find(record => record.id === id);
+        if (!item) return;
+
+        editingId = id;
+        setForm({
+          classUnit: item.classUnit,
+          classSize: item.classSize,
+          actualCount: item.actualCount,
+          absentStudents: getAbsentDisplay(item),
+          parentCount: item.parentCount,
+          nonVegCount: item.nonVegCount,
+          vegCount: item.vegCount,
+          vegSeatNumber: item.vegSeatNumber || "",
+          vegStudentName: item.vegStudentName || ""
+        });
+
+        formTitle.textContent = "編輯班級數據";
+        submitButton.textContent = "更新此班數據";
+        cancelEditButton.hidden = false;
+        clearMessages();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        render();
+      }
+
+      function resetForm() {
+        editingId = null;
+        setForm(defaultForm);
+        formTitle.textContent = "班級數據填報";
+        submitButton.textContent = "新增此班數據";
+        cancelEditButton.hidden = true;
+        clearMessages();
+        render();
+      }
+
+      function getFormData() {
+        const data = {};
+        Object.keys(defaultForm).forEach(name => data[name] = fields[name].value);
+        return data;
+      }
+
+      function setForm(data) {
+        Object.keys(defaultForm).forEach(name => fields[name].value = data[name] ?? "");
+      }
+
+      function setExtraFields() {
+        Object.keys(defaultSeats).forEach(name => fields[name].value = extraSeats[name] ?? "");
+        Object.keys(defaultMeals).forEach(name => fields[name].value = extraMealData[name] ?? "");
+      }
+
+      function render() {
+        const totals = getSchoolTotal();
+        const sorted = getSortedClassData();
+
+        text("totalClasses", totals.classes);
+        text("totalStudents", totals.students);
+        text("totalActual", totals.actual);
+        text("totalParents", totals.parents);
+        text("totalNonVeg", totals.nonVeg);
+        text("totalVeg", totals.veg);
+        text("totalSeats", totals.totalSeats);
+        text("mealBreakdown", `班級葷 ${totals.classNonVeg} + 其他葷 ${totals.extraNonVegCount} / 班級素 ${totals.classVeg} + 其他素 ${totals.extraVegCount}`);
+        text("seatBreakdown", `貴賓 ${totals.vipSeats} + 幼兒園老師 ${totals.kindergartenTeacherSeats} + 小學老師 ${totals.elementaryTeacherSeats} + 家長 ${totals.parents} + 幼兒園實到 ${totals.kindergartenActual} + 一、二年級實到 ${totals.lowerGradeActual}`);
+        text("printDate", `座位與用餐統計｜列印日期：${new Date().toLocaleDateString("zh-TW")}`);
+
+        const emptyState = document.getElementById("emptyState");
+        const tableWrap = document.getElementById("tableWrap");
+        emptyState.hidden = sorted.length > 0;
+        tableWrap.hidden = sorted.length === 0;
+
+        const tbody = document.getElementById("dataBody");
+        tbody.innerHTML = "";
+        sorted.forEach(item => {
+          const row = document.createElement("tr");
+          if (editingId === item.id) row.className = "edit-row";
+
+          row.appendChild(td(item.classUnit, "strong"));
+          row.appendChild(tdWithSmall(`${item.classSize} / ${item.actualCount}`, getAbsentDisplay(item) ? `缺席：${getAbsentDisplay(item)}` : ""));
+          row.appendChild(td(item.parentCount));
+          row.appendChild(tdWithSmall(`葷${item.nonVegCount} / 素${item.vegCount}`, item.vegSeatNumber || item.vegStudentName ? `素食：${item.vegSeatNumber || "-"} / ${item.vegStudentName || "-"}` : ""));
+
+          const actionCell = document.createElement("td");
+          actionCell.className = "no-print";
+          const editButton = document.createElement("button");
+          editButton.type = "button";
+          editButton.className = "edit-btn";
+          editButton.textContent = "✏️ 編輯";
+          editButton.addEventListener("click", () => startEditRecord(item.id));
+          actionCell.appendChild(editButton);
+          row.appendChild(actionCell);
+
+          tbody.appendChild(row);
+        });
+      }
+
+      function td(value, className) {
+        const cell = document.createElement("td");
+        if (className) cell.className = className;
+        cell.textContent = value;
+        return cell;
+      }
+
+      function tdWithSmall(primary, secondary) {
+        const cell = document.createElement("td");
+        const main = document.createElement("div");
+        main.textContent = primary;
+        cell.appendChild(main);
+        if (secondary) {
+          const small = document.createElement("div");
+          small.className = "small";
+          small.textContent = secondary;
+          cell.appendChild(small);
+        }
+        return cell;
+      }
+
+      function text(id, value) {
+        document.getElementById(id).textContent = value;
+      }
+
+      function getSchoolTotal() {
+        const base = allClassData.reduce((acc, curr) => {
+          acc.classes += 1;
+          acc.students += toNumber(curr.classSize);
+          acc.actual += toNumber(curr.actualCount);
+          acc.parents += toNumber(curr.parentCount);
+          acc.nonVeg += toNumber(curr.nonVegCount);
+          acc.veg += toNumber(curr.vegCount);
+          return acc;
+        }, { classes: 0, students: 0, actual: 0, parents: 0, nonVeg: 0, veg: 0 });
+
+        const kindergartenActual = allClassData
+          .filter(item => item.classUnit === "幼兒園")
+          .reduce((sum, item) => sum + toNumber(item.actualCount), 0);
+
+        const lowerGradeActual = allClassData
+          .filter(item => /^([一二])年/.test(item.classUnit || ""))
+          .reduce((sum, item) => sum + toNumber(item.actualCount), 0);
+
+        const vipSeats = toNumber(extraSeats.vipSeats);
+        const kindergartenTeacherSeats = toNumber(extraSeats.kindergartenTeacherSeats);
+        const elementaryTeacherSeats = toNumber(extraSeats.elementaryTeacherSeats);
+        const extraNonVegCount = toNumber(extraMealData.extraNonVegCount);
+        const extraVegCount = toNumber(extraMealData.extraVegCount);
+
+        return Object.assign({}, base, {
+          nonVeg: base.nonVeg + extraNonVegCount,
+          veg: base.veg + extraVegCount,
+          classNonVeg: base.nonVeg,
+          classVeg: base.veg,
+          kindergartenActual,
+          lowerGradeActual,
+          vipSeats,
+          kindergartenTeacherSeats,
+          elementaryTeacherSeats,
+          extraNonVegCount,
+          extraVegCount,
+          totalSeats: vipSeats + kindergartenTeacherSeats + elementaryTeacherSeats + base.parents + kindergartenActual + lowerGradeActual
+        });
+      }
+
+      function getSortedClassData() {
+        const gradeOrder = { "幼兒園": 0, "一": 1, "二": 2, "三": 3, "四": 4, "五": 5, "六": 6 };
+        const unitOrder = { "甲": 1, "乙": 2 };
+
+        function rank(classUnit) {
+          if (classUnit === "幼兒園") return [0, 0, classUnit];
+          const match = (classUnit || "").match(/^(.+)年(.+)班$/);
+          if (!match) return [999, 999, classUnit || ""];
+          return [gradeOrder[match[1]] ?? 999, unitOrder[match[2]] ?? 999, classUnit];
+        }
+
+        return allClassData.slice().sort((a, b) => {
+          const rankA = rank(a.classUnit);
+          const rankB = rank(b.classUnit);
+          if (rankA[0] !== rankB[0]) return rankA[0] - rankB[0];
+          if (rankA[1] !== rankB[1]) return rankA[1] - rankB[1];
+          return rankA[2].localeCompare(rankB[2], "zh-Hant");
+        });
+      }
+
+      function importCSV(file) {
+        if (!file) return;
+        clearMessages();
+
+        const reader = new FileReader();
+        reader.onload = event => {
+          try {
+            const csvText = String(event.target.result || "").replace(/^\uFEFF/, "");
+            const rows = parseCSVText(csvText);
+            if (rows.length < 2) return showError("CSV 沒有可匯入的資料");
+
+            const headers = rows[0].map(header => header.trim());
+            const importedRows = rows.slice(1)
+              .map(row => {
+                const rowObject = {};
+                headers.forEach((header, index) => rowObject[header] = row[index] ?? "");
+                return rowObject;
+              })
+              .filter(rowObject => {
+                const classUnit = findCSVValue(rowObject, ["班級", "統計班級"]).trim();
+                return classUnit && classUnit !== "全校總計";
+              })
+              .map(rowObject => {
+                const combinedAbsentees = findCSVValue(rowObject, ["缺席座號/姓名", "缺席學生", "缺席名單"]).trim();
+                const absentFields = combinedAbsentees
+                  ? splitAbsentFields(combinedAbsentees)
+                  : splitAbsentFields(buildAbsenteesText(findCSVValue(rowObject, ["缺席座號", "座號"]), findCSVValue(rowObject, ["缺席姓名", "姓名"])));
+
+                return normalizeClassRecord({
+                  id: Date.now() + Math.floor(Math.random() * 1000000),
+                  classUnit: findCSVValue(rowObject, ["班級", "統計班級"]).trim(),
+                  classSize: toNumber(findCSVValue(rowObject, ["應到人數", "應到"])),
+                  actualCount: toNumber(findCSVValue(rowObject, ["實到人數", "實到"])),
+                  absentStudents: absentFields.absentStudents,
+                  studentSeatNumber: absentFields.studentSeatNumber,
+                  studentName: absentFields.studentName,
+                  parentCount: toNumber(findCSVValue(rowObject, ["家長參加人數", "家長參加", "家長"])),
+                  nonVegCount: toNumber(findCSVValue(rowObject, ["葷食", "葷食份數"])),
+                  vegCount: toNumber(findCSVValue(rowObject, ["素食", "素食份數"])),
+                  vegSeatNumber: findCSVValue(rowObject, ["素食座號"]).trim(),
+                  vegStudentName: findCSVValue(rowObject, ["素食姓名"]).trim()
+                });
+              });
+
+            if (importedRows.length === 0) return showError("CSV 沒有找到可匯入的班級資料");
+
+            const invalidRows = importedRows.filter(row => !row.classUnit || row.classSize <= 0 || row.actualCount > row.classSize);
+            if (invalidRows.length > 0) {
+              return showError(`CSV 有 ${invalidRows.length} 筆資料需修正：請確認班級、應到人數，以及實到不可大於應到。`);
+            }
+
+            const existingByClass = new Map(allClassData.map(item => [item.classUnit, item]));
+            importedRows.forEach(imported => {
+              if (existingByClass.has(imported.classUnit)) {
+                const existing = existingByClass.get(imported.classUnit);
+                Object.assign(existing, imported, { id: existing.id });
+              } else {
+                allClassData.push(imported);
+              }
+            });
+
+            writeList(storageKeys.classes, allClassData);
+            resetForm();
+            showSuccess(`匯入完成：共讀取 ${importedRows.length} 筆班級資料。`);
+            render();
+          } catch (error) {
+            console.error(error);
+            showError("CSV 匯入失敗，請確認檔案格式是否正確");
+          } finally {
+            csvInput.value = "";
+          }
+        };
+
+        reader.onerror = () => showError("無法讀取 CSV 檔案");
+        reader.readAsText(file, "utf-8");
+      }
+
+      function exportCSV() {
+        if (allClassData.length === 0) return showError("目前沒有資料可以匯出");
+
+        const totals = getSchoolTotal();
+        const headers = ["班級", "應到人數", "實到人數", "缺席座號/姓名", "缺席座號", "缺席姓名", "家長參加人數", "葷食", "素食", "素食座號", "素食姓名"];
+        const rows = getSortedClassData().map(item => [
+          item.classUnit,
+          item.classSize,
+          item.actualCount,
+          getAbsentDisplay(item),
+          item.studentSeatNumber || "",
+          item.studentName || "",
+          item.parentCount,
+          item.nonVegCount,
+          item.vegCount,
+          item.vegSeatNumber || "",
+          item.vegStudentName || ""
+        ]);
+
+        rows.push(["全校總計", totals.students, totals.actual, "", "", "", totals.parents, totals.nonVeg, totals.veg, "", ""]);
+
+        const csvContent = [headers.map(escapeCSVCell).join(",")]
+          .concat(rows.map(row => row.map(escapeCSVCell).join(",")))
+          .join("\n");
+
+        const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.href = url;
+        link.download = `樟樹下活動統計_${new Date().toISOString().slice(0, 10)}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+      }
+
+      function splitListText(value) {
+        return String(value || "")
+          .split(/[，,、\n]+/)
+          .map(item => item.trim())
+          .filter(Boolean);
+      }
+
+      function parseAbsenteesText(value) {
+        return splitListText(value).map(item => {
+          const parts = item.split(/[／/]/);
+          return {
+            seatNumber: (parts[0] || "").trim(),
+            studentName: parts.slice(1).join("/").trim()
+          };
+        }).filter(item => item.seatNumber || item.studentName);
+      }
+
+      function splitAbsentFields(value) {
+        const absentees = parseAbsenteesText(value);
+        return {
+          absentStudents: absentees.map(item => `${item.seatNumber || "-"}/${item.studentName || "-"}`).join("，"),
+          studentSeatNumber: absentees.map(item => item.seatNumber).filter(Boolean).join("，"),
+          studentName: absentees.map(item => item.studentName).filter(Boolean).join("，")
+        };
+      }
+
+      function buildAbsenteesText(seatNumbers, studentNames) {
+        const seats = splitListText(seatNumbers);
+        const names = splitListText(studentNames);
+        const max = Math.max(seats.length, names.length);
+        const output = [];
+        for (let index = 0; index < max; index += 1) {
+          output.push(`${seats[index] || "-"}/${names[index] || "-"}`);
+        }
+        return output.join("，");
+      }
+
+      function getAbsentDisplay(item) {
+        return item.absentStudents || buildAbsenteesText(item.studentSeatNumber, item.studentName);
+      }
+
+      function parseCSVText(text) {
+        const rows = [];
+        let row = [];
+        let cell = "";
+        let inQuotes = false;
+
+        for (let i = 0; i < text.length; i += 1) {
+          const char = text[i];
+          const nextChar = text[i + 1];
+          if (char === "\"") {
+            if (inQuotes && nextChar === "\"") {
+              cell += "\"";
+              i += 1;
+            } else {
+              inQuotes = !inQuotes;
+            }
+          } else if (char === "," && !inQuotes) {
+            row.push(cell.trim());
+            cell = "";
+          } else if ((char === "\n" || char === "\r") && !inQuotes) {
+            if (char === "\r" && nextChar === "\n") i += 1;
+            row.push(cell.trim());
+            if (row.some(value => value !== "")) rows.push(row);
+            row = [];
+            cell = "";
+          } else {
+            cell += char;
+          }
+        }
+
+        row.push(cell.trim());
+        if (row.some(value => value !== "")) rows.push(row);
+        return rows;
+      }
+
+      function findCSVValue(rowObject, names) {
+        for (const name of names) {
+          if (rowObject[name] !== undefined) return rowObject[name];
+        }
+        return "";
+      }
+
+      function escapeCSVCell(value) {
+        const text = String(value ?? "");
+        return /[",\n\r]/.test(text) ? `"${text.replace(/"/g, "\"\"")}"` : text;
+      }
+
+      function normalizeClassRecord(item) {
+        return {
+          id: item.id || Date.now() + Math.floor(Math.random() * 1000000),
+          classUnit: item.classUnit || "",
+          classSize: toNumber(item.classSize),
+          actualCount: toNumber(item.actualCount ?? item.classSize),
+          absentStudents: item.absentStudents || "",
+          studentSeatNumber: item.studentSeatNumber || "",
+          studentName: item.studentName || "",
+          parentCount: toNumber(item.parentCount),
+          nonVegCount: toNumber(item.nonVegCount),
+          vegCount: toNumber(item.vegCount),
+          vegSeatNumber: item.vegSeatNumber || "",
+          vegStudentName: item.vegStudentName || ""
+        };
+      }
+
+      function normalizeNumberInput(value) {
+        return value === "" ? "" : toNumber(value);
+      }
+
+      function toNumber(value) {
+        const number = parseInt(String(value ?? "").trim(), 10);
+        return Number.isNaN(number) ? 0 : Math.max(0, number);
+      }
+
+      function readList(key) {
+        try {
+          const value = JSON.parse(localStorage.getItem(key) || "[]");
+          return Array.isArray(value) ? value : [];
+        } catch (error) {
+          return [];
+        }
+      }
+
+      function readObject(key) {
+        try {
+          const value = JSON.parse(localStorage.getItem(key) || "{}");
+          return value && typeof value === "object" && !Array.isArray(value) ? value : {};
+        } catch (error) {
+          return {};
+        }
+      }
+
+      function writeList(key, value) {
+        localStorage.setItem(key, JSON.stringify(value));
+      }
+
+      function writeObject(key, value) {
+        localStorage.setItem(key, JSON.stringify(value));
+      }
+
+      function clearMessages() {
+        [formError, formWarning, formSuccess].forEach(element => {
+          element.className = element.className.replace(" show", "");
+          element.textContent = "";
+        });
+      }
+
+      function showError(message) {
+        formError.textContent = message;
+        formError.classList.add("show");
+      }
+
+      function showWarning(message) {
+        formWarning.textContent = message;
+        formWarning.classList.add("show");
+      }
+
+      function showSuccess(message) {
+        formSuccess.textContent = message;
+        formSuccess.classList.add("show");
+        window.clearTimeout(successTimer);
+        successTimer = window.setTimeout(() => {
+          formSuccess.classList.remove("show");
+          formSuccess.textContent = "";
+        }, 3000);
+      }
+    })();
+  </script>
+</body>
+</html>
