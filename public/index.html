@@ -683,7 +683,7 @@
 
     function renderMaterial() {
       const rows = materialExpense(allExpenses());
-      const incomeMaterial = sum(otherIncome.filter(r => r.item === "材料費"));
+      const incomeMaterial = combinedIncome().reduce((t, r) => t + r.material, 0);
       const expenseMaterial = sum(rows);
       byId("materialKpis").innerHTML =
         kpi("材料費收入", incomeMaterial, "114-2 材料費", "good") +
