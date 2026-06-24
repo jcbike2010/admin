@@ -197,6 +197,34 @@
     .material-table td:nth-child(5) { width: 14%; }
     .material-table th:nth-child(6),
     .material-table td:nth-child(6) { width: 12%; }
+    .admin-tablebox {
+      max-width: 940px;
+    }
+    .admin-table {
+      table-layout: fixed;
+      width: 100%;
+      font-size: 14px;
+    }
+    .admin-table th,
+    .admin-table td {
+      padding: 9px 8px;
+    }
+    .admin-table th:nth-child(1),
+    .admin-table td:nth-child(1) { width: 12%; }
+    .admin-table th:nth-child(2),
+    .admin-table td:nth-child(2) { width: 16%; }
+    .admin-table th:nth-child(3),
+    .admin-table td:nth-child(3) { width: 12%; }
+    .admin-table th:nth-child(4),
+    .admin-table td:nth-child(4) { width: 44%; }
+    .admin-table th:nth-child(5),
+    .admin-table td:nth-child(5) { width: 16%; }
+    .admin-table td:nth-child(1),
+    .admin-table td:nth-child(2),
+    .admin-table td:nth-child(3),
+    .admin-table td:nth-child(5) {
+      white-space: nowrap;
+    }
     .chip {
       display: inline-flex;
       align-items: center;
@@ -372,7 +400,7 @@
         <div class="kpis" id="adminKpis"></div>
         <div class="panel">
           <div class="panel-head"><h2>行政費支出</h2><span class="mini">只計算 114-2</span></div>
-          <div class="tablebox"><table><thead><tr><th>學期</th><th>日期</th><th>AIS</th><th>摘要</th><th class="amount">金額</th></tr></thead><tbody id="adminRows"></tbody></table></div>
+          <div class="tablebox admin-tablebox"><table class="admin-table"><thead><tr><th>學期</th><th>日期</th><th>AIS</th><th>摘要</th><th class="amount">金額</th></tr></thead><tbody id="adminRows"></tbody></table></div>
         </div>
       </section>
 
