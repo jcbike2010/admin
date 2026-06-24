@@ -177,6 +177,26 @@
     .income-table td:nth-child(10) { width: 7.5%; }
     .income-table th:nth-child(12),
     .income-table td:nth-child(12) { width: 12%; }
+    .material-table {
+      table-layout: fixed;
+      font-size: 14px;
+    }
+    .material-table th,
+    .material-table td {
+      padding: 8px 7px;
+    }
+    .material-table th:nth-child(1),
+    .material-table td:nth-child(1) { width: 9%; }
+    .material-table th:nth-child(2),
+    .material-table td:nth-child(2) { width: 13%; }
+    .material-table th:nth-child(3),
+    .material-table td:nth-child(3) { width: 10%; }
+    .material-table th:nth-child(4),
+    .material-table td:nth-child(4) { width: 42%; }
+    .material-table th:nth-child(5),
+    .material-table td:nth-child(5) { width: 14%; }
+    .material-table th:nth-child(6),
+    .material-table td:nth-child(6) { width: 12%; }
     .chip {
       display: inline-flex;
       align-items: center;
@@ -232,6 +252,30 @@
       flex-wrap: wrap;
     }
     .table-actions select { min-width: 150px; }
+    .filter-bar {
+      background: var(--panel);
+      border: 2px solid #17324d;
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: end;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .filter-bar label {
+      color: #17202c;
+      font-size: 14px;
+      font-weight: 700;
+      min-width: min(360px, 100%);
+    }
+    .filter-bar select {
+      min-width: min(360px, 100%);
+      font-size: 17px;
+      font-weight: 700;
+      border-color: #17324d;
+      min-height: 46px;
+    }
     @media (max-width: 900px) {
       .app, .kpis, .two-col, .form-grid { grid-template-columns: 1fr; }
       aside { position: static; }
@@ -254,6 +298,7 @@
       <div class="nav">
         <button class="active" data-view="tuition">學費收入計算</button>
         <button data-view="admin">行政費</button>
+        <button data-view="hourly">鐘點費</button>
         <button data-view="material">材料費</button>
         <button data-view="add">支出: 新增支出</button>
         <button data-view="all">支出總表</button>
@@ -302,16 +347,32 @@
       <section id="view-admin" class="view">
         <div class="kpis" id="adminKpis"></div>
         <div class="panel">
-          <div class="panel-head"><h2>行政費支出</h2><span class="mini">114-1 + 114-2</span></div>
-          <div class="tablebox"><table><thead><tr><th>學期</th><th>日期</th><th>AIS</th><th>摘要</th><th>狀態</th><th class="amount">金額</th></tr></thead><tbody id="adminRows"></tbody></table></div>
+          <div class="panel-head"><h2>行政費支出</h2><span class="mini">只計算 114-2</span></div>
+          <div class="tablebox"><table><thead><tr><th>學期</th><th>日期</th><th>AIS</th><th>摘要</th><th class="amount">金額</th></tr></thead><tbody id="adminRows"></tbody></table></div>
+        </div>
+      </section>
+
+      <section id="view-hourly" class="view">
+        <div class="kpis" id="hourlyKpis"></div>
+        <div class="panel">
+          <div class="panel-head"><h2>鐘點費支出</h2><span class="mini">只計算 114-2</span></div>
+          <div class="tablebox"><table><thead><tr><th>學期</th><th>日期</th><th>AIS</th><th>摘要</th><th class="amount">金額</th></tr></thead><tbody id="hourlyRows"></tbody></table></div>
         </div>
       </section>
 
       <section id="view-material" class="view">
+        <div class="filter-bar">
+          <label>選擇社團
+            <select id="materialClassSelect"></select>
+          </label>
+        </div>
         <div class="kpis" id="materialKpis"></div>
         <div class="panel">
-          <div class="panel-head"><h2>材料費支出</h2><span class="mini">依班別統計</span></div>
-          <div class="tablebox"><table><thead><tr><th>學期</th><th>日期</th><th>AIS</th><th>摘要</th><th>細目</th><th>班別</th><th>狀態</th><th class="amount">金額</th></tr></thead><tbody id="materialRows"></tbody></table></div>
+          <div class="panel-head">
+            <h2>材料費支出</h2>
+            <span class="mini">依選擇社團統計</span>
+          </div>
+          <div class="tablebox"><table class="material-table"><thead><tr><th>學期</th><th>日期</th><th>AIS</th><th>摘要</th><th>班別</th><th class="amount">金額</th></tr></thead><tbody id="materialRows"></tbody></table></div>
         </div>
       </section>
 
@@ -339,10 +400,19 @@
       </section>
 
       <section id="view-all" class="view">
+        <div class="filter-bar">
+          <label>支出類別
+            <select id="allCategorySelect">
+              <option value="全部">全部</option>
+              <option value="材料費">材料費</option>
+              <option value="行政費">行政費</option>
+            </select>
+          </label>
+        </div>
         <div class="kpis" id="allKpis"></div>
         <div class="panel">
           <div class="panel-head"><h2>支出總表</h2><span class="mini" id="allCount"></span></div>
-          <div class="tablebox"><table><thead><tr><th>學期</th><th>日期</th><th>AIS</th><th>摘要</th><th>細目</th><th>班別</th><th>狀態</th><th class="amount">金額</th></tr></thead><tbody id="allRows"></tbody></table></div>
+          <div class="tablebox"><table><thead><tr><th>學期</th><th>日期</th><th>AIS</th><th>摘要</th><th>班別</th><th class="amount">金額</th><th>操作</th></tr></thead><tbody id="allRows"></tbody></table></div>
         </div>
       </section>
     </main>
@@ -441,19 +511,30 @@
     const localKey = "bjps-expense-local-v2";
     const incomeEditKey = "bjps-income-edits-v1";
     const clubStoreKey = "bjps-income-clubs-v1";
+    const deletedExpenseKey = "bjps-deleted-expenses-v1";
     const twd = n => new Intl.NumberFormat("zh-TW", { style: "currency", currency: "TWD", maximumFractionDigits: 0 }).format(Number(n || 0));
     const sum = rows => rows.reduce((total, row) => total + Number(row.amount ?? row.total ?? row.tuitionTotal ?? 0), 0);
     const byId = id => document.getElementById(id);
     const localExpenses = () => JSON.parse(localStorage.getItem(localKey) || "[]");
+    const deletedExpenseIds = () => JSON.parse(localStorage.getItem(deletedExpenseKey) || "[]");
     const incomeEdits = () => JSON.parse(localStorage.getItem(incomeEditKey) || "{}");
     const clubStore = () => JSON.parse(localStorage.getItem(clubStoreKey) || "{\"added\":[],\"deleted\":[]}");
     const saveClubStore = store => localStorage.setItem(clubStoreKey, JSON.stringify({
       added: [...new Set(store.added || [])],
       deleted: [...new Set(store.deleted || [])]
     }));
-    const allExpenses = () => [...baseExpenses, ...localExpenses()];
+    const allExpenses = () => {
+      const deleted = new Set(deletedExpenseIds());
+      return [...baseExpenses, ...localExpenses()].filter(row => !deleted.has(row.id));
+    };
     const materialExpense = rows => rows.filter(r => r.item.includes("材料"));
     const adminExpense = rows => rows.filter(r => r.item === "行政費");
+    const hourlyExpense = rows => rows.filter(r => r.item === "鐘點費");
+    const matchesExpenseCategory = (row, category) => {
+      if (category === "材料費") return row.item.includes("材料");
+      if (category === "行政費") return row.item === "行政費";
+      return true;
+    };
 
     function kpi(label, value, note = "", cls = "") {
       return `<div class="kpi"><div class="label">${label}</div><div class="value ${cls}">${twd(value)}</div><div class="mini">${note}</div></div>`;
@@ -670,38 +751,82 @@
     }
 
     function renderAdmin() {
-      const rows = adminExpense(allExpenses());
+      const rows = adminExpense(allExpenses()).filter(r => r.semester === "114-2");
       const incomeAdmin = combinedIncome().reduce((t, r) => t + r.admin, 0);
       const expenseAdmin = sum(rows);
       byId("adminKpis").innerHTML =
-        kpi("行政費收入", incomeAdmin, "由學費收入計算表同步", "good") +
+        kpi("行政費收入", incomeAdmin, "114-2 學費收入計算表", "good") +
         kpi("行政費支出", expenseAdmin, `${rows.length} 筆`) +
-        kpi("結餘", incomeAdmin - expenseAdmin, "收入 - 支出", incomeAdmin - expenseAdmin >= 0 ? "good" : "bad") +
-        kpi("114-2 支出", sum(rows.filter(r => r.semester === "114-2")), "下學期");
-      byId("adminRows").innerHTML = rows.map(r => `<tr><td>${r.semester}</td><td>${r.date}</td><td>${r.ais || ""}</td><td>${r.summary}</td><td>${r.status}</td><td class="amount">${twd(r.amount)}</td></tr>`).join("");
+        kpi("結餘", incomeAdmin - expenseAdmin, "收入 - 支出", incomeAdmin - expenseAdmin >= 0 ? "good" : "bad");
+      byId("adminRows").innerHTML = rows.map(r => `<tr><td>${r.semester}</td><td>${r.date}</td><td>${r.ais || ""}</td><td>${r.summary}</td><td class="amount">${twd(r.amount)}</td></tr>`).join("");
+    }
+
+    function renderHourly() {
+      const rows = hourlyExpense(allExpenses()).filter(r => r.semester === "114-2");
+      const incomeHourly = combinedIncome().reduce((t, r) => t + r.hourly, 0);
+      const expenseHourly = sum(rows);
+      byId("hourlyKpis").innerHTML =
+        kpi("鐘點費收入", incomeHourly, "114-2 學費收入計算表", "good") +
+        kpi("鐘點費支出", expenseHourly, `${rows.length} 筆`) +
+        kpi("結餘", incomeHourly - expenseHourly, "收入 - 支出", incomeHourly - expenseHourly >= 0 ? "good" : "bad");
+      byId("hourlyRows").innerHTML = rows.map(r => `<tr><td>${r.semester}</td><td>${r.date}</td><td>${r.ais || ""}</td><td>${r.summary}</td><td class="amount">${twd(r.amount)}</td></tr>`).join("");
     }
 
     function renderMaterial() {
-      const rows = materialExpense(allExpenses());
-      const incomeMaterial = combinedIncome().reduce((t, r) => t + r.material, 0);
+      const materialIncomeRows = combinedIncome();
+      const allMaterialRows = materialExpense(allExpenses());
+      const classNames = [...new Set([
+        ...materialIncomeRows.filter(row => row.material > 0).map(row => row.className),
+        ...allMaterialRows.map(row => row.className).filter(Boolean)
+      ])].sort((a, b) => classOrderIndex(a) - classOrderIndex(b) || a.localeCompare(b, "zh-Hant"));
+      const select = byId("materialClassSelect");
+      const selectedBefore = select ? select.value : "";
+      const options = ["全部", ...classNames];
+      if (select) {
+        select.innerHTML = options.map(name => `<option value="${name}">${name}</option>`).join("");
+        select.value = options.includes(selectedBefore) ? selectedBefore : "全部";
+      }
+      const selectedClass = select ? select.value : "全部";
+      const rows = allMaterialRows.filter(r => selectedClass === "全部" || r.className === selectedClass);
+      const incomeMaterial = materialIncomeRows
+        .filter(r => selectedClass === "全部" || r.className === selectedClass)
+        .reduce((t, r) => t + r.material, 0);
       const expenseMaterial = sum(rows);
       byId("materialKpis").innerHTML =
-        kpi("材料費收入", incomeMaterial, "114-2 材料費", "good") +
+        kpi("材料費收入", incomeMaterial, selectedClass, "good") +
         kpi("材料費支出", expenseMaterial, `${rows.length} 筆`) +
-        kpi("結餘", incomeMaterial - expenseMaterial, "收入 - 支出", incomeMaterial - expenseMaterial >= 0 ? "good" : "bad") +
-        kpi("耗材+冷氣費收入", sum(otherIncome.filter(r => r.item !== "材料費")), "另列收入");
-      byId("materialRows").innerHTML = rows.map(r => `<tr><td>${r.semester}</td><td>${r.date}</td><td>${r.ais || ""}</td><td>${r.summary}</td><td>${r.item}</td><td>${r.className || ""}</td><td>${r.status}</td><td class="amount">${twd(r.amount)}</td></tr>`).join("");
+        kpi("結餘", incomeMaterial - expenseMaterial, "收入 - 支出", incomeMaterial - expenseMaterial >= 0 ? "good" : "bad");
+      byId("materialRows").innerHTML = rows.map(r => `<tr><td>${r.semester}</td><td>${r.date}</td><td>${r.ais || ""}</td><td>${r.summary}</td><td>${r.className || ""}</td><td class="amount">${twd(r.amount)}</td></tr>`).join("");
     }
 
     function renderAll() {
-      const rows = allExpenses().sort((a, b) => a.date.localeCompare(b.date));
+      const selectedCategory = byId("allCategorySelect")?.value || "全部";
+      const rows = allExpenses()
+        .filter(row => matchesExpenseCategory(row, selectedCategory))
+        .sort((a, b) => a.date.localeCompare(b.date));
+      const localRows = localExpenses().filter(row => matchesExpenseCategory(row, selectedCategory));
       byId("allCount").textContent = `${rows.length} 筆`;
       byId("allKpis").innerHTML =
         kpi("支出合計", sum(rows), `${rows.length} 筆`) +
         kpi("114-1", sum(rows.filter(r => r.semester === "114-1")), "上學期") +
         kpi("114-2", sum(rows.filter(r => r.semester === "114-2")), "下學期") +
-        kpi("本機新增", sum(localExpenses()), `${localExpenses().length} 筆`, "warn");
-      byId("allRows").innerHTML = rows.map(r => `<tr><td>${r.semester}</td><td>${r.date}</td><td>${r.ais || ""}</td><td>${r.summary}</td><td>${r.item}</td><td>${r.className || ""}</td><td>${r.status}</td><td class="amount">${twd(r.amount)}</td></tr>`).join("");
+        kpi("本機新增", sum(localRows), `${localRows.length} 筆`, "warn");
+      byId("allRows").innerHTML = rows.map(r => `<tr><td>${r.semester}</td><td>${r.date}</td><td>${r.ais || ""}</td><td>${r.summary}</td><td>${r.className || ""}</td><td class="amount">${twd(r.amount)}</td><td><button type="button" class="danger delete-expense" data-id="${r.id}">刪除</button></td></tr>`).join("");
+      byId("allRows").querySelectorAll(".delete-expense").forEach(button => {
+        button.addEventListener("click", event => deleteExpense(event.target.dataset.id));
+      });
+    }
+
+    function deleteExpense(id) {
+      const row = allExpenses().find(item => item.id === id);
+      if (!row) return;
+      if (!confirm(`確定刪除「${row.summary}」？`)) return;
+      if (id.startsWith("local-")) {
+        localStorage.setItem(localKey, JSON.stringify(localExpenses().filter(item => item.id !== id)));
+      } else {
+        localStorage.setItem(deletedExpenseKey, JSON.stringify([...new Set([...deletedExpenseIds(), id])]));
+      }
+      render();
     }
 
     function switchView(view) {
@@ -714,6 +839,7 @@
       renderTuition();
       renderClassOptions();
       renderAdmin();
+      renderHourly();
       renderMaterial();
       renderAll();
     }
@@ -753,6 +879,8 @@
       document.querySelectorAll(".nav button").forEach(button => button.addEventListener("click", () => switchView(button.dataset.view)));
       byId("addClubBtn").addEventListener("click", addClub);
       byId("deleteClubBtn").addEventListener("click", deleteClub);
+      byId("materialClassSelect").addEventListener("change", renderMaterial);
+      byId("allCategorySelect").addEventListener("change", renderAll);
       byId("expenseForm").addEventListener("submit", addExpense);
       byId("clearLocal").addEventListener("click", () => {
         if (!confirm("確定清除本機新增的支出資料？")) return;
