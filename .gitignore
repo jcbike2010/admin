@@ -1,0 +1,12 @@
+*
+
+!.gitignore
+!README.md
+!firebase.json
+!.firebaserc
+!public/
+!public/**
+
+node_modules/
+.firebase/
+*.log

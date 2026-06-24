@@ -1,0 +1,774 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>114 學年經費管理</title>
+  <style>
+    :root {
+      --bg: #f5f6f8;
+      --panel: #fff;
+      --line: #dde2ea;
+      --text: #17202c;
+      --muted: #647084;
+      --blue: #1e5aa8;
+      --green: #207044;
+      --red: #b42318;
+      --amber: #a15c07;
+      --chip-blue: #dceeff;
+      --chip-red: #ffe2df;
+      --chip-gray: #eceff3;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Microsoft JhengHei", "Noto Sans TC", system-ui, sans-serif;
+      line-height: 1.5;
+    }
+    header {
+      background: #152033;
+      color: white;
+      border-bottom: 4px solid #2f6f68;
+    }
+    .wrap { width: 100%; max-width: none; margin: 0 auto; padding: 14px clamp(10px, 1.2vw, 18px); }
+    h1 { margin: 0; font-size: 28px; letter-spacing: 0; }
+    .sub { margin: 3px 0 0; color: #cbd5e1; font-size: 14px; }
+    .app {
+      display: grid;
+      grid-template-columns: 160px minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+      padding-top: 16px;
+    }
+    aside {
+      position: sticky;
+      top: 12px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+    }
+    aside h2 { margin: 0 0 10px; font-size: 16px; }
+    .nav { display: grid; gap: 8px; }
+    .nav button {
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: #243044;
+      text-align: left;
+      padding: 8px;
+      font: inherit;
+      cursor: pointer;
+    }
+    .nav button.active { background: #17324d; color: white; border-color: #17324d; }
+    main { min-width: 0; }
+    .view { display: none; }
+    .view.active { display: block; }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      margin-bottom: 14px;
+    }
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      padding: 13px 15px;
+      border-bottom: 1px solid var(--line);
+    }
+    .panel-head h2 { margin: 0; font-size: 19px; }
+    .panel-body { padding: 14px 15px; }
+    .mini { color: var(--muted); font-size: 12px; }
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .kpi {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 13px 14px;
+    }
+    .kpi .label { color: var(--muted); font-size: 13px; }
+    .kpi .value { font-size: 25px; font-weight: 800; margin-top: 3px; }
+    .good { color: var(--green); }
+    .bad { color: var(--red); }
+    .warn { color: var(--amber); }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td {
+      padding: 8px 7px;
+      border-bottom: 1px solid #edf0f4;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      position: sticky;
+      top: 0;
+      background: #f8fafc;
+      color: #536173;
+      z-index: 1;
+    }
+    tfoot th {
+      position: sticky;
+      bottom: 0;
+      background: #eef3f8;
+      color: #17202c;
+      border-top: 2px solid var(--line);
+      font-weight: 800;
+    }
+    .amount { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .computed {
+      background: #f1f7ff;
+      font-weight: 700;
+    }
+    .computed::before {
+      content: "計 ";
+      color: var(--blue);
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .sep-left {
+      border-left: 4px solid #26364d;
+    }
+    th.sep-left, td.sep-left { padding-left: 12px; }
+    .tablebox { max-height: 560px; overflow: auto; }
+    .income-table {
+      table-layout: fixed;
+      min-width: 0;
+      font-size: 13px;
+    }
+    .income-table th,
+    .income-table td {
+      padding: 7px 5px;
+    }
+    .income-table th {
+      white-space: normal;
+      line-height: 1.25;
+    }
+    .income-table th:nth-child(1),
+    .income-table td:nth-child(1) { width: 8.5%; }
+    .income-table th:nth-child(2),
+    .income-table td:nth-child(2) { width: 6%; }
+    .income-table th:nth-child(3),
+    .income-table td:nth-child(3),
+    .income-table th:nth-child(7),
+    .income-table td:nth-child(7),
+    .income-table th:nth-child(9),
+    .income-table td:nth-child(9),
+    .income-table th:nth-child(11),
+    .income-table td:nth-child(11) { width: 7%; }
+    .income-table th:nth-child(4),
+    .income-table td:nth-child(4),
+    .income-table th:nth-child(5),
+    .income-table td:nth-child(5),
+    .income-table th:nth-child(6),
+    .income-table td:nth-child(6),
+    .income-table th:nth-child(8),
+    .income-table td:nth-child(8),
+    .income-table th:nth-child(10),
+    .income-table td:nth-child(10),
+    .income-table th:nth-child(12),
+    .income-table td:nth-child(12) { width: 7.5%; }
+    .income-table th:nth-child(13),
+    .income-table td:nth-child(13) { width: 9%; }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 12px;
+      background: var(--chip-gray);
+    }
+    .chip.material { background: var(--chip-red); }
+    .chip.ac { background: var(--chip-blue); }
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+    label { display: grid; gap: 5px; color: var(--muted); font-size: 12px; }
+    input, select, button {
+      min-height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--text);
+      padding: 8px 10px;
+      font: inherit;
+    }
+    .cell-input {
+      width: 100%;
+      min-width: 0;
+      min-height: 34px;
+      text-align: right;
+      border-color: #cfd6e0;
+      background: #fff;
+      font-variant-numeric: tabular-nums;
+      padding: 6px 5px;
+    }
+    .cell-input:focus {
+      outline: 2px solid #b9d7ff;
+      border-color: var(--blue);
+    }
+    .wide { grid-column: span 2; }
+    .primary { background: #17324d; color: white; border-color: #17324d; cursor: pointer; }
+    .danger { color: var(--red); background: #fff7f7; border-color: #f1c5bf; cursor: pointer; }
+    .actions { display: flex; gap: 8px; align-items: end; }
+    .table-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .table-actions select { min-width: 150px; }
+    @media (max-width: 900px) {
+      .app, .kpis, .two-col, .form-grid { grid-template-columns: 1fr; }
+      aside { position: static; }
+      .wide { grid-column: span 1; }
+      .actions { align-items: stretch; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>114 學年經費管理</h1>
+      <p class="sub">上學期與下學期的收入、支出、統計與登錄</p>
+    </div>
+  </header>
+
+  <div class="wrap app">
+    <aside>
+      <h2>功能</h2>
+      <div class="nav">
+        <button class="active" data-view="tuition">學費收入計算</button>
+        <button data-view="admin">行政費</button>
+        <button data-view="material">材料費</button>
+        <button data-view="add">支出: 新增支出</button>
+        <button data-view="all">支出總表</button>
+      </div>
+    </aside>
+
+    <main>
+      <section id="view-tuition" class="view active">
+        <div class="kpis" id="tuitionKpis"></div>
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>114-2 學費收入計算表</h2>
+            </div>
+            <div class="table-actions">
+              <button type="button" class="primary" id="addClubBtn">新增社團</button>
+              <select id="deleteClubSelect" aria-label="選擇要刪除的社團"></select>
+              <button type="button" class="danger" id="deleteClubBtn">刪除社團</button>
+            </div>
+          </div>
+          <div class="tablebox">
+            <table class="income-table">
+              <thead>
+                <tr>
+                  <th>班別</th>
+                  <th class="amount">人數</th>
+                  <th class="amount">每人學費</th>
+                  <th class="amount">學費總應收</th>
+                  <th class="amount">行政費</th>
+                  <th class="amount">鐘點費</th>
+                  <th class="amount sep-left">材料費</th>
+                  <th class="amount">總材料費</th>
+                  <th class="amount">耗材費</th>
+                  <th class="amount">總耗材費</th>
+                  <th class="amount">冷氣費</th>
+                  <th class="amount">總冷氣費</th>
+                  <th class="amount">收入合計</th>
+                </tr>
+              </thead>
+              <tbody id="combinedIncomeRows"></tbody>
+              <tfoot id="combinedIncomeFoot"></tfoot>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-admin" class="view">
+        <div class="kpis" id="adminKpis"></div>
+        <div class="panel">
+          <div class="panel-head"><h2>行政費支出</h2><span class="mini">114-1 + 114-2</span></div>
+          <div class="tablebox"><table><thead><tr><th>學期</th><th>日期</th><th>AIS</th><th>摘要</th><th>狀態</th><th class="amount">金額</th></tr></thead><tbody id="adminRows"></tbody></table></div>
+        </div>
+      </section>
+
+      <section id="view-material" class="view">
+        <div class="kpis" id="materialKpis"></div>
+        <div class="panel">
+          <div class="panel-head"><h2>材料費支出</h2><span class="mini">依班別統計</span></div>
+          <div class="tablebox"><table><thead><tr><th>學期</th><th>日期</th><th>AIS</th><th>摘要</th><th>細目</th><th>班別</th><th>狀態</th><th class="amount">金額</th></tr></thead><tbody id="materialRows"></tbody></table></div>
+        </div>
+      </section>
+
+      <section id="view-add" class="view">
+        <div class="panel">
+          <div class="panel-head"><h2>新增支出</h2><span class="mini">資料儲存在本機瀏覽器，不會寫回 Notion</span></div>
+          <div class="panel-body">
+            <form id="expenseForm" class="form-grid">
+              <label>學期<select id="newSemester"><option value="114-2">114-2</option><option value="114-1">114-1</option></select></label>
+              <label>核銷日期<input id="newDate" type="date" required></label>
+              <label>AIS<input id="newAis" type="text" placeholder="例如 01111"></label>
+              <label>金額<input id="newAmount" type="number" min="0" step="1" required></label>
+              <label class="wide">支出摘要<input id="newSummary" type="text" required placeholder="輸入支出摘要"></label>
+              <label>支出細目<select id="newItem"></select></label>
+              <label>班別<select id="newClass"></select></label>
+              <label>狀態<select id="newStatus"></select></label>
+              <label>申請人<select id="newApplicant"></select></label>
+              <div class="actions">
+                <button class="primary" type="submit">新增支出</button>
+                <button class="danger" id="clearLocal" type="button">清除本機新增</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-all" class="view">
+        <div class="kpis" id="allKpis"></div>
+        <div class="panel">
+          <div class="panel-head"><h2>支出總表</h2><span class="mini" id="allCount"></span></div>
+          <div class="tablebox"><table><thead><tr><th>學期</th><th>日期</th><th>AIS</th><th>摘要</th><th>細目</th><th>班別</th><th>狀態</th><th class="amount">金額</th></tr></thead><tbody id="allRows"></tbody></table></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const tuition = [
+      ["打擊樂",13,2857,37141,11142,25999],
+      ["足球",15,1714,25710,7713,17997],
+      ["兒童美術",9,2946,26514,7954,18560],
+      ["兒童陶藝",15,1333,19995,5999,13997],
+      ["弦樂A",15,9900,148500,44550,103950],
+      ["弦樂B",4,8000,32000,9600,22400],
+      ["直排輪",14,1684,23576,7073,16503],
+      ["桌球",10,2600,26000,7800,18200],
+      ["烏克麗麗",10,2000,20000,6000,14000],
+      ["創意點心",25,1786,44650,13395,31255],
+      ["創意捏塑",15,1114,16710,5013,11697]
+    ].map(([className, people, tuitionPer, tuitionTotal, admin, hourly]) => ({className, people, tuitionPer, tuitionTotal, admin, hourly}));
+
+    const otherIncome = [
+      ["籃球","耗材費",15,100,1500],
+      ["縫紉","材料費",12,600,7200],
+      ["縫紉","冷氣費",12,50,600],
+      ["跆拳道","冷氣費",8,50,400],
+      ["街舞","冷氣費",20,50,1000],
+      ["無人機","冷氣費",10,50,500],
+      ["創意捏塑","冷氣費",15,50,750],
+      ["創意捏塑","材料費",15,600,9000],
+      ["創意點心","材料費",25,1800,45000],
+      ["創意點心","冷氣費",25,50,1250],
+      ["烏克麗麗","冷氣費",10,50,500],
+      ["桌球","耗材費",10,50,500],
+      ["桌球","冷氣費",10,50,500]
+    ].map(([className, item, people, perPerson, total]) => ({className, item, people, perPerson, total}));
+
+    const expenseSeed = `114-1|2025-09-05||廁所清潔+114開學鑼|行政費||完成|4496
+114-1|2025-10-02||游泳社器材-浮板|行政費||完成|1300
+114-1|2025-10-14||總-音樂教室白蟻防治|行政費||完成|6000
+114-1|2025-10-15||9月社團行政加班費|行政費||完成|1194
+114-1|2025-10-23||器材收納角鋼架|行政費||完成|3960
+114-1|2025-11-03||社團獎勵品|行政費||完成|2150
+114-1|2025-11-17||游泳社材料費|行政費||完成|922
+114-1|2025-11-17||社團收納角鋼架|行政費||完成|1950
+114-1|2025-12-04||社團用文具消耗品|行政費||完成|508
+114-1|2026-01-02|00054|退費--退社差額|行政費||完成|20169
+114-1|2026-01-05|00068|總-鼠害防治費用|行政費||完成|66000
+114-1|2026-01-08|00257|12月蛋糕|行政費||完成|490
+114-1|2026-01-08|00018|陶藝烤箱維修費|行政費||完成|5460
+114-1|2026-01-19|00143|陶藝烤箱維修費|行政費||完成|6825
+114-1|2026-01-22|00142|弦樂團器材|行政費||完成|9178
+114-1|2026-01-22|00213|12月影印費分攤|行政費||完成|10000
+114-1|2026-01-30|00253|115年1月課後社團鐘點|鐘點費||完成|2300
+114-1|2026-02-11|00329|弦樂團器材用品費|行政費||完成|4900
+114-2|2026-03-13|00451|115年3月蛋糕|行政費||完成|399
+114-2|2026-03-13|00454|運動用品費|行政費||完成|9480
+114-2|2026-03-13|00455|兒童美術社材料費|美術材料|兒童美術|完成|1953
+114-2|2026-03-13|00456|兒童美術社材料費|美術材料|兒童美術|完成|1723
+114-2|2026-03-13|00450|捏塑社材料費|塑材料|創意捏塑|完成|7500
+114-2|2026-03-17|00473|陶藝烤箱安全維修費|行政費||完成|5460
+114-2|2026-03-17|00472|創意點心社材料費|烘材料|創意點心|完成|2330
+114-2|2026-03-17|00471|創意點心社材料費|烘材料|創意點心|完成|8252
+114-2|2026-03-25|00525|打擊樂社器材|行政費||完成|8400
+114-2|2026-04-01|00572|3月鐘點費|鐘點費||完成|123700
+114-2|2026-04-02|00586|3月加班費|行政費||進行中|3114
+114-2|2026-04-13|00635|2月課後社團人員-曾華然|行政費||進行中|4100
+114-2|2026-04-13|00636|3月課後社團人員-曾華然|行政費||進行中|21320
+114-2|2026-04-23|00704|創意點心社材料費|烘材料|創意點心|進行中|16875
+114-2|2026-04-23|00706|兒童美術社材料費|美術材料|兒童美術|進行中|707
+114-2|2026-04-23|00707|縫紉社材料費|縫紉材料|縫紉|進行中|6750
+114-2|2026-04-30|00753|4月課後社團人員-曾華然|行政費||進行中|19000
+114-2|2026-04-30|00752|4月鐘點費|鐘點費||進行中|124600
+114-2|2026-05-11|00808|4月加班費|行政費||進行中|3762
+114-2|2026-05-14|00846|創意點心社材料費|烘材料|創意點心|進行中|5091
+114-2|2026-05-14|00847|創意點心社材料費|烘材料|創意點心|進行中|8936
+114-2|2026-06-01|00978|5月課後社團-教學進用人員-曾華然|行政費||完成|21180
+114-2|2026-06-01|01056|5月課後社團行政輪值加班費|行政費||完成|3762
+114-2|2026-06-02|00981|115年1月份補充保費(19)|行政費||完成|2636
+114-2|2026-06-16|01078|114-2課後社團退社、差額退費-黃浩等5人|行政費||進行中|7279
+114-2|2026-06-19|01100|5月蛋糕|行政費||進行中|399
+114-2|2026-06-22|01109|捏塑社材料費|塑材料|創意捏塑|進行中|1500
+114-2|2026-06-22|01110|創意點心社材料費|烘材料|創意點心|進行中|3494`;
+
+    const baseExpenses = expenseSeed.trim().split("\n").map((line, index) => {
+      const [semester, date, ais, summary, item, className, status, amount] = line.split("|");
+      return { id: `base-${index}`, semester, date, ais, summary, item, className, status, amount: Number(amount) };
+    });
+
+    const schema = {
+      items: ["行政費", "材料費", "鐘點費", "烘材料", "美術材料", "塑材料", "縫紉材料"],
+      classes: ["", "桌球", "打擊樂", "足球", "兒童美術", "兒童陶藝", "弦樂A", "弦樂B", "直排輪", "烏克麗麗", "創意點心", "創意捏塑", "縫紉", "其他"],
+      statuses: ["未開始", "進行中", "完成"],
+      applicants: ["", "許哲彰", "朱俐嬛", "柏毅"]
+    };
+
+    const localKey = "bjps-expense-local-v2";
+    const incomeEditKey = "bjps-income-edits-v1";
+    const clubStoreKey = "bjps-income-clubs-v1";
+    const twd = n => new Intl.NumberFormat("zh-TW", { style: "currency", currency: "TWD", maximumFractionDigits: 0 }).format(Number(n || 0));
+    const sum = rows => rows.reduce((total, row) => total + Number(row.amount ?? row.total ?? row.tuitionTotal ?? 0), 0);
+    const byId = id => document.getElementById(id);
+    const localExpenses = () => JSON.parse(localStorage.getItem(localKey) || "[]");
+    const incomeEdits = () => JSON.parse(localStorage.getItem(incomeEditKey) || "{}");
+    const clubStore = () => JSON.parse(localStorage.getItem(clubStoreKey) || "{\"added\":[],\"deleted\":[]}");
+    const saveClubStore = store => localStorage.setItem(clubStoreKey, JSON.stringify({
+      added: [...new Set(store.added || [])],
+      deleted: [...new Set(store.deleted || [])]
+    }));
+    const allExpenses = () => [...baseExpenses, ...localExpenses()];
+    const materialExpense = rows => rows.filter(r => r.item.includes("材料"));
+    const adminExpense = rows => rows.filter(r => r.item === "行政費");
+
+    function kpi(label, value, note = "", cls = "") {
+      return `<div class="kpi"><div class="label">${label}</div><div class="value ${cls}">${twd(value)}</div><div class="mini">${note}</div></div>`;
+    }
+
+    function adminRate(className) {
+      return /^弦樂[AB]/.test(className) ? 0.12 : 0.30;
+    }
+
+    const classOrder = ["桌球", "打擊樂", "足球", "兒童美術", "兒童陶藝", "弦樂A", "弦樂B", "直排輪", "烏克麗麗", "創意點心", "創意捏塑", "籃球", "縫紉", "跆拳道", "街舞", "無人機"];
+
+    function classOrderIndex(className) {
+      const fixedIndex = classOrder.indexOf(className);
+      if (fixedIndex >= 0) return fixedIndex;
+      const otherIndex = otherIncome.findIndex(row => row.className === className);
+      return classOrder.length + (otherIndex >= 0 ? otherIndex : 999);
+    }
+
+    function activeTuitionRows() {
+      const store = clubStore();
+      const deleted = new Set(store.deleted || []);
+      const addedRows = (store.added || [])
+        .filter(name => name && !deleted.has(name))
+        .map(className => ({className, people: 0, tuitionPer: 0, tuitionTotal: 0, admin: 0, hourly: 0}));
+      return [
+        ...tuition.filter(row => !deleted.has(row.className)),
+        ...addedRows
+      ];
+    }
+
+    function activeClassNames() {
+      return combinedIncome().map(row => row.className);
+    }
+
+    function combinedIncome() {
+      const map = new Map();
+      const edits = incomeEdits();
+      const deleted = new Set(clubStore().deleted || []);
+      activeTuitionRows().forEach(row => {
+        map.set(row.className, {
+          className: row.className,
+          people: row.people,
+          tuitionPer: row.tuitionPer,
+          tuitionTotal: row.tuitionTotal,
+          admin: row.admin,
+          hourly: row.hourly,
+          material: 0,
+          consumable: 0,
+          ac: 0
+        });
+      });
+      otherIncome.forEach(row => {
+        if (deleted.has(row.className)) return;
+        if (!map.has(row.className)) {
+          map.set(row.className, {
+            className: row.className,
+            people: row.people,
+            tuitionPer: 0,
+            tuitionTotal: 0,
+            admin: 0,
+            hourly: 0,
+            material: 0,
+            consumable: 0,
+            ac: 0
+          });
+        }
+        const target = map.get(row.className);
+        if (row.people && !target.people) target.people = row.people;
+        if (row.item === "材料費") target.material += row.total;
+        if (row.item === "耗材費") target.consumable += row.total;
+        if (row.item === "冷氣費") target.ac += row.total;
+      });
+      return [...map.values()].map(row => {
+        const edit = edits[row.className] || {};
+        const people = Number(edit.people ?? row.people ?? 0);
+        const tuitionPer = Number(edit.tuitionPer ?? row.tuitionPer ?? 0);
+        const materialPer = Number(edit.materialPer ?? (people ? row.material / people : 0));
+        const consumablePer = Number(edit.consumablePer ?? (people ? row.consumable / people : 0));
+        const acPer = Number(edit.acPer ?? (people ? row.ac / people : 0));
+        const tuitionTotal = people * tuitionPer;
+        const admin = Math.round(tuitionTotal * adminRate(row.className));
+        const hourly = tuitionTotal - admin;
+        const material = people * materialPer;
+        const consumable = people * consumablePer;
+        const ac = people * acPer;
+        return {
+          ...row,
+          people,
+          tuitionPer,
+          tuitionTotal,
+          admin,
+          hourly,
+          materialPer,
+          material,
+          consumablePer,
+          consumable,
+          acPer,
+          ac,
+          total: tuitionTotal + material + consumable + ac
+        };
+      }).sort((a, b) => classOrderIndex(a.className) - classOrderIndex(b.className) || a.className.localeCompare(b.className, "zh-Hant"));
+    }
+
+    function addClub() {
+      const name = prompt("請輸入新增社團名稱");
+      const className = (name || "").trim();
+      if (!className) return;
+      const store = clubStore();
+      store.deleted = (store.deleted || []).filter(item => item !== className);
+      const existsInBase = tuition.some(row => row.className === className) || otherIncome.some(row => row.className === className);
+      if (!existsInBase && !(store.added || []).includes(className)) {
+        store.added = [...(store.added || []), className];
+      }
+      saveClubStore(store);
+      render();
+    }
+
+    function deleteClub() {
+      const select = byId("deleteClubSelect");
+      const className = select.value;
+      if (!className) return;
+      if (!confirm(`確定刪除「${className}」？`)) return;
+      const store = clubStore();
+      const existsInBase = tuition.some(row => row.className === className) || otherIncome.some(row => row.className === className);
+      store.added = (store.added || []).filter(item => item !== className);
+      if (existsInBase && !(store.deleted || []).includes(className)) {
+        store.deleted = [...(store.deleted || []), className];
+      }
+      saveClubStore(store);
+      const edits = incomeEdits();
+      delete edits[className];
+      localStorage.setItem(incomeEditKey, JSON.stringify(edits));
+      render();
+    }
+
+    function editCell(className, field, value) {
+      const edits = incomeEdits();
+      edits[className] = edits[className] || {};
+      edits[className][field] = Number(value || 0);
+      localStorage.setItem(incomeEditKey, JSON.stringify(edits));
+      renderTuition();
+    }
+
+    function inputCell(row, field, value) {
+      return `<input class="cell-input" type="number" min="0" step="1" value="${Math.round(Number(value || 0))}" data-class="${row.className}" data-field="${field}">`;
+    }
+
+    function renderTuition() {
+      const rows = combinedIncome();
+      const deleteSelect = byId("deleteClubSelect");
+      if (deleteSelect) {
+        deleteSelect.innerHTML = rows.map(r => `<option value="${r.className}">${r.className}</option>`).join("");
+      }
+      const tuitionTotal = rows.reduce((t, r) => t + r.tuitionTotal, 0);
+      const adminTotal = rows.reduce((t, r) => t + r.admin, 0);
+      const hourlyTotal = rows.reduce((t, r) => t + r.hourly, 0);
+      const otherTotal = rows.reduce((t, r) => t + r.material + r.consumable + r.ac, 0);
+      const grandTotal = rows.reduce((t, r) => t + r.total, 0);
+      byId("tuitionKpis").innerHTML =
+        kpi("收入合計", grandTotal, `${rows.length} 個班別`, "good") +
+        kpi("學費總應收", tuitionTotal, "114-2學費") +
+        kpi("行政費", adminTotal, "學費拆分") +
+        kpi("收入其他", otherTotal, "材料、耗材、冷氣", "warn");
+      byId("combinedIncomeRows").innerHTML = rows.map(r => `
+        <tr>
+          <td>${r.className}</td>
+          <td class="amount">${inputCell(r, "people", r.people)}</td>
+          <td class="amount">${inputCell(r, "tuitionPer", r.tuitionPer)}</td>
+          <td class="amount computed">${r.tuitionTotal ? twd(r.tuitionTotal) : "-"}</td>
+          <td class="amount computed">${r.admin ? twd(r.admin) : "-"}</td>
+          <td class="amount computed">${r.hourly ? twd(r.hourly) : "-"}</td>
+          <td class="amount sep-left">${inputCell(r, "materialPer", r.materialPer)}</td>
+          <td class="amount computed">${r.material ? twd(r.material) : "-"}</td>
+          <td class="amount">${inputCell(r, "consumablePer", r.consumablePer)}</td>
+          <td class="amount computed">${r.consumable ? twd(r.consumable) : "-"}</td>
+          <td class="amount">${inputCell(r, "acPer", r.acPer)}</td>
+          <td class="amount computed">${r.ac ? twd(r.ac) : "-"}</td>
+          <td class="amount computed">${twd(r.total)}</td>
+        </tr>
+      `).join("");
+      byId("combinedIncomeRows").querySelectorAll(".cell-input").forEach(input => {
+        input.addEventListener("change", event => editCell(event.target.dataset.class, event.target.dataset.field, event.target.value));
+      });
+      const totals = rows.reduce((acc, r) => {
+        acc.people += Number(r.people || 0);
+        acc.tuition += r.tuitionTotal;
+        acc.admin += r.admin;
+        acc.hourly += r.hourly;
+        acc.material += r.material;
+        acc.consumable += r.consumable;
+        acc.ac += r.ac;
+        acc.total += r.total;
+        return acc;
+      }, {people:0, tuition:0, admin:0, hourly:0, material:0, consumable:0, ac:0, total:0});
+      byId("combinedIncomeFoot").innerHTML = `
+        <tr>
+          <th>合計</th>
+          <th class="amount">${totals.people}</th>
+          <th></th>
+          <th class="amount computed">${twd(totals.tuition)}</th>
+          <th class="amount computed">${twd(totals.admin)}</th>
+          <th class="amount computed">${twd(totals.hourly)}</th>
+          <th></th>
+          <th class="amount computed">${twd(totals.material)}</th>
+          <th></th>
+          <th class="amount computed">${twd(totals.consumable)}</th>
+          <th></th>
+          <th class="amount computed">${twd(totals.ac)}</th>
+          <th class="amount computed">${twd(totals.total)}</th>
+        </tr>
+      `;
+    }
+
+    function renderClassOptions() {
+      const names = ["", ...activeClassNames(), "其他"];
+      byId("newClass").innerHTML = names.map(x => `<option value="${x}">${x || "無"}</option>`).join("");
+    }
+
+    function renderAdmin() {
+      const rows = adminExpense(allExpenses());
+      const incomeAdmin = combinedIncome().reduce((t, r) => t + r.admin, 0);
+      const expenseAdmin = sum(rows);
+      byId("adminKpis").innerHTML =
+        kpi("行政費收入", incomeAdmin, "114-2 學費拆分", "good") +
+        kpi("行政費支出", expenseAdmin, `${rows.length} 筆`) +
+        kpi("結餘", incomeAdmin - expenseAdmin, "收入 - 支出", incomeAdmin - expenseAdmin >= 0 ? "good" : "bad") +
+        kpi("114-2 支出", sum(rows.filter(r => r.semester === "114-2")), "下學期");
+      byId("adminRows").innerHTML = rows.map(r => `<tr><td>${r.semester}</td><td>${r.date}</td><td>${r.ais || ""}</td><td>${r.summary}</td><td>${r.status}</td><td class="amount">${twd(r.amount)}</td></tr>`).join("");
+    }
+
+    function renderMaterial() {
+      const rows = materialExpense(allExpenses());
+      const incomeMaterial = sum(otherIncome.filter(r => r.item === "材料費"));
+      const expenseMaterial = sum(rows);
+      byId("materialKpis").innerHTML =
+        kpi("材料費收入", incomeMaterial, "114-2 收入其他", "good") +
+        kpi("材料費支出", expenseMaterial, `${rows.length} 筆`) +
+        kpi("結餘", incomeMaterial - expenseMaterial, "收入 - 支出", incomeMaterial - expenseMaterial >= 0 ? "good" : "bad") +
+        kpi("冷氣/耗材收入", sum(otherIncome.filter(r => r.item !== "材料費")), "另列收入");
+      byId("materialRows").innerHTML = rows.map(r => `<tr><td>${r.semester}</td><td>${r.date}</td><td>${r.ais || ""}</td><td>${r.summary}</td><td>${r.item}</td><td>${r.className || ""}</td><td>${r.status}</td><td class="amount">${twd(r.amount)}</td></tr>`).join("");
+    }
+
+    function renderAll() {
+      const rows = allExpenses().sort((a, b) => a.date.localeCompare(b.date));
+      byId("allCount").textContent = `${rows.length} 筆`;
+      byId("allKpis").innerHTML =
+        kpi("支出合計", sum(rows), `${rows.length} 筆`) +
+        kpi("114-1", sum(rows.filter(r => r.semester === "114-1")), "上學期") +
+        kpi("114-2", sum(rows.filter(r => r.semester === "114-2")), "下學期") +
+        kpi("本機新增", sum(localExpenses()), `${localExpenses().length} 筆`, "warn");
+      byId("allRows").innerHTML = rows.map(r => `<tr><td>${r.semester}</td><td>${r.date}</td><td>${r.ais || ""}</td><td>${r.summary}</td><td>${r.item}</td><td>${r.className || ""}</td><td>${r.status}</td><td class="amount">${twd(r.amount)}</td></tr>`).join("");
+    }
+
+    function switchView(view) {
+      document.querySelectorAll(".nav button").forEach(button => button.classList.toggle("active", button.dataset.view === view));
+      document.querySelectorAll(".view").forEach(section => section.classList.toggle("active", section.id === `view-${view}`));
+      render();
+    }
+
+    function render() {
+      renderTuition();
+      renderClassOptions();
+      renderAdmin();
+      renderMaterial();
+      renderAll();
+    }
+
+    function addExpense(event) {
+      event.preventDefault();
+      const amount = Number(byId("newAmount").value || 0);
+      const summary = byId("newSummary").value.trim();
+      if (!summary || !byId("newDate").value || amount <= 0) return;
+      const row = {
+        id: `local-${Date.now()}`,
+        semester: byId("newSemester").value,
+        date: byId("newDate").value,
+        ais: byId("newAis").value.trim(),
+        summary,
+        item: byId("newItem").value,
+        className: byId("newClass").value,
+        status: byId("newStatus").value,
+        amount
+      };
+      const rows = localExpenses();
+      rows.push(row);
+      localStorage.setItem(localKey, JSON.stringify(rows));
+      event.target.reset();
+      byId("newDate").value = new Date().toISOString().slice(0, 10);
+      byId("newStatus").value = "未開始";
+      render();
+      switchView("all");
+    }
+
+    function setup() {
+      byId("newItem").innerHTML = schema.items.map(x => `<option value="${x}">${x}</option>`).join("");
+      byId("newStatus").innerHTML = schema.statuses.map(x => `<option value="${x}">${x}</option>`).join("");
+      byId("newApplicant").innerHTML = schema.applicants.map(x => `<option value="${x}">${x || "未填"}</option>`).join("");
+      byId("newDate").value = new Date().toISOString().slice(0, 10);
+      byId("newStatus").value = "未開始";
+      document.querySelectorAll(".nav button").forEach(button => button.addEventListener("click", () => switchView(button.dataset.view)));
+      byId("addClubBtn").addEventListener("click", addClub);
+      byId("deleteClubBtn").addEventListener("click", deleteClub);
+      byId("expenseForm").addEventListener("submit", addExpense);
+      byId("clearLocal").addEventListener("click", () => {
+        if (!confirm("確定清除本機新增的支出資料？")) return;
+        localStorage.removeItem(localKey);
+        render();
+      });
+      render();
+    }
+
+    setup();
+  </script>
+</body>
+</html>
