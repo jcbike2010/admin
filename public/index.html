@@ -674,7 +674,7 @@
       const incomeAdmin = combinedIncome().reduce((t, r) => t + r.admin, 0);
       const expenseAdmin = sum(rows);
       byId("adminKpis").innerHTML =
-        kpi("行政費收入", incomeAdmin, "114-2 學費拆分", "good") +
+        kpi("行政費收入", incomeAdmin, "由學費收入計算表同步", "good") +
         kpi("行政費支出", expenseAdmin, `${rows.length} 筆`) +
         kpi("結餘", incomeAdmin - expenseAdmin, "收入 - 支出", incomeAdmin - expenseAdmin >= 0 ? "good" : "bad") +
         kpi("114-2 支出", sum(rows.filter(r => r.semester === "114-2")), "下學期");
