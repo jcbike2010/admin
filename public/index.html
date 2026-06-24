@@ -154,31 +154,29 @@
       line-height: 1.25;
     }
     .income-table th:nth-child(1),
-    .income-table td:nth-child(1) { width: 8.5%; }
+    .income-table td:nth-child(1) { width: 9%; }
     .income-table th:nth-child(2),
     .income-table td:nth-child(2) { width: 6%; }
     .income-table th:nth-child(3),
     .income-table td:nth-child(3),
-    .income-table th:nth-child(7),
-    .income-table td:nth-child(7),
-    .income-table th:nth-child(9),
-    .income-table td:nth-child(9),
-    .income-table th:nth-child(11),
-    .income-table td:nth-child(11) { width: 7%; }
     .income-table th:nth-child(4),
     .income-table td:nth-child(4),
     .income-table th:nth-child(5),
     .income-table td:nth-child(5),
     .income-table th:nth-child(6),
     .income-table td:nth-child(6),
+    .income-table th:nth-child(7),
+    .income-table td:nth-child(7),
+    .income-table th:nth-child(9),
+    .income-table td:nth-child(9),
+    .income-table th:nth-child(11),
+    .income-table td:nth-child(11) { width: 8%; }
     .income-table th:nth-child(8),
     .income-table td:nth-child(8),
     .income-table th:nth-child(10),
-    .income-table td:nth-child(10),
+    .income-table td:nth-child(10) { width: 7.5%; }
     .income-table th:nth-child(12),
-    .income-table td:nth-child(12) { width: 7.5%; }
-    .income-table th:nth-child(13),
-    .income-table td:nth-child(13) { width: 9%; }
+    .income-table td:nth-child(12) { width: 12%; }
     .chip {
       display: inline-flex;
       align-items: center;
@@ -283,7 +281,6 @@
                   <th>班別</th>
                   <th class="amount">人數</th>
                   <th class="amount">每人學費</th>
-                  <th class="amount">學費總應收</th>
                   <th class="amount">行政費</th>
                   <th class="amount">鐘點費</th>
                   <th class="amount sep-left">材料費</th>
@@ -292,7 +289,7 @@
                   <th class="amount">總耗材費</th>
                   <th class="amount">冷氣費</th>
                   <th class="amount">總冷氣費</th>
-                  <th class="amount">收入合計</th>
+                  <th class="amount">總應收</th>
                 </tr>
               </thead>
               <tbody id="combinedIncomeRows"></tbody>
@@ -610,22 +607,20 @@
       if (deleteSelect) {
         deleteSelect.innerHTML = rows.map(r => `<option value="${r.className}">${r.className}</option>`).join("");
       }
-      const tuitionTotal = rows.reduce((t, r) => t + r.tuitionTotal, 0);
       const adminTotal = rows.reduce((t, r) => t + r.admin, 0);
       const hourlyTotal = rows.reduce((t, r) => t + r.hourly, 0);
-      const otherTotal = rows.reduce((t, r) => t + r.material + r.consumable + r.ac, 0);
+      const extraTotal = rows.reduce((t, r) => t + r.consumable + r.ac, 0);
       const grandTotal = rows.reduce((t, r) => t + r.total, 0);
       byId("tuitionKpis").innerHTML =
-        kpi("收入合計", grandTotal, `${rows.length} 個班別`, "good") +
-        kpi("學費總應收", tuitionTotal, "114-2學費") +
+        kpi("總應收", grandTotal, `${rows.length} 個班別`, "good") +
         kpi("行政費", adminTotal, "學費拆分") +
-        kpi("收入其他", otherTotal, "材料、耗材、冷氣", "warn");
+        kpi("鐘點費", hourlyTotal, "學費拆分") +
+        kpi("耗材+冷氣費收入", extraTotal, "耗材、冷氣", "warn");
       byId("combinedIncomeRows").innerHTML = rows.map(r => `
         <tr>
           <td>${r.className}</td>
           <td class="amount">${inputCell(r, "people", r.people)}</td>
           <td class="amount">${inputCell(r, "tuitionPer", r.tuitionPer)}</td>
-          <td class="amount computed">${r.tuitionTotal ? twd(r.tuitionTotal) : "-"}</td>
           <td class="amount computed">${r.admin ? twd(r.admin) : "-"}</td>
           <td class="amount computed">${r.hourly ? twd(r.hourly) : "-"}</td>
           <td class="amount sep-left">${inputCell(r, "materialPer", r.materialPer)}</td>
@@ -656,7 +651,6 @@
           <th>合計</th>
           <th class="amount">${totals.people}</th>
           <th></th>
-          <th class="amount computed">${twd(totals.tuition)}</th>
           <th class="amount computed">${twd(totals.admin)}</th>
           <th class="amount computed">${twd(totals.hourly)}</th>
           <th></th>
@@ -692,10 +686,10 @@
       const incomeMaterial = sum(otherIncome.filter(r => r.item === "材料費"));
       const expenseMaterial = sum(rows);
       byId("materialKpis").innerHTML =
-        kpi("材料費收入", incomeMaterial, "114-2 收入其他", "good") +
+        kpi("材料費收入", incomeMaterial, "114-2 材料費", "good") +
         kpi("材料費支出", expenseMaterial, `${rows.length} 筆`) +
         kpi("結餘", incomeMaterial - expenseMaterial, "收入 - 支出", incomeMaterial - expenseMaterial >= 0 ? "good" : "bad") +
-        kpi("冷氣/耗材收入", sum(otherIncome.filter(r => r.item !== "材料費")), "另列收入");
+        kpi("耗材+冷氣費收入", sum(otherIncome.filter(r => r.item !== "材料費")), "另列收入");
       byId("materialRows").innerHTML = rows.map(r => `<tr><td>${r.semester}</td><td>${r.date}</td><td>${r.ais || ""}</td><td>${r.summary}</td><td>${r.item}</td><td>${r.className || ""}</td><td>${r.status}</td><td class="amount">${twd(r.amount)}</td></tr>`).join("");
     }
 
