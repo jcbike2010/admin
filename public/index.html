@@ -608,13 +608,13 @@
         deleteSelect.innerHTML = rows.map(r => `<option value="${r.className}">${r.className}</option>`).join("");
       }
       const adminTotal = rows.reduce((t, r) => t + r.admin, 0);
-      const hourlyTotal = rows.reduce((t, r) => t + r.hourly, 0);
+      const materialTotal = rows.reduce((t, r) => t + r.material, 0);
       const extraTotal = rows.reduce((t, r) => t + r.consumable + r.ac, 0);
       const grandTotal = rows.reduce((t, r) => t + r.total, 0);
       byId("tuitionKpis").innerHTML =
         kpi("總應收", grandTotal, `${rows.length} 個班別`, "good") +
         kpi("行政費", adminTotal, "學費拆分") +
-        kpi("鐘點費", hourlyTotal, "學費拆分") +
+        kpi("材料費", materialTotal, "總材料費") +
         kpi("耗材+冷氣費收入", extraTotal, "耗材、冷氣", "warn");
       byId("combinedIncomeRows").innerHTML = rows.map(r => `
         <tr>
