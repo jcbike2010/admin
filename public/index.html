@@ -466,7 +466,12 @@
       ["桌球",10,2600,26000,7800,18200],
       ["烏克麗麗",10,2000,20000,6000,14000],
       ["創意點心",25,1786,44650,13395,31255],
-      ["創意捏塑",15,1114,16710,5013,11697]
+      ["創意捏塑",15,1114,16710,5013,11697],
+      ["縫紉",12,1786,21432,6430,15002],
+      ["跆拳道",8,2857,22856,6857,15999],
+      ["街舞",20,2143,42860,12858,30002],
+      ["無人機",10,1671,16710,5013,11697],
+      ["游泳",20,1929,38580,11574,27006]
     ].map(([className, people, tuitionPer, tuitionTotal, admin, hourly]) => ({className, people, tuitionPer, tuitionTotal, admin, hourly}));
 
     const otherIncome = [
@@ -539,7 +544,7 @@
 
     const schema = {
       items: ["行政費", "材料費", "鐘點費", "烘材料", "美術材料", "塑材料", "縫紉材料"],
-      classes: ["", "桌球", "打擊樂", "足球", "兒童美術", "兒童陶藝", "弦樂A", "弦樂B", "直排輪", "烏克麗麗", "創意點心", "創意捏塑", "縫紉", "其他"],
+      classes: ["", "桌球", "打擊樂", "足球", "兒童美術", "兒童陶藝", "弦樂A", "弦樂B", "直排輪", "烏克麗麗", "創意點心", "創意捏塑", "縫紉", "跆拳道", "街舞", "無人機", "游泳", "其他"],
       statuses: ["未開始", "進行中", "完成"],
       applicants: ["", "許哲彰", "朱俐嬛", "柏毅"]
     };
@@ -658,7 +663,7 @@
       return /^弦樂[AB]/.test(className) ? 0.12 : 0.30;
     }
 
-    const classOrder = ["桌球", "打擊樂", "足球", "兒童美術", "兒童陶藝", "弦樂A", "弦樂B", "直排輪", "烏克麗麗", "創意點心", "創意捏塑", "籃球", "縫紉", "跆拳道", "街舞", "無人機"];
+    const classOrder = ["桌球", "打擊樂", "足球", "兒童美術", "兒童陶藝", "弦樂A", "弦樂B", "直排輪", "烏克麗麗", "創意點心", "創意捏塑", "籃球", "縫紉", "跆拳道", "街舞", "無人機", "游泳"];
 
     function classOrderIndex(className) {
       const fixedIndex = classOrder.indexOf(className);
@@ -868,12 +873,16 @@
 
     function renderAdmin() {
       const rows = adminExpense(allExpenses()).filter(r => r.semester === "114-2");
-      const incomeAdmin = combinedIncome().reduce((t, r) => t + r.admin, 0);
+      const incomeRows = combinedIncome();
+      const incomeAdmin = incomeRows.reduce((t, r) => t + r.admin, 0);
+      const extraIncome = incomeRows.reduce((t, r) => t + r.consumable + r.ac, 0);
       const expenseAdmin = sum(rows);
+      const balance = incomeAdmin - expenseAdmin + extraIncome;
       byId("adminKpis").innerHTML =
         kpi("行政費收入", incomeAdmin, "114-2 學費收入計算表", "good") +
+        kpi("耗材+冷氣費收入", extraIncome, "併入行政費結餘", "warn") +
         kpi("行政費支出", expenseAdmin, `${rows.length} 筆`) +
-        kpi("結餘", incomeAdmin - expenseAdmin, "收入 - 支出", incomeAdmin - expenseAdmin >= 0 ? "good" : "bad");
+        kpi("結餘", balance, "行政費收入 - 行政費支出 + 耗材冷氣", balance >= 0 ? "good" : "bad");
       byId("adminRows").innerHTML = rows.map(r => `<tr><td>${r.semester}</td><td>${r.date}</td><td>${r.ais || ""}</td><td>${r.summary}</td><td class="amount">${twd(r.amount)}</td></tr>`).join("");
     }
 
