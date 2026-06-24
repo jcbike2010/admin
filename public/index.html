@@ -1032,6 +1032,8 @@
             const mergedState = hasUserData(cloudData) ? mergeCloudState(localSnapshot, cloudData) : localSnapshot;
             applyCloudState(mergedState);
             await saveCloudState();
+          } else if (!hasUserData(cloudData)) {
+            setCloudStatus("雲端已連線", "saved");
           } else {
             applyCloudState(cloudData);
             setCloudStatus("雲端已同步", "saved");
