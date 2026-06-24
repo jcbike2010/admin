@@ -4,6 +4,7 @@
 !README.md
 !firebase.json
 !.firebaserc
+!firestore.rules
 !public/
 !public/**
 

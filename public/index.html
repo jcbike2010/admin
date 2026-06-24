@@ -276,6 +276,29 @@
       border-color: #17324d;
       min-height: 46px;
     }
+    .cloud-status {
+      margin-top: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .cloud-status::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: #9ca3af;
+    }
+    .cloud-status.saved::before { background: var(--good); }
+    .cloud-status.saving::before { background: var(--warn); }
+    .cloud-status.error::before { background: var(--bad); }
     @media (max-width: 900px) {
       .app, .kpis, .two-col, .form-grid { grid-template-columns: 1fr; }
       aside { position: static; }
@@ -289,6 +312,7 @@
     <div class="wrap">
       <h1>114 學年經費管理</h1>
       <p class="sub">上學期與下學期的收入、支出、統計與登錄</p>
+      <div class="cloud-status" id="cloudStatus">雲端連線準備中</div>
     </div>
   </header>
 
@@ -418,7 +442,19 @@
     </main>
   </div>
 
-  <script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+    import { getFirestore, doc, onSnapshot, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDNNsFV2gkbxt9lM04WD_10iXlqA9U9oeI",
+      authDomain: "bjps-expense-114.firebaseapp.com",
+      projectId: "bjps-expense-114",
+      storageBucket: "bjps-expense-114.firebasestorage.app",
+      messagingSenderId: "542788096616",
+      appId: "1:542788096616:web:cb187d161ac1b1583221dd"
+    };
+
     const tuition = [
       ["打擊樂",13,2857,37141,11142,25999],
       ["足球",15,1714,25710,7713,17997],
@@ -512,17 +548,95 @@
     const incomeEditKey = "bjps-income-edits-v1";
     const clubStoreKey = "bjps-income-clubs-v1";
     const deletedExpenseKey = "bjps-deleted-expenses-v1";
+    const cloudCollection = "expenseDashboards";
+    const cloudDocument = "114-school-year";
+    let cloudDocRef = null;
+    let cloudSaveTimer = null;
+    let applyingCloudState = false;
     const twd = n => new Intl.NumberFormat("zh-TW", { style: "currency", currency: "TWD", maximumFractionDigits: 0 }).format(Number(n || 0));
     const sum = rows => rows.reduce((total, row) => total + Number(row.amount ?? row.total ?? row.tuitionTotal ?? 0), 0);
     const byId = id => document.getElementById(id);
+    const readJson = (key, fallback) => {
+      try {
+        return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback));
+      } catch {
+        return fallback;
+      }
+    };
     const localExpenses = () => JSON.parse(localStorage.getItem(localKey) || "[]");
     const deletedExpenseIds = () => JSON.parse(localStorage.getItem(deletedExpenseKey) || "[]");
     const incomeEdits = () => JSON.parse(localStorage.getItem(incomeEditKey) || "{}");
     const clubStore = () => JSON.parse(localStorage.getItem(clubStoreKey) || "{\"added\":[],\"deleted\":[]}");
-    const saveClubStore = store => localStorage.setItem(clubStoreKey, JSON.stringify({
-      added: [...new Set(store.added || [])],
-      deleted: [...new Set(store.deleted || [])]
-    }));
+    const saveClubStore = store => {
+      localStorage.setItem(clubStoreKey, JSON.stringify({
+        added: [...new Set(store.added || [])],
+        deleted: [...new Set(store.deleted || [])]
+      }));
+      scheduleCloudSave();
+    };
+    const setCloudStatus = (text, cls = "") => {
+      const el = byId("cloudStatus");
+      if (!el) return;
+      el.textContent = text;
+      el.className = `cloud-status ${cls}`.trim();
+    };
+    const cloudStateFromLocalStorage = () => ({
+      localExpenses: readJson(localKey, []),
+      deletedExpenseIds: readJson(deletedExpenseKey, []),
+      incomeEdits: readJson(incomeEditKey, {}),
+      clubStore: readJson(clubStoreKey, {added: [], deleted: []}),
+      updatedAt: Date.now()
+    });
+    const hasUserData = state => Boolean(
+      (state.localExpenses || []).length ||
+      (state.deletedExpenseIds || []).length ||
+      Object.keys(state.incomeEdits || {}).length ||
+      (state.clubStore?.added || []).length ||
+      (state.clubStore?.deleted || []).length
+    );
+    const mergeCloudState = (localState, cloudState) => {
+      const expenseMap = new Map();
+      (cloudState.localExpenses || []).forEach(row => expenseMap.set(row.id, row));
+      (localState.localExpenses || []).forEach(row => expenseMap.set(row.id, row));
+      return {
+        localExpenses: [...expenseMap.values()],
+        deletedExpenseIds: [...new Set([...(cloudState.deletedExpenseIds || []), ...(localState.deletedExpenseIds || [])])],
+        incomeEdits: {...(cloudState.incomeEdits || {}), ...(localState.incomeEdits || {})},
+        clubStore: {
+          added: [...new Set([...(cloudState.clubStore?.added || []), ...(localState.clubStore?.added || [])])],
+          deleted: [...new Set([...(cloudState.clubStore?.deleted || []), ...(localState.clubStore?.deleted || [])])]
+        },
+        updatedAt: Date.now()
+      };
+    };
+    const applyCloudState = data => {
+      applyingCloudState = true;
+      localStorage.setItem(localKey, JSON.stringify(data.localExpenses || []));
+      localStorage.setItem(deletedExpenseKey, JSON.stringify(data.deletedExpenseIds || []));
+      localStorage.setItem(incomeEditKey, JSON.stringify(data.incomeEdits || {}));
+      localStorage.setItem(clubStoreKey, JSON.stringify({
+        added: [...new Set(data.clubStore?.added || [])],
+        deleted: [...new Set(data.clubStore?.deleted || [])]
+      }));
+      applyingCloudState = false;
+      render();
+    };
+    async function saveCloudState() {
+      if (!cloudDocRef) return;
+      try {
+        setCloudStatus("雲端儲存中", "saving");
+        await setDoc(cloudDocRef, {...cloudStateFromLocalStorage(), updatedAt: serverTimestamp()}, {merge: true});
+        setCloudStatus("雲端已同步", "saved");
+      } catch (error) {
+        setCloudStatus("雲端儲存失敗，已暫存在本機", "error");
+        console.error(error);
+      }
+    }
+    function scheduleCloudSave() {
+      if (applyingCloudState || !cloudDocRef) return;
+      clearTimeout(cloudSaveTimer);
+      cloudSaveTimer = setTimeout(saveCloudState, 600);
+    }
     const allExpenses = () => {
       const deleted = new Set(deletedExpenseIds());
       return [...baseExpenses, ...localExpenses()].filter(row => !deleted.has(row.id));
@@ -667,6 +781,7 @@
       const edits = incomeEdits();
       delete edits[className];
       localStorage.setItem(incomeEditKey, JSON.stringify(edits));
+      scheduleCloudSave();
       render();
     }
 
@@ -675,6 +790,7 @@
       edits[className] = edits[className] || {};
       edits[className][field] = Number(value || 0);
       localStorage.setItem(incomeEditKey, JSON.stringify(edits));
+      scheduleCloudSave();
       renderTuition();
     }
 
@@ -826,6 +942,7 @@
       } else {
         localStorage.setItem(deletedExpenseKey, JSON.stringify([...new Set([...deletedExpenseIds(), id])]));
       }
+      scheduleCloudSave();
       render();
     }
 
@@ -863,6 +980,7 @@
       const rows = localExpenses();
       rows.push(row);
       localStorage.setItem(localKey, JSON.stringify(rows));
+      scheduleCloudSave();
       event.target.reset();
       byId("newDate").value = new Date().toISOString().slice(0, 10);
       byId("newStatus").value = "未開始";
@@ -885,12 +1003,52 @@
       byId("clearLocal").addEventListener("click", () => {
         if (!confirm("確定清除本機新增的支出資料？")) return;
         localStorage.removeItem(localKey);
+        scheduleCloudSave();
         render();
       });
       render();
     }
 
+    function initCloud() {
+      try {
+        setCloudStatus("雲端連線中", "saving");
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        cloudDocRef = doc(db, cloudCollection, cloudDocument);
+        const localSnapshot = cloudStateFromLocalStorage();
+        let firstSnapshot = true;
+        onSnapshot(cloudDocRef, async snapshot => {
+          if (!snapshot.exists()) {
+            if (hasUserData(localSnapshot)) {
+              await saveCloudState();
+            } else {
+              setCloudStatus("雲端已連線", "saved");
+            }
+            firstSnapshot = false;
+            return;
+          }
+          const cloudData = snapshot.data();
+          if (firstSnapshot && hasUserData(localSnapshot)) {
+            const mergedState = hasUserData(cloudData) ? mergeCloudState(localSnapshot, cloudData) : localSnapshot;
+            applyCloudState(mergedState);
+            await saveCloudState();
+          } else {
+            applyCloudState(cloudData);
+            setCloudStatus("雲端已同步", "saved");
+          }
+          firstSnapshot = false;
+        }, error => {
+          setCloudStatus("雲端未連線，資料暫存在本機", "error");
+          console.error(error);
+        });
+      } catch (error) {
+        setCloudStatus("雲端未連線，資料暫存在本機", "error");
+        console.error(error);
+      }
+    }
+
     setup();
+    initCloud();
   </script>
 </body>
 </html>
