@@ -1,1093 +1,340 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>114 學年經費管理</title>
-  <style>
-    :root {
-      --bg: #f5f6f8;
-      --panel: #fff;
-      --line: #dde2ea;
-      --text: #17202c;
-      --muted: #647084;
-      --blue: #1e5aa8;
-      --green: #207044;
-      --red: #b42318;
-      --amber: #a15c07;
-      --chip-blue: #dceeff;
-      --chip-red: #ffe2df;
-      --chip-gray: #eceff3;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-      font-family: "Microsoft JhengHei", "Noto Sans TC", system-ui, sans-serif;
-      line-height: 1.5;
-    }
-    header {
-      background: #152033;
-      color: white;
-      border-bottom: 4px solid #2f6f68;
-    }
-    .wrap { width: 100%; max-width: none; margin: 0 auto; padding: 14px clamp(10px, 1.2vw, 18px); }
-    h1 { margin: 0; font-size: 28px; letter-spacing: 0; }
-    .sub { margin: 3px 0 0; color: #cbd5e1; font-size: 14px; }
-    .app {
-      display: grid;
-      grid-template-columns: 160px minmax(0, 1fr);
-      gap: 10px;
-      align-items: start;
-      padding-top: 16px;
-    }
-    aside {
-      position: sticky;
-      top: 12px;
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 10px;
-    }
-    aside h2 { margin: 0 0 10px; font-size: 16px; }
-    .nav { display: grid; gap: 8px; }
-    .nav button {
-      min-height: 42px;
-      border: 1px solid var(--line);
-      border-radius: 6px;
-      background: #fff;
-      color: #243044;
-      text-align: left;
-      padding: 8px;
-      font: inherit;
-      cursor: pointer;
-    }
-    .nav button.active { background: #17324d; color: white; border-color: #17324d; }
-    main { min-width: 0; }
-    .view { display: none; }
-    .view.active { display: block; }
-    .panel {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      margin-bottom: 14px;
-    }
-    .panel-head {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
-      padding: 13px 15px;
-      border-bottom: 1px solid var(--line);
-    }
-    .panel-head h2 { margin: 0; font-size: 19px; }
-    .panel-body { padding: 14px 15px; }
-    .mini { color: var(--muted); font-size: 12px; }
-    .kpis {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 10px;
-      margin-bottom: 14px;
-    }
-    .kpi {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 13px 14px;
-    }
-    .kpi .label { color: var(--muted); font-size: 13px; }
-    .kpi .value { font-size: 25px; font-weight: 800; margin-top: 3px; }
-    .good { color: var(--green); }
-    .bad { color: var(--red); }
-    .warn { color: var(--amber); }
-    table { width: 100%; border-collapse: collapse; font-size: 14px; }
-    th, td {
-      padding: 8px 7px;
-      border-bottom: 1px solid #edf0f4;
-      text-align: left;
-      vertical-align: top;
-    }
-    th {
-      position: sticky;
-      top: 0;
-      background: #f8fafc;
-      color: #536173;
-      z-index: 1;
-    }
-    tfoot th {
-      position: sticky;
-      bottom: 0;
-      background: #eef3f8;
-      color: #17202c;
-      border-top: 2px solid var(--line);
-      font-weight: 800;
-    }
-    .amount { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
-    .computed {
-      background: #f1f7ff;
-      font-weight: 700;
-    }
-    .computed::before {
-      content: "計 ";
-      color: var(--blue);
-      font-size: 11px;
-      font-weight: 700;
-    }
-    .sep-left {
-      border-left: 4px solid #26364d;
-    }
-    th.sep-left, td.sep-left { padding-left: 12px; }
-    .tablebox { max-height: 560px; overflow: auto; }
-    .income-table {
-      table-layout: fixed;
-      min-width: 0;
-      font-size: 13px;
-    }
-    .income-table th,
-    .income-table td {
-      padding: 7px 5px;
-    }
-    .income-table th {
-      white-space: normal;
-      line-height: 1.25;
-    }
-    .income-table th:nth-child(1),
-    .income-table td:nth-child(1) { width: 9%; }
-    .income-table th:nth-child(2),
-    .income-table td:nth-child(2) { width: 6%; }
-    .income-table th:nth-child(3),
-    .income-table td:nth-child(3),
-    .income-table th:nth-child(4),
-    .income-table td:nth-child(4),
-    .income-table th:nth-child(5),
-    .income-table td:nth-child(5),
-    .income-table th:nth-child(6),
-    .income-table td:nth-child(6),
-    .income-table th:nth-child(7),
-    .income-table td:nth-child(7),
-    .income-table th:nth-child(9),
-    .income-table td:nth-child(9),
-    .income-table th:nth-child(11),
-    .income-table td:nth-child(11) { width: 8%; }
-    .income-table th:nth-child(8),
-    .income-table td:nth-child(8),
-    .income-table th:nth-child(10),
-    .income-table td:nth-child(10) { width: 7.5%; }
-    .income-table th:nth-child(12),
-    .income-table td:nth-child(12) { width: 12%; }
-    .material-table {
-      table-layout: fixed;
-      font-size: 14px;
-    }
-    .material-table th,
-    .material-table td {
-      padding: 8px 7px;
-    }
-    .material-table th:nth-child(1),
-    .material-table td:nth-child(1) { width: 9%; }
-    .material-table th:nth-child(2),
-    .material-table td:nth-child(2) { width: 13%; }
-    .material-table th:nth-child(3),
-    .material-table td:nth-child(3) { width: 10%; }
-    .material-table th:nth-child(4),
-    .material-table td:nth-child(4) { width: 42%; }
-    .material-table th:nth-child(5),
-    .material-table td:nth-child(5) { width: 14%; }
-    .material-table th:nth-child(6),
-    .material-table td:nth-child(6) { width: 12%; }
-    .admin-tablebox {
-      max-width: 940px;
-    }
-    .admin-table {
-      table-layout: fixed;
-      width: 100%;
-      font-size: 14px;
-    }
-    .admin-table th,
-    .admin-table td {
-      padding: 9px 8px;
-    }
-    .admin-table th:nth-child(1),
-    .admin-table td:nth-child(1) { width: 12%; }
-    .admin-table th:nth-child(2),
-    .admin-table td:nth-child(2) { width: 16%; }
-    .admin-table th:nth-child(3),
-    .admin-table td:nth-child(3) { width: 12%; }
-    .admin-table th:nth-child(4),
-    .admin-table td:nth-child(4) { width: 44%; }
-    .admin-table th:nth-child(5),
-    .admin-table td:nth-child(5) { width: 16%; }
-    .admin-table td:nth-child(1),
-    .admin-table td:nth-child(2),
-    .admin-table td:nth-child(3),
-    .admin-table td:nth-child(5) {
-      white-space: nowrap;
-    }
-    .chip {
-      display: inline-flex;
-      align-items: center;
-      border-radius: 999px;
-      padding: 2px 8px;
-      font-size: 12px;
-      background: var(--chip-gray);
-    }
-    .chip.material { background: var(--chip-red); }
-    .chip.ac { background: var(--chip-blue); }
-    .two-col {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 10px;
-    }
-    label { display: grid; gap: 5px; color: var(--muted); font-size: 12px; }
-    input, select, button {
-      min-height: 40px;
-      border: 1px solid var(--line);
-      border-radius: 6px;
-      background: #fff;
-      color: var(--text);
-      padding: 8px 10px;
-      font: inherit;
-    }
-    .cell-input {
-      width: 100%;
-      min-width: 0;
-      min-height: 34px;
-      text-align: right;
-      border-color: #cfd6e0;
-      background: #fff;
-      font-variant-numeric: tabular-nums;
-      padding: 6px 5px;
-    }
-    .cell-input:focus {
-      outline: 2px solid #b9d7ff;
-      border-color: var(--blue);
-    }
-    .wide { grid-column: span 2; }
-    .primary { background: #17324d; color: white; border-color: #17324d; cursor: pointer; }
-    .danger { color: var(--red); background: #fff7f7; border-color: #f1c5bf; cursor: pointer; }
-    .actions { display: flex; gap: 8px; align-items: end; }
-    .table-actions {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-    .table-actions select { min-width: 150px; }
-    .filter-bar {
-      background: var(--panel);
-      border: 2px solid #17324d;
-      border-radius: 8px;
-      padding: 12px 14px;
-      margin-bottom: 12px;
-      display: flex;
-      align-items: end;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    .filter-bar label {
-      color: #17202c;
-      font-size: 14px;
-      font-weight: 700;
-      min-width: min(360px, 100%);
-    }
-    .filter-bar select {
-      min-width: min(360px, 100%);
-      font-size: 17px;
-      font-weight: 700;
-      border-color: #17324d;
-      min-height: 46px;
-    }
-    .cloud-status {
-      margin-top: 12px;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      border-radius: 8px;
-      background: #ffffff;
-      border: 1px solid var(--line);
-      color: var(--muted);
-      font-size: 14px;
-      font-weight: 700;
-    }
-    .cloud-status::before {
-      content: "";
-      width: 10px;
-      height: 10px;
-      border-radius: 999px;
-      background: #9ca3af;
-    }
-    .cloud-status.saved::before { background: var(--good); }
-    .cloud-status.saving::before { background: var(--warn); }
-    .cloud-status.error::before { background: var(--bad); }
-    @media (max-width: 900px) {
-      .app, .kpis, .two-col, .form-grid { grid-template-columns: 1fr; }
-      aside { position: static; }
-      .wide { grid-column: span 1; }
-      .actions { align-items: stretch; }
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>博嘉實小活動組 年度工作計畫</title>
+<style>
+:root{--b:#2563eb;--g:#059669;--r:#dc2626;--y:#d97706;--p:#7c3aed;--bg:#f1f5f9;--c:#fff;--l:#e2e8f0;--t:#1e293b;--m:#64748b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:"Microsoft JhengHei","PingFang TC",sans-serif;color:var(--t)}
+.app{display:grid;grid-template-columns:250px 1fr;min-height:100vh}.side{background:#0f172a;color:#fff;padding:20px;position:sticky;top:0;height:100vh}
+.logo{width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#60a5fa,#fbbf24);display:grid;place-items:center;font-weight:900;color:#0f172a}
+.brand{display:flex;gap:12px;align-items:center;border-bottom:1px solid #334155;padding-bottom:16px;margin-bottom:14px}.brand h1{font-size:1rem;margin:0}.brand p{margin:3px 0 0;color:#cbd5e1;font-size:.8rem}.logo{font-size:.82rem}
+.nav{width:100%;border:0;border-radius:10px;background:transparent;color:#cbd5e1;padding:11px;text-align:left;font-weight:800;cursor:pointer;margin:3px 0}.nav:hover,.nav.active{background:var(--b);color:#fff}
+.tools{border-top:1px solid #334155;margin-top:16px;padding-top:14px;display:grid;gap:8px}.tools button,.btn{border:0;border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer}.tools button{background:#1e293b;color:#fff;border:1px solid #334155}
+main{padding:24px;max-width:1500px;width:100%}.top{display:flex;justify-content:space-between;gap:12px;margin-bottom:18px}.top h2{margin:0;font-size:1.7rem}.top p{margin:4px 0;color:var(--m)}
+.btn.b{background:var(--b);color:#fff}.btn.g{background:var(--g);color:#fff}.btn.r{background:var(--r);color:#fff}.btn.s{background:#fff;border:1px solid var(--l);color:var(--t)}
+.sec{display:none}.sec.on{display:block}.card{background:#fff;border:1px solid var(--l);border-radius:18px;box-shadow:0 8px 24px #0f172a10;padding:18px;margin-bottom:16px}
+h3{margin:0 0 14px}.grid{display:grid;gap:12px}.g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}.full{grid-column:1/-1}
+label{display:block;font-size:.86rem;color:#475569;font-weight:800;margin-bottom:5px}input,select,textarea{width:100%;border:1px solid var(--l);border-radius:10px;padding:10px;font:inherit}textarea{resize:vertical}
+.compact-form-card{padding:12px 14px}.compact-form-card h3{margin-bottom:8px;font-size:1rem}.compact-form{gap:8px;align-items:end}.compact-form label{font-size:.76rem;margin-bottom:2px}.compact-form input,.compact-form select,.compact-form textarea{padding:7px 8px;border-radius:9px;font-size:.9rem}.compact-form textarea{min-height:38px}.compact-form .actions{display:flex;gap:6px;justify-content:flex-end;align-items:center}.compact-form .btn{padding:8px 12px}.compact-form .repeat-box{padding:8px 10px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.stat{border-radius:16px;padding:16px;border:1px solid var(--l);background:#fff}.stat small{color:var(--m);font-weight:800}.stat strong{display:block;font-size:2rem}.blue{background:#eff6ff}.green{background:#ecfdf5}.amber{background:#fffbeb}.pink{background:#fdf2f8}
+.wrap{overflow:auto;border:1px solid var(--l);border-radius:14px}table{width:100%;border-collapse:collapse}th,td{border-bottom:1px solid var(--l);padding:10px;vertical-align:top;text-align:left}th{background:#f8fafc;color:#475569}
+.tag{display:inline-block;border-radius:999px;padding:4px 9px;margin:2px;font-size:.78rem;font-weight:900;background:#e2e8f0}.done{background:#dcfce7;color:#166534}.doing{background:#fef3c7;color:#92400e}.todo{background:#fee2e2;color:#991b1b}.pri-high,.pri-mid,.pri-low{background:#fff;color:#000;border:1px solid #111;font-weight:900;font-size:.92rem;letter-spacing:.08em}
+.mini{border:0;border-radius:8px;padding:6px 9px;font-weight:800;margin:2px;cursor:pointer}.edit{background:#fef3c7;color:#92400e}.del{background:#fee2e2;color:#991b1b}.ok{background:#dcfce7;color:#166534}
+.months{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.month{background:#fff;border:1px solid var(--l);border-radius:16px;padding:14px;min-height:160px}.month h4{margin:0 0 8px}.empty{color:#94a3b8}
+.hint{font-size:.8rem;color:var(--m);line-height:1.6;margin-top:5px}
+.month-items{list-style:none;padding:0;margin:6px 0 0;display:grid;gap:6px}.month-items li{background:#f8fafc;border-left:4px solid #cbd5e1;border-radius:8px;padding:7px 9px;cursor:pointer}.month-items li:hover{background:#eff6ff}.month-items li.event{border-left-color:#2563eb}.month-items li.task{border-left-color:#d97706}.month-items li.trip{border-left-color:#059669}.month-line{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.month-line small{color:var(--m)}
+.repeat-box{background:#f8fafc;border:1px dashed #cbd5e1;border-radius:12px;padding:12px}
+.report{display:grid;grid-template-columns:360px 1fr;gap:16px}.preview{background:#fff;border:1px solid var(--l);border-radius:14px;padding:24px;min-height:760px}.ph{display:flex;gap:12px;align-items:center;border-bottom:3px solid #111;padding-bottom:12px;margin-bottom:14px}.plogo{width:58px;height:58px;border-radius:14px;background:#e0f2fe;display:grid;place-items:center;font-weight:900}.step{border-bottom:1px solid #e5e7eb;padding:7px 0}.admin{font-size:1.15rem;font-weight:900;border-left:4px solid #9ca3af;background:#f9fafb;padding:6px 10px;margin:4px 0}.act{font-weight:900;padding:10px;border:2px solid #111;border-radius:10px;background:#fef08a;margin:9px 0}.script{font-weight:500;white-space:pre-wrap;background:#ffffffaa;border-top:1px dashed #999;margin-top:8px;padding:8px;border-radius:6px}
+.progress{height:14px;background:#e2e8f0;border-radius:999px;overflow:hidden;min-width:120px}.bar{height:100%;background:linear-gradient(90deg,#2563eb,#059669);border-radius:999px}.summary-note{color:#475569;line-height:1.8}.summary-note b{color:#0f172a}
+
+.trip-form-card{
+  background:#f0f9ff;
+  border:1px solid #bae6fd;
+  padding:14px 16px;
+}
+.trip-list-card{
+  background:#fff7ed;
+  border:1px solid #fed7aa;
+}
+.trip-form-card h3,.trip-list-card h3{
+  margin-bottom:8px;
+}
+.trip-compact{
+  display:grid;
+  grid-template-columns:1.1fr 1.2fr .9fr .7fr .7fr 1.2fr .55fr .55fr .55fr;
+  gap:8px;
+  align-items:end;
+}
+.trip-compact label{
+  font-size:.78rem;
+  margin-bottom:2px;
+}
+.trip-compact input,
+.trip-compact select,
+.trip-compact textarea{
+  padding:7px 8px;
+  font-size:.86rem;
+  border-radius:9px;
+}
+.trip-compact .note{
+  grid-column:1 / 8;
+}
+.trip-compact .actions{
+  grid-column:8 / 10;
+  display:flex;
+  gap:6px;
+  justify-content:flex-end;
+}
+.trip-compact .btn{
+  padding:8px 12px;
+}
+@media(max-width:1100px){
+  .trip-compact{grid-template-columns:repeat(3,1fr)}
+  .trip-compact .note{grid-column:1 / 3}
+  .trip-compact .actions{grid-column:3 / 4}
+}
+@media(max-width:760px){
+  .trip-compact{grid-template-columns:1fr}
+  .trip-compact .note,.trip-compact .actions{grid-column:auto}
+}
+
+.hide{display:none!important}.pt{display:none}
+@media(max-width:980px){.app{grid-template-columns:1fr}.side{position:relative;height:auto}.g2,.g3,.g4,.stats,.months,.report{grid-template-columns:1fr}.top{display:block}main{padding:16px}}
+@page{size:A4 landscape;margin:12mm}@media print{.side,.top,.no{display:none!important}.app{display:block}main{padding:0}.sec{display:none!important}.sec.on{display:block!important}.card{box-shadow:none;border:0;padding:0}.pt{display:block;text-align:center;font-size:22pt;font-weight:900;margin:0 0 12px}th,td{border:1px solid #333;padding:6px;font-size:10pt}.wrap{border:0}.months{grid-template-columns:repeat(4,1fr)}.preview{border:0;padding:0;min-height:auto}}
+</style>
 </head>
 <body>
-  <header>
-    <div class="wrap">
-      <h1>114 學年經費管理</h1>
-      <p class="sub">上學期與下學期的收入、支出、統計與登錄</p>
-      <div class="cloud-status" id="cloudStatus">雲端連線準備中</div>
-    </div>
-  </header>
-
-  <div class="wrap app">
-    <aside>
-      <h2>功能</h2>
-      <div class="nav">
-        <button class="active" data-view="tuition">學費收入計算</button>
-        <button data-view="admin">行政費</button>
-        <button data-view="hourly">鐘點費</button>
-        <button data-view="material">材料費</button>
-        <button data-view="add">支出: 新增支出</button>
-        <button data-view="all">支出總表</button>
-      </div>
-    </aside>
-
-    <main>
-      <section id="view-tuition" class="view active">
-        <div class="kpis" id="tuitionKpis"></div>
-        <div class="panel">
-          <div class="panel-head">
-            <div>
-              <h2>114-2 學費收入計算表</h2>
-            </div>
-            <div class="table-actions">
-              <button type="button" class="primary" id="addClubBtn">新增社團</button>
-              <select id="deleteClubSelect" aria-label="選擇要刪除的社團"></select>
-              <button type="button" class="danger" id="deleteClubBtn">刪除社團</button>
-            </div>
-          </div>
-          <div class="tablebox">
-            <table class="income-table">
-              <thead>
-                <tr>
-                  <th>班別</th>
-                  <th class="amount">人數</th>
-                  <th class="amount">每人學費</th>
-                  <th class="amount">行政費</th>
-                  <th class="amount">鐘點費</th>
-                  <th class="amount sep-left">材料費</th>
-                  <th class="amount">總材料費</th>
-                  <th class="amount">耗材費</th>
-                  <th class="amount">總耗材費</th>
-                  <th class="amount">冷氣費</th>
-                  <th class="amount">總冷氣費</th>
-                  <th class="amount">總應收</th>
-                </tr>
-              </thead>
-              <tbody id="combinedIncomeRows"></tbody>
-              <tfoot id="combinedIncomeFoot"></tfoot>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <section id="view-admin" class="view">
-        <div class="kpis" id="adminKpis"></div>
-        <div class="panel">
-          <div class="panel-head"><h2>行政費支出</h2><span class="mini">只計算 114-2</span></div>
-          <div class="tablebox admin-tablebox"><table class="admin-table"><thead><tr><th>學期</th><th>日期</th><th>AIS</th><th>摘要</th><th class="amount">金額</th></tr></thead><tbody id="adminRows"></tbody></table></div>
-        </div>
-      </section>
-
-      <section id="view-hourly" class="view">
-        <div class="kpis" id="hourlyKpis"></div>
-        <div class="panel">
-          <div class="panel-head"><h2>鐘點費支出</h2><span class="mini">只計算 114-2</span></div>
-          <div class="tablebox"><table><thead><tr><th>學期</th><th>日期</th><th>AIS</th><th>摘要</th><th class="amount">金額</th></tr></thead><tbody id="hourlyRows"></tbody></table></div>
-        </div>
-      </section>
-
-      <section id="view-material" class="view">
-        <div class="filter-bar">
-          <label>選擇社團
-            <select id="materialClassSelect"></select>
-          </label>
-        </div>
-        <div class="kpis" id="materialKpis"></div>
-        <div class="panel">
-          <div class="panel-head">
-            <h2>材料費支出</h2>
-            <span class="mini">依選擇社團統計</span>
-          </div>
-          <div class="tablebox"><table class="material-table"><thead><tr><th>學期</th><th>日期</th><th>AIS</th><th>摘要</th><th>班別</th><th class="amount">金額</th></tr></thead><tbody id="materialRows"></tbody></table></div>
-        </div>
-      </section>
-
-      <section id="view-add" class="view">
-        <div class="panel">
-          <div class="panel-head"><h2>新增支出</h2><span class="mini">資料會暫存在本機，並同步到 Firebase</span></div>
-          <div class="panel-body">
-            <form id="expenseForm" class="form-grid">
-              <label>學期<select id="newSemester"><option value="114-2">114-2</option><option value="114-1">114-1</option></select></label>
-              <label>核銷日期<input id="newDate" type="date" required></label>
-              <label>AIS<input id="newAis" type="text" placeholder="例如 01111"></label>
-              <label>金額<input id="newAmount" type="number" min="0" step="1" required></label>
-              <label class="wide">支出摘要<input id="newSummary" type="text" required placeholder="輸入支出摘要"></label>
-              <label>支出細目<select id="newItem"></select></label>
-              <label>班別<select id="newClass"></select></label>
-              <label>狀態<select id="newStatus"></select></label>
-              <label>申請人<select id="newApplicant"></select></label>
-              <div class="actions">
-                <button class="primary" type="submit">新增支出</button>
-                <button class="danger" id="clearLocal" type="button">清除本機新增</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </section>
-
-      <section id="view-all" class="view">
-        <div class="filter-bar">
-          <label>支出類別
-            <select id="allCategorySelect">
-              <option value="全部">全部</option>
-              <option value="材料費">材料費</option>
-              <option value="行政費">行政費</option>
-            </select>
-          </label>
-        </div>
-        <div class="kpis" id="allKpis"></div>
-        <div class="panel">
-          <div class="panel-head"><h2>支出總表</h2><span class="mini" id="allCount"></span></div>
-          <div class="tablebox"><table><thead><tr><th>學期</th><th>日期</th><th>AIS</th><th>摘要</th><th>班別</th><th class="amount">金額</th><th>操作</th></tr></thead><tbody id="allRows"></tbody></table></div>
-        </div>
-      </section>
-    </main>
+<div class="app">
+<aside class="side">
+  <div class="brand"><div class="logo">活動組</div><div><h1>年度工作計畫</h1><p>博嘉實小｜學輔中心</p></div></div>
+  <button class="nav active" data-s="dash">Topview</button>
+  <button class="nav" data-s="projects">Project</button>
+  <button class="nav" data-s="tasks">To-do</button>
+  <button class="nav" data-s="events">Activity Log</button>
+  <button class="nav" data-s="trips">校外教學</button>
+  <button class="nav" data-s="assembly">朝會司儀</button>
+  <button class="nav" data-s="settings">設定/備份</button>
+  <div class="tools no">
+    <button onclick="backup()">資料備份 JSON</button>
+    <button onclick="importFile.click()">匯入還原</button>
+    <button onclick="window.print()">列印目前頁面</button>
+    <input id="importFile" type="file" accept=".json" class="hide">
   </div>
+</aside>
+<main>
+  <div class="top no"><div><h2 id="title">Topview</h2></div><div><button class="btn b" onclick="go('events')">新增活動</button> <button class="btn g" onclick="go('tasks')">新增待辦</button></div></div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-    import { getFirestore, doc, onSnapshot, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+  <section id="dash" class="sec on"><h1 class="pt">Topview｜活動組年度總覽</h1>
+    <div class="card">
+      <h3>Project 進度表</h3>
+      <div class="wrap"><table><thead><tr><th>專案</th><th>類別</th><th>期間</th><th>負責</th><th>待辦進度</th><th>狀態</th></tr></thead><tbody id="dashProjectRows"></tbody></table></div>
+    </div>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDNNsFV2gkbxt9lM04WD_10iXlqA9U9oeI",
-      authDomain: "bjps-expense-114.firebaseapp.com",
-      projectId: "bjps-expense-114",
-      storageBucket: "bjps-expense-114.firebasestorage.app",
-      messagingSenderId: "542788096616",
-      appId: "1:542788096616:web:cb187d161ac1b1583221dd"
-    };
+    <div class="card">
+      <h3>MonthlyView｜月份工作總覽</h3>
+      <div class="months" id="monthlyView"></div>
+    </div>
+  </section>
 
-    const tuition = [
-      ["打擊樂",13,2857,37141,11142,25999],
-      ["足球",15,1714,25710,7713,17997],
-      ["兒童美術",9,2946,26514,7954,18560],
-      ["兒童陶藝",15,1333,19995,5999,13997],
-      ["弦樂A",15,9900,148500,44550,103950],
-      ["弦樂B",4,8000,32000,9600,22400],
-      ["直排輪",14,1684,23576,7073,16503],
-      ["桌球",10,2600,26000,7800,18200],
-      ["烏克麗麗",10,2000,20000,6000,14000],
-      ["創意點心",25,1786,44650,13395,31255],
-      ["創意捏塑",15,1114,16710,5013,11697],
-      ["縫紉",12,1786,21432,6430,15002],
-      ["跆拳道",8,2857,22856,6857,15999],
-      ["街舞",20,2143,42860,12858,30002],
-      ["無人機",10,1671,16710,5013,11697],
-      ["游泳",20,1929,38580,11574,27006]
-    ].map(([className, people, tuitionPer, tuitionTotal, admin, hourly]) => ({className, people, tuitionPer, tuitionTotal, admin, hourly}));
+  <section id="events" class="sec"><h1 class="pt">Activity Log｜活動紀錄</h1>
+    <div class="card no compact-form-card"><h3>新增活動紀錄</h3><form id="eventF" class="grid g4 compact-form"><input id="eid" type="hidden"><div><label>日期</label><input id="ed" type="date" required></div><div><label>類別</label><select id="et"><option>朝會</option><option>校外教學</option><option>社團活動</option><option>節慶活動</option><option>畢業活動</option><option>防災安全</option><option>其他</option></select></div><div><label>活動名稱</label><input id="en" required></div><div><label>地點</label><input id="el"></div><div><label>時間</label><input id="etime" placeholder="08:00-10:00"></div><div><label>對象</label><input id="eg"></div><div><label>負責</label><input id="eo" value="活動組"></div><div><label>狀態</label><select id="es"><option>規劃中</option><option>進行中</option><option>已完成</option></select></div><div class="full repeat-box"><div class="grid g3"><div><label>重複</label><select id="erepeat"><option value="none">不重複</option><option value="weekly">每週</option><option value="biweekly">每兩週</option><option value="monthly">每月</option></select></div><div><label>筆數</label><input id="ecount" type="number" min="1" max="60" value="1"></div><div><label>備註</label><input id="er"></div></div></div><div class="full actions"><button class="btn b">儲存活動</button> <button type="button" class="btn s" onclick="resetEvent()">取消</button></div></form></div>
+    <div class="card"><h3>Activity Log｜活動紀錄清單</h3><div class="wrap"><table><thead><tr><th>日期</th><th>時間</th><th>活動</th><th>類別</th><th>地點</th><th>對象</th><th>負責</th><th>狀態</th><th class="no">操作</th></tr></thead><tbody id="eventRows"></tbody></table></div></div>
+  </section>
 
-    const otherIncome = [
-      ["籃球","耗材費",15,100,1500],
-      ["縫紉","材料費",12,600,7200],
-      ["縫紉","冷氣費",12,50,600],
-      ["跆拳道","冷氣費",8,50,400],
-      ["街舞","冷氣費",20,50,1000],
-      ["無人機","冷氣費",10,50,500],
-      ["創意捏塑","冷氣費",15,50,750],
-      ["創意捏塑","材料費",15,600,9000],
-      ["創意點心","材料費",25,1800,45000],
-      ["創意點心","冷氣費",25,50,1250],
-      ["烏克麗麗","冷氣費",10,50,500],
-      ["桌球","耗材費",10,50,500],
-      ["桌球","冷氣費",10,50,500]
-    ].map(([className, item, people, perPerson, total]) => ({className, item, people, perPerson, total}));
+  <section id="trips" class="sec"><h1 class="pt">校外教學記錄表</h1>
+    <div class="card no trip-form-card"><h3>新增校外教學</h3>
+      <form id="tripF" class="trip-compact">
+        <input id="tid" type="hidden">
+        <div><label>班級/單位</label><input id="tc" required placeholder="例：四年級"></div>
+        <div><label>所屬 Project</label><select id="tp"><option value="">不指定專案</option></select></div>
+        <div><label>日期</label><input id="td" type="date" required></div>
+        <div><label>出發</label><input id="ts" type="time" value="08:50"></div>
+        <div><label>返校</label><input id="tr" type="time" value="12:00"></div>
+        <div><label>地點</label><input id="tl" required></div>
+        <div><label>學生</label><input id="tstu" type="number" value="0"></div>
+        <div><label>教師</label><input id="ttea" type="number" value="0"></div>
+        <div><label>行政</label><input id="tadm" type="number" value="0"></div>
+        <div class="note"><label>備註</label><input id="tn" placeholder="可輸入車輛、保險、注意事項等"></div>
+        <div class="actions"><button class="btn b">儲存</button><button type="button" class="btn s" onclick="resetTrip()">取消</button></div>
+      </form>
+    </div>
+    <div class="card trip-list-card"><h3>校外教學清單</h3>
+      <div class="wrap"><table>
+        <thead><tr><th>計畫表</th><th>班級/單位</th><th>所屬 Project</th><th>日期</th><th>出發</th><th>返校</th><th>地點</th><th>學生</th><th>教師</th><th>行政</th><th>總人數</th><th>備註</th><th class="no">操作</th></tr></thead>
+        <tbody id="tripRows"></tbody>
+      </table></div>
+    </div>
+  </section>
 
-    const expenseSeed = `114-1|2025-09-05||廁所清潔+114開學鑼|行政費||完成|4496
-114-1|2025-10-02||游泳社器材-浮板|行政費||完成|1300
-114-1|2025-10-14||總-音樂教室白蟻防治|行政費||完成|6000
-114-1|2025-10-15||9月社團行政加班費|行政費||完成|1194
-114-1|2025-10-23||器材收納角鋼架|行政費||完成|3960
-114-1|2025-11-03||社團獎勵品|行政費||完成|2150
-114-1|2025-11-17||游泳社材料費|行政費||完成|922
-114-1|2025-11-17||社團收納角鋼架|行政費||完成|1950
-114-1|2025-12-04||社團用文具消耗品|行政費||完成|508
-114-1|2026-01-02|00054|退費--退社差額|行政費||完成|20169
-114-1|2026-01-05|00068|總-鼠害防治費用|行政費||完成|66000
-114-1|2026-01-08|00257|12月蛋糕|行政費||完成|490
-114-1|2026-01-08|00018|陶藝烤箱維修費|行政費||完成|5460
-114-1|2026-01-19|00143|陶藝烤箱維修費|行政費||完成|6825
-114-1|2026-01-22|00142|弦樂團器材|行政費||完成|9178
-114-1|2026-01-22|00213|12月影印費分攤|行政費||完成|10000
-114-1|2026-01-30|00253|115年1月課後社團鐘點|鐘點費||完成|2300
-114-1|2026-02-11|00329|弦樂團器材用品費|行政費||完成|4900
-114-2|2026-03-13|00451|115年3月蛋糕|行政費||完成|399
-114-2|2026-03-13|00454|運動用品費|行政費||完成|9480
-114-2|2026-03-13|00455|兒童美術社材料費|美術材料|兒童美術|完成|1953
-114-2|2026-03-13|00456|兒童美術社材料費|美術材料|兒童美術|完成|1723
-114-2|2026-03-13|00450|捏塑社材料費|塑材料|創意捏塑|完成|7500
-114-2|2026-03-17|00473|陶藝烤箱安全維修費|行政費||完成|5460
-114-2|2026-03-17|00472|創意點心社材料費|烘材料|創意點心|完成|2330
-114-2|2026-03-17|00471|創意點心社材料費|烘材料|創意點心|完成|8252
-114-2|2026-03-25|00525|打擊樂社器材|行政費||完成|8400
-114-2|2026-04-01|00572|3月鐘點費|鐘點費||完成|123700
-114-2|2026-04-02|00586|3月加班費|行政費||進行中|3114
-114-2|2026-04-13|00635|2月課後社團人員-曾華然|行政費||進行中|4100
-114-2|2026-04-13|00636|3月課後社團人員-曾華然|行政費||進行中|21320
-114-2|2026-04-23|00704|創意點心社材料費|烘材料|創意點心|進行中|16875
-114-2|2026-04-23|00706|兒童美術社材料費|美術材料|兒童美術|進行中|707
-114-2|2026-04-23|00707|縫紉社材料費|縫紉材料|縫紉|進行中|6750
-114-2|2026-04-30|00753|4月課後社團人員-曾華然|行政費||進行中|19000
-114-2|2026-04-30|00752|4月鐘點費|鐘點費||進行中|124600
-114-2|2026-05-11|00808|4月加班費|行政費||進行中|3762
-114-2|2026-05-14|00846|創意點心社材料費|烘材料|創意點心|進行中|5091
-114-2|2026-05-14|00847|創意點心社材料費|烘材料|創意點心|進行中|8936
-114-2|2026-06-01|00978|5月課後社團-教學進用人員-曾華然|行政費||完成|21180
-114-2|2026-06-01|01056|5月課後社團行政輪值加班費|行政費||完成|3762
-114-2|2026-06-02|00981|115年1月份補充保費(19)|行政費||完成|2636
-114-2|2026-06-16|01078|114-2課後社團退社、差額退費-黃浩等5人|行政費||進行中|7279
-114-2|2026-06-19|01100|5月蛋糕|行政費||進行中|399
-114-2|2026-06-22|01109|捏塑社材料費|塑材料|創意捏塑|進行中|1500
-114-2|2026-06-22|01110|創意點心社材料費|烘材料|創意點心|進行中|3494`;
+  <section id="assembly" class="sec"><h1 class="pt">朝會司儀稿</h1>
+    <div class="report"><div class="card no"><h3>司儀稿內容</h3><label>日期</label><input id="ad" value="3/24"><label>學期</label><input id="as" value="115學年度第二學期"><label>內容</label><textarea id="ar" rows="16">主席報告
+師長報告
+學輔中心報告
+教研中心報告
 
-    const baseExpenses = expenseSeed.trim().split("\n").map((line, index) => {
-      const [semester, date, ais, summary, item, className, status, amount] = line.split("|");
-      return { id: `base-${index}`, semester, date, ais, summary, item, className, status, amount: Number(amount) };
-    });
+當月份慶生會:
+讓我們用熱烈掌聲歡迎壽星！
+請壽星許願、吹蠟燭。
 
-    const schema = {
-      items: ["行政費", "材料費", "鐘點費", "烘材料", "美術材料", "塑材料", "縫紉材料"],
-      classes: ["", "桌球", "打擊樂", "足球", "兒童美術", "兒童陶藝", "弦樂A", "弦樂B", "直排輪", "烏克麗麗", "創意點心", "創意捏塑", "縫紉", "跆拳道", "街舞", "無人機", "游泳", "其他"],
-      statuses: ["未開始", "進行中", "完成"],
-      applicants: ["", "許哲彰", "朱俐嬛", "柏毅"]
-    };
+音樂分享:
+請大家保持安靜，用心聆聽。</textarea><label>未來活動備忘（不列印）</label><textarea id="af" rows="4"></textarea><br><button class="btn b" onclick="window.print()">列印司儀稿</button></div>
+    <div class="preview"><div class="ph"><div class="plogo">博</div><div><b style="color:#64748b">朝會典禮流程（<span id="adp"></span>）</b><div style="font-size:1.2rem;font-weight:900">臺北市博嘉實驗國民小學 <span id="asp"></span> 升旗典禮</div></div></div><div class="step"><b>典禮開始</b></div><div class="step">全體肅立、主席就位</div><div class="step">唱國歌</div><div class="step">升旗，向國旗敬禮（播國旗歌）</div><div class="step">禮畢，請主席復位</div><div class="step"><b>向師長行早安禮（老師早～）</b></div><div class="step">全體同學請坐下</div><div id="dyn"></div><div class="step"><b>唱校歌</b></div><div style="text-align:center;font-size:1.8rem;font-weight:900;letter-spacing:1.5em;margin-top:30px;border-top:1px dashed #aaa;padding-top:18px">禮成</div></div></div>
+  </section>
 
-    const localKey = "bjps-expense-local-v2";
-    const incomeEditKey = "bjps-income-edits-v1";
-    const clubStoreKey = "bjps-income-clubs-v1";
-    const deletedExpenseKey = "bjps-deleted-expenses-v1";
-    const cloudCollection = "expenseDashboards";
-    const cloudDocument = "114-school-year";
-    let cloudDocRef = null;
-    let cloudSaveTimer = null;
-    let applyingCloudState = false;
-    const twd = n => new Intl.NumberFormat("zh-TW", { style: "currency", currency: "TWD", maximumFractionDigits: 0 }).format(Number(n || 0));
-    const sum = rows => rows.reduce((total, row) => total + Number(row.amount ?? row.total ?? row.tuitionTotal ?? 0), 0);
-    const byId = id => document.getElementById(id);
-    const readJson = (key, fallback) => {
-      try {
-        return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback));
-      } catch {
-        return fallback;
-      }
-    };
-    const localExpenses = () => JSON.parse(localStorage.getItem(localKey) || "[]");
-    const deletedExpenseIds = () => JSON.parse(localStorage.getItem(deletedExpenseKey) || "[]");
-    const incomeEdits = () => JSON.parse(localStorage.getItem(incomeEditKey) || "{}");
-    const clubStore = () => JSON.parse(localStorage.getItem(clubStoreKey) || "{\"added\":[],\"deleted\":[]}");
-    const saveClubStore = store => {
-      localStorage.setItem(clubStoreKey, JSON.stringify({
-        added: [...new Set(store.added || [])],
-        deleted: [...new Set(store.deleted || [])]
-      }));
-      scheduleCloudSave();
-    };
-    const setCloudStatus = (text, cls = "") => {
-      const el = byId("cloudStatus");
-      if (!el) return;
-      el.textContent = text;
-      el.className = `cloud-status ${cls}`.trim();
-    };
-    const cloudStateFromLocalStorage = () => ({
-      localExpenses: readJson(localKey, []),
-      deletedExpenseIds: readJson(deletedExpenseKey, []),
-      incomeEdits: readJson(incomeEditKey, {}),
-      clubStore: readJson(clubStoreKey, {added: [], deleted: []}),
-      updatedAt: Date.now()
-    });
-    const hasUserData = state => Boolean(
-      (state.localExpenses || []).length ||
-      (state.deletedExpenseIds || []).length ||
-      Object.keys(state.incomeEdits || {}).length ||
-      (state.clubStore?.added || []).length ||
-      (state.clubStore?.deleted || []).length
-    );
-    const mergeCloudState = (localState, cloudState) => {
-      const expenseMap = new Map();
-      (cloudState.localExpenses || []).forEach(row => expenseMap.set(row.id, row));
-      (localState.localExpenses || []).forEach(row => expenseMap.set(row.id, row));
-      return {
-        localExpenses: [...expenseMap.values()],
-        deletedExpenseIds: [...new Set([...(cloudState.deletedExpenseIds || []), ...(localState.deletedExpenseIds || [])])],
-        incomeEdits: {...(cloudState.incomeEdits || {}), ...(localState.incomeEdits || {})},
-        clubStore: {
-          added: [...new Set([...(cloudState.clubStore?.added || []), ...(localState.clubStore?.added || [])])],
-          deleted: [...new Set([...(cloudState.clubStore?.deleted || []), ...(localState.clubStore?.deleted || [])])]
-        },
-        updatedAt: Date.now()
-      };
-    };
-    const applyCloudState = data => {
-      applyingCloudState = true;
-      localStorage.setItem(localKey, JSON.stringify(data.localExpenses || []));
-      localStorage.setItem(deletedExpenseKey, JSON.stringify(data.deletedExpenseIds || []));
-      localStorage.setItem(incomeEditKey, JSON.stringify(data.incomeEdits || {}));
-      localStorage.setItem(clubStoreKey, JSON.stringify({
-        added: [...new Set(data.clubStore?.added || [])],
-        deleted: [...new Set(data.clubStore?.deleted || [])]
-      }));
-      applyingCloudState = false;
-      render();
-    };
-    async function saveCloudState() {
-      if (!cloudDocRef) return;
-      try {
-        setCloudStatus("雲端儲存中", "saving");
-        await setDoc(cloudDocRef, {...cloudStateFromLocalStorage(), updatedAt: serverTimestamp()}, {merge: true});
-        setCloudStatus("雲端已同步", "saved");
-      } catch (error) {
-        setCloudStatus("雲端儲存失敗，已暫存在本機", "error");
-        console.error(error);
-      }
-    }
-    function scheduleCloudSave() {
-      if (applyingCloudState || !cloudDocRef) return;
-      clearTimeout(cloudSaveTimer);
-      cloudSaveTimer = setTimeout(saveCloudState, 600);
-    }
-    const allExpenses = () => {
-      const deleted = new Set(deletedExpenseIds());
-      return [...baseExpenses, ...localExpenses()].filter(row => !deleted.has(row.id));
-    };
-    const materialExpense = rows => rows.filter(r => r.item.includes("材料"));
-    const adminExpense = rows => rows.filter(r => r.item === "行政費");
-    const hourlyExpense = rows => rows.filter(r => r.item === "鐘點費");
-    const matchesExpenseCategory = (row, category) => {
-      if (category === "材料費") return row.item.includes("材料");
-      if (category === "行政費") return row.item === "行政費";
-      return true;
-    };
 
-    function kpi(label, value, note = "", cls = "") {
-      return `<div class="kpi"><div class="label">${label}</div><div class="value ${cls}">${twd(value)}</div><div class="mini">${note}</div></div>`;
-    }
+  <section id="projects" class="sec"><h1 class="pt">Project｜專案管理</h1>
+    <div class="card no compact-form-card"><h3>新增專案</h3><form id="projectF" class="grid g4 compact-form"><input id="pid" type="hidden"><div><label>專案名稱</label><input id="pn" required placeholder="例：53屆畢業活動"></div><div><label>類別</label><select id="py"><option>53屆畢業活動</option><option>54屆畢業活動</option><option>校外教學</option><option>社團活動</option><option>節慶活動</option><option>朝會</option><option>其他</option></select></div><div><label>開始日期</label><input id="psd" type="date"></div><div><label>結束日期</label><input id="ped" type="date"></div><div><label>負責</label><input id="powner" value="活動組"></div><div><label>狀態</label><select id="pstatus"><option>規劃中</option><option>進行中</option><option>已完成</option></select></div><div class="full"><label>專案說明</label><input id="pnote" placeholder="例：流程、座位表、司儀稿、頒獎名單、場佈與彩排"></div><div class="full actions"><button class="btn b">儲存專案</button> <button type="button" class="btn s" onclick="resetProject()">取消</button></div></form></div>
+    <div class="card"><h3>專案清單與待辦</h3><div id="projectRows"></div></div>
+  </section>
 
-    function adminRate(className) {
-      return /^弦樂[AB]/.test(className) ? 0.12 : 0.30;
-    }
+  <section id="tasks" class="sec"><h1 class="pt">To-do｜待辦追蹤</h1>
+    <div class="card no compact-form-card"><h3>新增待辦</h3><form id="taskF" class="grid g4 compact-form"><input id="kid" type="hidden"><div><label>期限</label><input id="kd" type="date" required></div><div><label>類別</label><select id="kt"><option>朝會</option><option>校外教學</option><option>社團</option><option>節慶</option><option>53屆畢業活動</option><option>54屆畢業活動</option><option>通知單</option><option>其他</option></select></div><div><label>專案</label><select id="kp"><option value="">不指定專案</option></select></div><div><label>優先</label><select id="kpri"><option>高</option><option selected>中</option><option>低</option></select></div><div><label>負責</label><input id="ko" value="活動組"></div><div><label>狀態</label><select id="ks"><option>未開始</option><option>進行中</option><option>已完成</option></select></div><div><label>工作項目</label><input id="kn" required></div><div><label>備註</label><input id="kr"></div><div class="full actions"><button class="btn b">儲存待辦</button> <button type="button" class="btn s" onclick="resetTask()">取消</button></div></form></div>
+    <div class="card"><h3>待辦清單</h3><div class="wrap"><table><thead><tr><th>期限</th><th>工作</th><th>優先</th><th>專案</th><th>類別</th><th>負責</th><th>狀態</th><th>備註</th><th class="no">操作</th></tr></thead><tbody id="taskRows"></tbody></table></div></div>
+  </section>
 
-    const classOrder = ["桌球", "打擊樂", "足球", "兒童美術", "兒童陶藝", "弦樂A", "弦樂B", "直排輪", "烏克麗麗", "創意點心", "創意捏塑", "籃球", "縫紉", "跆拳道", "街舞", "無人機", "游泳"];
+  <section id="settings" class="sec"><div class="card"><h3>設定與備份</h3><p>資料儲存在本機瀏覽器 localStorage。更換電腦前請先備份 JSON。</p><button class="btn b" onclick="backup()">資料備份 JSON</button> <button class="btn s" onclick="importFile.click()">匯入還原</button> <button class="btn r" onclick="clearAll()">清空資料</button><br><br><button class="btn g" onclick="csv('events')">匯出活動 CSV</button> <button class="btn g" onclick="csv('trips')">匯出校外教學 CSV</button> <button class="btn g" onclick="csv('projects')">匯出專案 CSV</button> <button class="btn g" onclick="csv('tasks')">匯出待辦 CSV</button></div></section>
+</main></div>
+<script>
+let D=JSON.parse(localStorage.getItem('bojia_director_site')||'{"plans":[],"events":[],"trips":[],"tasks":[],"projects":[],"assembly":{}}');
+D.projects=D.projects||[];D.tasks=D.tasks||[];D.trips=D.trips||[];D.plans=D.plans||[];D.tasks.forEach(x=>{if(x.type=="畢業")x.type="53屆畢業活動";if(!x.priority)x.priority="中"});D.trips.forEach(x=>{if(x.planStatus===undefined)x.planStatus="已納入";if(x.projectId===undefined)x.projectId=""});D.plans.forEach(x=>{if(x.projectId===undefined)x.projectId=""});
+/* 保留使用者已輸入資料，僅將舊類別名稱自動轉換為新名稱 */
+if(Array.isArray(D.events)){D.events.forEach(x=>{if(x.type==='朝會與頒獎')x.type='朝會'});}
+localStorage.setItem('bojia_director_site',JSON.stringify(D));
+const $=id=>document.getElementById(id),today=()=>new Date().toISOString().slice(0,10),uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6),esc=s=>String(s??'').replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));function save(){localStorage.setItem('bojia_director_site',JSON.stringify(D));render()}
+function go(s){document.querySelectorAll('.sec').forEach(x=>x.classList.remove('on'));$(s).classList.add('on');document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.s==s));title.textContent={dash:'Topview',events:'Activity Log',trips:'校外教學',assembly:'朝會司儀',projects:'Project',tasks:'To-do',settings:'設定/備份'}[s]}
+document.querySelectorAll('.nav').forEach(b=>b.onclick=()=>go(b.dataset.s));
+function tag(s){return `<span class="tag ${s=='已完成'?'done':s=='進行中'?'doing':'todo'}">${esc(s)}</span>`}
+function ptag(p){return `<span class="tag ${p=='高'?'pri-high':p=='低'?'pri-low':'pri-mid'}">${esc(p||'中')}</span>`}
+function priorityRank(p){return p=='高'?0:p=='中'?1:2}
+function del(a,id){if(confirm('確定刪除？')){D[a]=D[a].filter(x=>x.id!=id);save()}}
+function monthLabel(m){
+  if(!m) return '';
+  let parts=String(m).split('-'), y=+parts[0], mo=+parts[1];
+  if(y>1911) return `${m} <span class="tag">民國${y-1911}年${mo}月</span>`;
+  return `${m} <span class="tag">${mo}月</span>`;
+}
+function defaultSchoolMonths(){
+  let baseY=new Date().getFullYear();
+  let months=[];
+  for(let mm=8;mm<=12;mm++)months.push(`${baseY}-${String(mm).padStart(2,'0')}`);
+  for(let mm=1;mm<=7;mm++)months.push(`${baseY+1}-${String(mm).padStart(2,'0')}`);
+  return months;
+}
+function projectName(id){let p=D.projects.find(x=>x.id==id);return p?p.name:''}
+function projectOptions(selected=''){
+  let html='<option value="">不指定專案</option>'+D.projects.map(p=>`<option value="${p.id}" ${p.id==selected?'selected':''}>${esc(p.name)}</option>`).join('');
+  if($('kp'))kp.innerHTML=html;
+  if($('tp'))tp.innerHTML=html;
+  if($('pp'))pp.innerHTML=html;
+}
+function dateParts(s){let [y,m,d]=String(s).split('-').map(Number);return new Date(y,m-1,d)}
+function fmtDate(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function addMonths(date,n){let d=new Date(date),day=d.getDate();d.setDate(1);d.setMonth(d.getMonth()+n);d.setDate(Math.min(day,new Date(d.getFullYear(),d.getMonth()+1,0).getDate()));return d}
+function repeatDate(start,rule,i){
+  let d=dateParts(start);
+  if(rule=='weekly')d.setDate(d.getDate()+7*i);
+  if(rule=='biweekly')d.setDate(d.getDate()+14*i);
+  if(rule=='monthly')d=addMonths(d,i);
+  return fmtDate(d);
+}
+function normalizeDate(s){
+  let parts=String(s||'').split('-').map(Number);
+  if(parts.length<3||!parts[0]||!parts[1])return '';
+  if(parts[0]<1911)parts[0]+=1911;
+  return `${parts[0]}-${String(parts[1]).padStart(2,'0')}-${String(parts[2]||1).padStart(2,'0')}`;
+}
+function itemMonth(s){
+  let d=normalizeDate(s);
+  return d?d.slice(0,7):'';
+}
+function monthlyItemDate(s){
+  let d=normalizeDate(s);
+  if(!d)return '';
+  let [,m,day]=d.split('-');
+  return `${+m}/${+day}`;
+}
+function renderMonthlyView(){
+  if(!$('monthlyView'))return;
+  let months=[...new Set([...defaultSchoolMonths(),...D.events.map(x=>itemMonth(x.date)),...D.tasks.map(x=>itemMonth(x.due)),...D.trips.map(x=>itemMonth(x.date))].filter(Boolean))].sort();
+  let start=today().slice(0,7);
+  months=months.filter(m=>m>=start).slice(0,6);
+  monthlyView.innerHTML=months.map(m=>{
+    let items=[
+      ...D.events.filter(x=>itemMonth(x.date)==m).map(x=>({kind:'event',date:normalizeDate(x.date),action:`editEvent('${x.id}')`,html:`<div class="month-line"><span class="tag">${monthlyItemDate(x.date)}</span><b>${esc(x.name)}</b>${tag(x.status)}</div><small>${esc(x.time||'')} ${esc(x.location||'')} ${esc(x.type||'')}</small>`})),
+      ...D.tasks.filter(x=>itemMonth(x.due)==m).map(x=>({kind:'task',date:normalizeDate(x.due),rank:priorityRank(x.priority),action:`editTask('${x.id}')`,html:`<div class="month-line"><span class="tag">${monthlyItemDate(x.due)}</span><b>${esc(x.name)}</b>${ptag(x.priority)}${tag(x.status)}</div><small>${esc(projectName(x.projectId)||'未指定專案')}</small>`})),
+      ...D.trips.filter(x=>itemMonth(x.date)==m).map(x=>({kind:'trip',date:normalizeDate(x.date),action:`editTrip('${x.id}')`,html:`<div class="month-line"><span class="tag">${monthlyItemDate(x.date)}</span><b>${esc(x.className)}</b></div><small>${esc(x.location||'')} ${esc(x.start||'')}-${esc(x.return||'')} ${esc(projectName(x.projectId)||'')}</small>`}))
+    ].sort((a,b)=>(a.date||'').localeCompare(b.date||'')||(a.rank??9)-(b.rank??9));
+    let list=items.length?`<ul class="month-items">${items.map(x=>`<li class="${x.kind}" onclick="${x.action}" title="點擊編輯">${x.html}</li>`).join('')}</ul>`:'<span class="empty">本月尚無活動或待辦</span>';
+    return `<div class="month"><h4>${monthLabel(m)}</h4>${list}</div>`;
+  }).join('');
+}
+function renderProjects(){
+  projectOptions(kp?kp.value:'');
+  if(!$('projectRows'))return;
+  projectRows.innerHTML=D.projects.length?D.projects.slice().sort((a,b)=>(a.start||'').localeCompare(b.start||'')).map(p=>{
+    let tasks=D.tasks.filter(t=>t.projectId==p.id).sort((a,b)=>(a.due||'').localeCompare(b.due||''));
+    let done=tasks.filter(t=>t.status=='已完成').length;
+    let list=tasks.length?`<h4>To-do</h4><div class="wrap"><table><thead><tr><th>期限</th><th>待辦</th><th>優先</th><th>類別</th><th>狀態</th><th class="no">操作</th></tr></thead><tbody>${tasks.map(t=>`<tr><td>${esc(t.due)}</td><td><b>${esc(t.name)}</b></td><td>${ptag(t.priority)}</td><td>${esc(t.type)}</td><td>${tag(t.status)}</td><td class="no"><button class="mini ok" onclick="done('${t.id}')">完成</button><button class="mini edit" onclick="editTask('${t.id}');go('tasks')">編輯待辦</button></td></tr>`).join('')}</tbody></table></div>`:'<h4>To-do</h4><p class="empty">此專案尚未建立待辦。</p>';
+    let trips=D.trips.filter(t=>t.projectId==p.id).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+    let tripList=trips.length?`<h4>校外教學紀錄</h4><div class="wrap"><table><thead><tr><th>日期</th><th>班級</th><th>地點</th><th>時間</th><th>總數</th></tr></thead><tbody>${trips.map(t=>{let total=+t.students+ +t.teachers+ +t.admins;return `<tr><td>${esc(t.date)}</td><td><b>${esc(t.className)}</b></td><td>${esc(t.location)}</td><td>${esc(t.start)}-${esc(t.return)}</td><td>${total}</td></tr>`}).join('')}</tbody></table></div>`:'<h4>校外教學紀錄</h4><p class="empty">此專案尚未連結校外教學紀錄。</p>';
+    return `<div class="card"><h3>${esc(p.name)} ${tag(p.status)}</h3><p><b>類別：</b>${esc(p.type)}　<b>期間：</b>${esc(p.start)} ～ ${esc(p.end)}　<b>負責：</b>${esc(p.owner)}　<b>待辦進度：</b>${done}/${tasks.length}　<b>校外教學：</b>${trips.length}筆</p><p>${esc(p.note)}</p><div class="no"><button class="mini edit" onclick="editProject('${p.id}')">編輯專案</button><button class="mini del" onclick="del('projects','${p.id}')">刪除專案</button><button class="mini ok" onclick="newTaskForProject('${p.id}')">新增此專案待辦</button><button class="mini ok" onclick="newTripForProject('${p.id}')">新增此專案校外教學</button></div>${list}${tripList}</div>`
+  }).join(''):'<p class="empty">尚無專案，請先新增專案。</p>';
+}
+function render(){
+  renderMonthlyView();
 
-    function classOrderIndex(className) {
-      const fixedIndex = classOrder.indexOf(className);
-      if (fixedIndex >= 0) return fixedIndex;
-      const otherIndex = otherIncome.findIndex(row => row.className === className);
-      return classOrder.length + (otherIndex >= 0 ? otherIndex : 999);
-    }
+  if($('dashTripRows')){
+    dashTripRows.innerHTML=(D.trips.slice().sort((a,b)=>(a.date||'').localeCompare(b.date||'')).slice(0,8).map(x=>{
+      let total=+x.students+ +x.teachers+ +x.admins;
+      return `<tr><td>${esc(x.date)}</td><td><b>${esc(x.className)}</b></td><td>${esc(projectName(x.projectId))||'<span class="empty">未指定</span>'}</td><td>${esc(x.location)}</td><td>${total}</td></tr>`
+    }).join('')||'<tr><td colspan=5 class="empty">尚無校外教學資料</td></tr>');
+  }
 
-    function activeTuitionRows() {
-      const store = clubStore();
-      const deleted = new Set(store.deleted || []);
-      const addedRows = (store.added || [])
-        .filter(name => name && !deleted.has(name))
-        .map(className => ({className, people: 0, tuitionPer: 0, tuitionTotal: 0, admin: 0, hourly: 0}));
-      return [
-        ...tuition.filter(row => !deleted.has(row.className)),
-        ...addedRows
-      ];
-    }
+  if($('dashProjectRows')){
+    dashProjectRows.innerHTML=D.projects.length?D.projects.slice().sort((a,b)=>(a.start||'').localeCompare(b.start||'')).map(p=>{
+      let tasks=D.tasks.filter(t=>t.projectId==p.id);
+      let done=tasks.filter(t=>t.status=='已完成').length;
+      let pct=tasks.length?Math.round(done/tasks.length*100):0;
+      return `<tr><td><b>${esc(p.name)}</b></td><td>${esc(p.type)}</td><td>${esc(p.start)}～${esc(p.end)}</td><td>${esc(p.owner)}</td><td><div>${done}/${tasks.length}（${pct}%）</div><div class="progress"><div class="bar" style="width:${pct}%"></div></div></td><td>${tag(p.status)}</td></tr>`
+    }).join(''):'<tr><td colspan=6 class="empty">尚無專案。可到「專案」頁面新增大型活動專案。</td></tr>';
+  }
 
-    function activeClassNames() {
-      return combinedIncome().map(row => row.className);
-    }
+  if($('dashAssemblyBox')){
+    dashAssemblyBox.innerHTML=`<div class="summary-note"><b>最近朝會日期：</b>${esc(D.assembly&&D.assembly.date?D.assembly.date:ad.value)}<br><b>學期：</b>${esc(D.assembly&&D.assembly.sem?D.assembly.sem:as.value)}<br><b>未來活動備忘：</b><br>${esc((D.assembly&&D.assembly.future)||af.value||'尚未填寫').replace(/\n/g,'<br>')}</div>`;
+  }
 
-    function combinedIncome() {
-      const map = new Map();
-      const edits = incomeEdits();
-      const deleted = new Set(clubStore().deleted || []);
-      activeTuitionRows().forEach(row => {
-        map.set(row.className, {
-          className: row.className,
-          people: row.people,
-          tuitionPer: row.tuitionPer,
-          tuitionTotal: row.tuitionTotal,
-          admin: row.admin,
-          hourly: row.hourly,
-          material: 0,
-          consumable: 0,
-          ac: 0
-        });
-      });
-      otherIncome.forEach(row => {
-        if (deleted.has(row.className)) return;
-        if (!map.has(row.className)) {
-          map.set(row.className, {
-            className: row.className,
-            people: row.people,
-            tuitionPer: 0,
-            tuitionTotal: 0,
-            admin: 0,
-            hourly: 0,
-            material: 0,
-            consumable: 0,
-            ac: 0
-          });
-        }
-        const target = map.get(row.className);
-        if (row.people && !target.people) target.people = row.people;
-        if (row.item === "材料費") target.material += row.total;
-        if (row.item === "耗材費") target.consumable += row.total;
-        if (row.item === "冷氣費") target.ac += row.total;
-      });
-      return [...map.values()].map(row => {
-        const edit = edits[row.className] || {};
-        const people = Number(edit.people ?? row.people ?? 0);
-        const tuitionPer = Number(edit.tuitionPer ?? row.tuitionPer ?? 0);
-        const materialPer = Number(edit.materialPer ?? (people ? row.material / people : 0));
-        const consumablePer = Number(edit.consumablePer ?? (people ? row.consumable / people : 0));
-        const acPer = Number(edit.acPer ?? (people ? row.ac / people : 0));
-        const tuitionTotal = people * tuitionPer;
-        const admin = Math.round(tuitionTotal * adminRate(row.className));
-        const hourly = tuitionTotal - admin;
-        const material = people * materialPer;
-        const consumable = people * consumablePer;
-        const ac = people * acPer;
-        return {
-          ...row,
-          people,
-          tuitionPer,
-          tuitionTotal,
-          admin,
-          hourly,
-          materialPer,
-          material,
-          consumablePer,
-          consumable,
-          acPer,
-          ac,
-          total: tuitionTotal + material + consumable + ac
-        };
-      }).sort((a, b) => classOrderIndex(a.className) - classOrderIndex(b.className) || a.className.localeCompare(b.className, "zh-Hant"));
-    }
+  eventRows.innerHTML=D.events.slice().sort((a,b)=>(a.date||'').localeCompare(b.date||'')).map(x=>`<tr><td>${esc(x.date)}</td><td>${esc(x.time)}</td><td><b>${esc(x.name)}</b></td><td>${esc(x.type)}</td><td>${esc(x.location)}</td><td>${esc(x.target)}</td><td>${esc(x.owner)}</td><td>${tag(x.status)}</td><td class="no"><button class="mini edit" onclick="editEvent('${x.id}')">編輯</button><button class="mini del" onclick="del('events','${x.id}')">刪除</button></td></tr>`).join('')||'<tr><td colspan=10 class="empty">尚無資料</td></tr>';
 
-    function addClub() {
-      const name = prompt("請輸入新增社團名稱");
-      const className = (name || "").trim();
-      if (!className) return;
-      const store = clubStore();
-      store.deleted = (store.deleted || []).filter(item => item !== className);
-      const existsInBase = tuition.some(row => row.className === className) || otherIncome.some(row => row.className === className);
-      if (!existsInBase && !(store.added || []).includes(className)) {
-        store.added = [...(store.added || []), className];
-      }
-      saveClubStore(store);
-      render();
-    }
+  tripRows.innerHTML=D.trips.slice().sort((a,b)=>(a.date||'').localeCompare(b.date||'')).map(x=>{
+    let total=+x.students+ +x.teachers+ +x.admins;
+    let checked=(x.planStatus||'已納入')=='已納入'?'checked':'';
+    return `<tr>
+      <td><input type="checkbox" ${checked} disabled></td>
+      <td><b>${esc(x.className)}</b></td>
+      <td>${esc(projectName(x.projectId))||'<span class="empty">未指定</span>'}</td>
+      <td>${esc(x.date)}</td>
+      <td>${esc(x.start)}</td>
+      <td>${esc(x.return)}</td>
+      <td>${esc(x.location)}</td>
+      <td>${esc(x.students)}</td>
+      <td>${esc(x.teachers)}</td>
+      <td>${esc(x.admins)}</td>
+      <td><b>${total}</b></td>
+      <td>${esc(x.note)}</td>
+      <td class="no"><button class="mini edit" onclick="editTrip('${x.id}')">編輯</button><button class="mini del" onclick="del('trips','${x.id}')">刪除</button></td>
+    </tr>`
+  }).join('')||'<tr><td colspan=13 class="empty">尚無資料</td></tr>';
 
-    function deleteClub() {
-      const select = byId("deleteClubSelect");
-      const className = select.value;
-      if (!className) return;
-      if (!confirm(`確定刪除「${className}」？`)) return;
-      const store = clubStore();
-      const existsInBase = tuition.some(row => row.className === className) || otherIncome.some(row => row.className === className);
-      store.added = (store.added || []).filter(item => item !== className);
-      if (existsInBase && !(store.deleted || []).includes(className)) {
-        store.deleted = [...(store.deleted || []), className];
-      }
-      saveClubStore(store);
-      const edits = incomeEdits();
-      delete edits[className];
-      localStorage.setItem(incomeEditKey, JSON.stringify(edits));
-      scheduleCloudSave();
-      render();
-    }
+  renderProjects();
 
-    function editCell(className, field, value) {
-      const edits = incomeEdits();
-      edits[className] = edits[className] || {};
-      edits[className][field] = Number(value || 0);
-      localStorage.setItem(incomeEditKey, JSON.stringify(edits));
-      scheduleCloudSave();
-      renderTuition();
-    }
+  taskRows.innerHTML=D.tasks.slice().sort((a,b)=>(a.due||'').localeCompare(b.due||'')).map(x=>`<tr><td>${esc(x.due)}</td><td><b>${esc(x.name)}</b></td><td>${ptag(x.priority)}</td><td>${esc(projectName(x.projectId))||'<span class="empty">未指定</span>'}</td><td>${esc(x.type)}</td><td>${esc(x.owner)}</td><td>${tag(x.status)}</td><td>${esc(x.note)}</td><td class="no"><button class="mini ok" onclick="done('${x.id}')">完成</button><button class="mini edit" onclick="editTask('${x.id}')">編輯</button><button class="mini del" onclick="del('tasks','${x.id}')">刪除</button></td></tr>`).join('')||'<tr><td colspan=10 class="empty">尚無資料</td></tr>';
 
-    function inputCell(row, field, value) {
-      return `<input class="cell-input" type="number" min="0" step="1" value="${Math.round(Number(value || 0))}" data-class="${row.className}" data-field="${field}">`;
-    }
+  renderA();
+}
+eventF.onsubmit=e=>{e.preventDefault();let id=eid.value,base={date:ed.value,type:et.value,name:en.value,location:el.value,time:etime.value,target:eg.value,owner:eo.value,status:es.value,note:er.value};if(id){let i=D.events.findIndex(x=>x.id==id);if(i>-1)D.events[i]={...D.events[i],...base};else D.events.push({id,...base})}else{let rule=erepeat.value,count=rule=='none'?1:Math.max(1,Math.min(60,+ecount.value||1)),group=count>1?uid():'';for(let n=0;n<count;n++)D.events.push({id:uid(),...base,date:repeatDate(base.date,rule,n),repeatRule:rule,repeatGroup:group,repeatIndex:n+1})}resetEvent();save()};
+function editEvent(id){let x=D.events.find(y=>y.id==id);eid.value=x.id;ed.value=x.date;et.value=x.type;en.value=x.name;el.value=x.location;etime.value=x.time;eg.value=x.target;eo.value=x.owner;es.value=x.status;er.value=x.note;erepeat.value='none';ecount.value=1;go('events');scrollTo(0,0)}
+function resetEvent(){eventF.reset();eid.value='';ed.value=today();eo.value='活動組';erepeat.value='none';ecount.value=1}
+tripF.onsubmit=e=>{e.preventDefault();let id=tid.value||uid(),o={id,planStatus:'已納入',className:tc.value,projectId:tp.value,date:td.value,start:ts.value,return:tr.value,location:tl.value,students:+tstu.value||0,teachers:+ttea.value||0,admins:+tadm.value||0,note:tn.value};let i=D.trips.findIndex(x=>x.id==id);i>-1?D.trips[i]=o:D.trips.push(o);resetTrip();save()};
+function editTrip(id){let x=D.trips.find(y=>y.id==id);tid.value=x.id;tc.value=x.className;projectOptions(x.projectId||'');tp.value=x.projectId||'';td.value=x.date;ts.value=x.start;tr.value=x.return;tl.value=x.location;tstu.value=x.students;ttea.value=x.teachers;tadm.value=x.admins;tn.value=x.note;go('trips');scrollTo(0,0)}
+function resetTrip(){tripF.reset();tid.value='';projectOptions('');td.value=today();ts.value='08:50';tr.value='12:00';tstu.value=0;ttea.value=0;tadm.value=0}
 
-    function renderTuition() {
-      const rows = combinedIncome();
-      const deleteSelect = byId("deleteClubSelect");
-      if (deleteSelect) {
-        deleteSelect.innerHTML = rows.map(r => `<option value="${r.className}">${r.className}</option>`).join("");
-      }
-      const adminTotal = rows.reduce((t, r) => t + r.admin, 0);
-      const materialTotal = rows.reduce((t, r) => t + r.material, 0);
-      const extraTotal = rows.reduce((t, r) => t + r.consumable + r.ac, 0);
-      const grandTotal = rows.reduce((t, r) => t + r.total, 0);
-      byId("tuitionKpis").innerHTML =
-        kpi("總應收", grandTotal, `${rows.length} 個班別`, "good") +
-        kpi("行政費", adminTotal, "學費拆分") +
-        kpi("材料費", materialTotal, "總材料費") +
-        kpi("耗材+冷氣費收入", extraTotal, "耗材、冷氣", "warn");
-      byId("combinedIncomeRows").innerHTML = rows.map(r => `
-        <tr>
-          <td>${r.className}</td>
-          <td class="amount">${inputCell(r, "people", r.people)}</td>
-          <td class="amount">${inputCell(r, "tuitionPer", r.tuitionPer)}</td>
-          <td class="amount computed">${r.admin ? twd(r.admin) : "-"}</td>
-          <td class="amount computed">${r.hourly ? twd(r.hourly) : "-"}</td>
-          <td class="amount sep-left">${inputCell(r, "materialPer", r.materialPer)}</td>
-          <td class="amount computed">${r.material ? twd(r.material) : "-"}</td>
-          <td class="amount">${inputCell(r, "consumablePer", r.consumablePer)}</td>
-          <td class="amount computed">${r.consumable ? twd(r.consumable) : "-"}</td>
-          <td class="amount">${inputCell(r, "acPer", r.acPer)}</td>
-          <td class="amount computed">${r.ac ? twd(r.ac) : "-"}</td>
-          <td class="amount computed">${twd(r.total)}</td>
-        </tr>
-      `).join("");
-      byId("combinedIncomeRows").querySelectorAll(".cell-input").forEach(input => {
-        input.addEventListener("change", event => editCell(event.target.dataset.class, event.target.dataset.field, event.target.value));
-      });
-      const totals = rows.reduce((acc, r) => {
-        acc.people += Number(r.people || 0);
-        acc.tuition += r.tuitionTotal;
-        acc.admin += r.admin;
-        acc.hourly += r.hourly;
-        acc.material += r.material;
-        acc.consumable += r.consumable;
-        acc.ac += r.ac;
-        acc.total += r.total;
-        return acc;
-      }, {people:0, tuition:0, admin:0, hourly:0, material:0, consumable:0, ac:0, total:0});
-      byId("combinedIncomeFoot").innerHTML = `
-        <tr>
-          <th>合計</th>
-          <th class="amount">${totals.people}</th>
-          <th></th>
-          <th class="amount computed">${twd(totals.admin)}</th>
-          <th class="amount computed">${twd(totals.hourly)}</th>
-          <th></th>
-          <th class="amount computed">${twd(totals.material)}</th>
-          <th></th>
-          <th class="amount computed">${twd(totals.consumable)}</th>
-          <th></th>
-          <th class="amount computed">${twd(totals.ac)}</th>
-          <th class="amount computed">${twd(totals.total)}</th>
-        </tr>
-      `;
-    }
+projectF.onsubmit=e=>{e.preventDefault();let id=pid.value||uid(),o={id,name:pn.value,type:py.value,start:psd.value,end:ped.value,owner:powner.value,status:pstatus.value,note:pnote.value};let i=D.projects.findIndex(x=>x.id==id);i>-1?D.projects[i]=o:D.projects.push(o);resetProject();save()};
+function editProject(id){let x=D.projects.find(y=>y.id==id);if(!x)return;pid.value=x.id;pn.value=x.name;py.value=x.type;psd.value=x.start;ped.value=x.end;powner.value=x.owner;pstatus.value=x.status;pnote.value=x.note;go('projects');scrollTo(0,0)}
+function resetProject(){projectF.reset();pid.value='';powner.value='活動組'}
+function newTaskForProject(id){let p=D.projects.find(x=>x.id==id);resetTask();kp.value=id;kpri.value='中';kt.value=p&&p.type?p.type:'其他';ko.value=p&&p.owner?p.owner:'活動組';go('tasks');scrollTo(0,0)}
+function newTripForProject(id){resetTrip();tp.value=id;go('trips');scrollTo(0,0)}
 
-    function renderClassOptions() {
-      const names = ["", ...activeClassNames(), "其他"];
-      byId("newClass").innerHTML = names.map(x => `<option value="${x}">${x || "無"}</option>`).join("");
-    }
-
-    function renderAdmin() {
-      const rows = adminExpense(allExpenses()).filter(r => r.semester === "114-2");
-      const incomeRows = combinedIncome();
-      const incomeAdmin = incomeRows.reduce((t, r) => t + r.admin, 0);
-      const extraIncome = incomeRows.reduce((t, r) => t + r.consumable + r.ac, 0);
-      const expenseAdmin = sum(rows);
-      const balance = incomeAdmin - expenseAdmin + extraIncome;
-      byId("adminKpis").innerHTML =
-        kpi("行政費收入", incomeAdmin, "114-2 學費收入計算表", "good") +
-        kpi("耗材+冷氣費收入", extraIncome, "併入行政費結餘", "warn") +
-        kpi("行政費支出", expenseAdmin, `${rows.length} 筆`) +
-        kpi("結餘", balance, "行政費收入 - 行政費支出 + 耗材冷氣", balance >= 0 ? "good" : "bad");
-      byId("adminRows").innerHTML = rows.map(r => `<tr><td>${r.semester}</td><td>${r.date}</td><td>${r.ais || ""}</td><td>${r.summary}</td><td class="amount">${twd(r.amount)}</td></tr>`).join("");
-    }
-
-    function renderHourly() {
-      const rows = hourlyExpense(allExpenses()).filter(r => r.semester === "114-2");
-      const incomeHourly = combinedIncome().reduce((t, r) => t + r.hourly, 0);
-      const expenseHourly = sum(rows);
-      byId("hourlyKpis").innerHTML =
-        kpi("鐘點費收入", incomeHourly, "114-2 學費收入計算表", "good") +
-        kpi("鐘點費支出", expenseHourly, `${rows.length} 筆`) +
-        kpi("結餘", incomeHourly - expenseHourly, "收入 - 支出", incomeHourly - expenseHourly >= 0 ? "good" : "bad");
-      byId("hourlyRows").innerHTML = rows.map(r => `<tr><td>${r.semester}</td><td>${r.date}</td><td>${r.ais || ""}</td><td>${r.summary}</td><td class="amount">${twd(r.amount)}</td></tr>`).join("");
-    }
-
-    function renderMaterial() {
-      const materialIncomeRows = combinedIncome();
-      const allMaterialRows = materialExpense(allExpenses());
-      const classNames = [...new Set([
-        ...materialIncomeRows.filter(row => row.material > 0).map(row => row.className),
-        ...allMaterialRows.map(row => row.className).filter(Boolean)
-      ])].sort((a, b) => classOrderIndex(a) - classOrderIndex(b) || a.localeCompare(b, "zh-Hant"));
-      const select = byId("materialClassSelect");
-      const selectedBefore = select ? select.value : "";
-      const options = ["全部", ...classNames];
-      if (select) {
-        select.innerHTML = options.map(name => `<option value="${name}">${name}</option>`).join("");
-        select.value = options.includes(selectedBefore) ? selectedBefore : "全部";
-      }
-      const selectedClass = select ? select.value : "全部";
-      const rows = allMaterialRows.filter(r => selectedClass === "全部" || r.className === selectedClass);
-      const incomeMaterial = materialIncomeRows
-        .filter(r => selectedClass === "全部" || r.className === selectedClass)
-        .reduce((t, r) => t + r.material, 0);
-      const expenseMaterial = sum(rows);
-      byId("materialKpis").innerHTML =
-        kpi("材料費收入", incomeMaterial, selectedClass, "good") +
-        kpi("材料費支出", expenseMaterial, `${rows.length} 筆`) +
-        kpi("結餘", incomeMaterial - expenseMaterial, "收入 - 支出", incomeMaterial - expenseMaterial >= 0 ? "good" : "bad");
-      byId("materialRows").innerHTML = rows.map(r => `<tr><td>${r.semester}</td><td>${r.date}</td><td>${r.ais || ""}</td><td>${r.summary}</td><td>${r.className || ""}</td><td class="amount">${twd(r.amount)}</td></tr>`).join("");
-    }
-
-    function renderAll() {
-      const selectedCategory = byId("allCategorySelect")?.value || "全部";
-      const rows = allExpenses()
-        .filter(row => matchesExpenseCategory(row, selectedCategory))
-        .sort((a, b) => a.date.localeCompare(b.date));
-      const localRows = localExpenses().filter(row => matchesExpenseCategory(row, selectedCategory));
-      byId("allCount").textContent = `${rows.length} 筆`;
-      byId("allKpis").innerHTML =
-        kpi("支出合計", sum(rows), `${rows.length} 筆`) +
-        kpi("114-1", sum(rows.filter(r => r.semester === "114-1")), "上學期") +
-        kpi("114-2", sum(rows.filter(r => r.semester === "114-2")), "下學期") +
-        kpi("本機新增", sum(localRows), `${localRows.length} 筆`, "warn");
-      byId("allRows").innerHTML = rows.map(r => `<tr><td>${r.semester}</td><td>${r.date}</td><td>${r.ais || ""}</td><td>${r.summary}</td><td>${r.className || ""}</td><td class="amount">${twd(r.amount)}</td><td><button type="button" class="danger delete-expense" data-id="${r.id}">刪除</button></td></tr>`).join("");
-      byId("allRows").querySelectorAll(".delete-expense").forEach(button => {
-        button.addEventListener("click", event => deleteExpense(event.target.dataset.id));
-      });
-    }
-
-    function deleteExpense(id) {
-      const row = allExpenses().find(item => item.id === id);
-      if (!row) return;
-      if (!confirm(`確定刪除「${row.summary}」？`)) return;
-      if (id.startsWith("local-")) {
-        localStorage.setItem(localKey, JSON.stringify(localExpenses().filter(item => item.id !== id)));
-      } else {
-        localStorage.setItem(deletedExpenseKey, JSON.stringify([...new Set([...deletedExpenseIds(), id])]));
-      }
-      scheduleCloudSave();
-      render();
-    }
-
-    function switchView(view) {
-      document.querySelectorAll(".nav button").forEach(button => button.classList.toggle("active", button.dataset.view === view));
-      document.querySelectorAll(".view").forEach(section => section.classList.toggle("active", section.id === `view-${view}`));
-      render();
-    }
-
-    function render() {
-      renderTuition();
-      renderClassOptions();
-      renderAdmin();
-      renderHourly();
-      renderMaterial();
-      renderAll();
-    }
-
-    function addExpense(event) {
-      event.preventDefault();
-      const amount = Number(byId("newAmount").value || 0);
-      const summary = byId("newSummary").value.trim();
-      if (!summary || !byId("newDate").value || amount <= 0) return;
-      const row = {
-        id: `local-${Date.now()}`,
-        semester: byId("newSemester").value,
-        date: byId("newDate").value,
-        ais: byId("newAis").value.trim(),
-        summary,
-        item: byId("newItem").value,
-        className: byId("newClass").value,
-        status: byId("newStatus").value,
-        amount
-      };
-      const rows = localExpenses();
-      rows.push(row);
-      localStorage.setItem(localKey, JSON.stringify(rows));
-      scheduleCloudSave();
-      event.target.reset();
-      byId("newDate").value = new Date().toISOString().slice(0, 10);
-      byId("newStatus").value = "未開始";
-      render();
-      switchView("all");
-    }
-
-    function setup() {
-      byId("newItem").innerHTML = schema.items.map(x => `<option value="${x}">${x}</option>`).join("");
-      byId("newStatus").innerHTML = schema.statuses.map(x => `<option value="${x}">${x}</option>`).join("");
-      byId("newApplicant").innerHTML = schema.applicants.map(x => `<option value="${x}">${x || "未填"}</option>`).join("");
-      byId("newDate").value = new Date().toISOString().slice(0, 10);
-      byId("newStatus").value = "未開始";
-      document.querySelectorAll(".nav button").forEach(button => button.addEventListener("click", () => switchView(button.dataset.view)));
-      byId("addClubBtn").addEventListener("click", addClub);
-      byId("deleteClubBtn").addEventListener("click", deleteClub);
-      byId("materialClassSelect").addEventListener("change", renderMaterial);
-      byId("allCategorySelect").addEventListener("change", renderAll);
-      byId("expenseForm").addEventListener("submit", addExpense);
-      byId("clearLocal").addEventListener("click", () => {
-        if (!confirm("確定清除本機新增的支出資料？")) return;
-        localStorage.removeItem(localKey);
-        scheduleCloudSave();
-        render();
-      });
-      render();
-    }
-
-    function initCloud() {
-      try {
-        setCloudStatus("雲端連線中", "saving");
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        cloudDocRef = doc(db, cloudCollection, cloudDocument);
-        const localSnapshot = cloudStateFromLocalStorage();
-        let firstSnapshot = true;
-        onSnapshot(cloudDocRef, async snapshot => {
-          if (!snapshot.exists()) {
-            if (hasUserData(localSnapshot)) {
-              await saveCloudState();
-            } else {
-              setCloudStatus("雲端已連線", "saved");
-            }
-            firstSnapshot = false;
-            return;
-          }
-          const cloudData = snapshot.data();
-          if (firstSnapshot && hasUserData(localSnapshot)) {
-            const mergedState = hasUserData(cloudData) ? mergeCloudState(localSnapshot, cloudData) : localSnapshot;
-            applyCloudState(mergedState);
-            await saveCloudState();
-          } else if (!hasUserData(cloudData)) {
-            setCloudStatus("雲端已連線", "saved");
-          } else {
-            applyCloudState(cloudData);
-            setCloudStatus("雲端已同步", "saved");
-          }
-          firstSnapshot = false;
-        }, error => {
-          setCloudStatus("雲端未連線，資料暫存在本機", "error");
-          console.error(error);
-        });
-      } catch (error) {
-        setCloudStatus("雲端未連線，資料暫存在本機", "error");
-        console.error(error);
-      }
-    }
-
-    setup();
-    initCloud();
-  </script>
+taskF.onsubmit=e=>{e.preventDefault();let id=kid.value||uid(),o={id,due:kd.value,type:kt.value,projectId:kp.value,priority:kpri.value,owner:ko.value,status:ks.value,name:kn.value,note:kr.value};let i=D.tasks.findIndex(x=>x.id==id);i>-1?D.tasks[i]=o:D.tasks.push(o);resetTask();save()};function editTask(id){let x=D.tasks.find(y=>y.id==id);kid.value=x.id;kd.value=x.due;kt.value=x.type;kpri.value=x.priority||'中';projectOptions(x.projectId||'');kp.value=x.projectId||'';ko.value=x.owner;ks.value=x.status;kn.value=x.name;kr.value=x.note;go('tasks');scrollTo(0,0)}function resetTask(){taskF.reset();kid.value='';kd.value=today();kpri.value='中';ko.value='活動組';projectOptions('')}function done(id){let x=D.tasks.find(y=>y.id==id);x.status='已完成';save()}
+function renderA(){D.assembly={date:ad.value,sem:as.value,reports:ar.value,future:af.value};adp.textContent=ad.value;asp.textContent=as.value;let lines=ar.value.split('\n'),i=0,h='';function hc(s){return s.endsWith(':')||s.endsWith('：')}while(i<lines.length){let line=lines[i].trim();if(!line){i++;continue}if(hc(line)){let title=line.slice(0,-1),script='';i++;while(i<lines.length&&lines[i].trim()&&!hc(lines[i].trim())&&!['主席報告','師長報告'].includes(lines[i].trim())&&!lines[i].includes('中心報告')){script+=lines[i]+'\n';i++}h+=`<div class="act">${esc(title)}${script.trim()?`<div class="script">${esc(script.trim())}</div>`:''}</div>`;continue}if(['主席報告','師長報告'].includes(line)){h+=`<div class="admin">${esc(line)}</div>`}else if(line.includes('中心報告')){h+=`<div style="padding-left:24px;font-weight:800;color:#6b7280">● ${esc(line)}</div>`}else h+=`<div class="act">${esc(line)}</div>`;i++}dyn.innerHTML=h;localStorage.setItem('bojia_director_site',JSON.stringify(D))}
+[ad,as,ar,af].forEach(x=>x.oninput=renderA);
+function seed(){if(!confirm('載入常用年度範本？'))return;D.events.push({id:uid(),date:'115-09-28',type:'節慶活動',name:'教師節敬師活動',location:'校園',time:'08:00-08:40',target:'全校',owner:'活動組',status:'規劃中',note:''},{id:uid(),date:'116-04-03',type:'節慶活動',name:'兒童節慶祝活動',location:'校園',time:'08:00-10:00',target:'全校',owner:'活動組',status:'規劃中',note:''});D.tasks.push({id:uid(),due:'115-09-15',type:'節慶',priority:'中',owner:'活動組',status:'未開始',name:'確認教師節活動流程',note:''},{id:uid(),due:'116-05-20',type:'53屆畢業活動',priority:'高',owner:'活動組',status:'未開始',name:'畢業典禮流程與司儀稿初稿',note:''});save()}
+function backup(){let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(D,null,2)],{type:'application/json'}));a.download='博嘉活動組長年度計畫備份.json';a.click();URL.revokeObjectURL(a.href)}
+importFile.onchange=e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{D=JSON.parse(r.result);save();alert('匯入成功')};r.readAsText(f)}
+function clearAll(){if(confirm('確定清空全部資料？')){localStorage.removeItem('bojia_director_site');location.reload()}}
+function csv(type){let rows=type=='events'?[['日期','時間','活動','類別','地點','對象','負責','狀態'],...D.events.map(x=>[x.date,x.time,x.name,x.type,x.location,x.target,x.owner,x.status])]:type=='trips'?[['計畫表','班級/單位','所屬 Project','日期','出發','返校','地點','學生','教師','行政','總人數','備註'],...D.trips.map(x=>[x.planStatus||'已納入',x.className,projectName(x.projectId),x.date,x.start,x.return,x.location,x.students,x.teachers,x.admins,(+x.students+ +x.teachers+ +x.admins),x.note])]:type=='projects'?[['專案名稱','類別','開始','結束','負責','狀態','說明'],...D.projects.map(x=>[x.name,x.type,x.start,x.end,x.owner,x.status,x.note])]:[['期限','工作','優先順序','專案','類別','負責','狀態','備註'],...D.tasks.map(x=>[x.due,x.name,x.priority||'中',projectName(x.projectId),x.type,x.owner,x.status,x.note])];let a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+rows.map(r=>r.map(c=>`"${String(c??'').replace(/"/g,'""')}"`).join(',')).join('\n')],{type:'text/csv'}));a.download=type+'.csv';a.click()}
+window.onload=()=>{ed.value=td.value=kd.value=psd.value=today();if(D.assembly){ad.value=D.assembly.date||ad.value;as.value=D.assembly.sem||as.value;ar.value=D.assembly.reports||ar.value;af.value=D.assembly.future||''}render()}
+</script>
 </body>
 </html>
