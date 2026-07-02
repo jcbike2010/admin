@@ -12,6 +12,7 @@
 .brand{display:flex;gap:12px;align-items:center;border-bottom:1px solid #334155;padding-bottom:16px;margin-bottom:14px}.brand h1{font-size:1rem;margin:0}.brand p{margin:3px 0 0;color:#cbd5e1;font-size:.8rem}.logo{font-size:.82rem}
 .nav{width:100%;border:0;border-radius:10px;background:transparent;color:#cbd5e1;padding:11px;text-align:left;font-weight:800;cursor:pointer;margin:3px 0}.nav:hover,.nav.active{background:var(--b);color:#fff}
 .tools{border-top:1px solid #334155;margin-top:16px;padding-top:14px;display:grid;gap:8px}.tools button,.btn{border:0;border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer}.tools button{background:#1e293b;color:#fff;border:1px solid #334155}
+.cloud-status{color:#cbd5e1;font-weight:800;line-height:1.5}
 main{padding:24px;max-width:1500px;width:100%}.top{display:flex;justify-content:space-between;gap:12px;margin-bottom:18px}.top h2{margin:0;font-size:1.7rem}.top p{margin:4px 0;color:var(--m)}
 .btn.b{background:var(--b);color:#fff}.btn.g{background:var(--g);color:#fff}.btn.r{background:var(--r);color:#fff}.btn.s{background:#fff;border:1px solid var(--l);color:var(--t)}
 .sec{display:none}.sec.on{display:block}.card{background:#fff;border:1px solid var(--l);border-radius:18px;box-shadow:0 8px 24px #0f172a10;padding:18px;margin-bottom:16px}
@@ -97,6 +98,7 @@ label{display:block;font-size:.86rem;color:#475569;font-weight:800;margin-bottom
   <button class="nav" data-s="assembly">朝會司儀</button>
   <button class="nav" data-s="settings">設定/備份</button>
   <div class="tools no">
+    <small id="cloudStatus" class="cloud-status">雲端連線中...</small>
     <button onclick="backup()">資料備份 JSON</button>
     <button onclick="importFile.click()">匯入還原</button>
     <button onclick="window.print()">列印目前頁面</button>
@@ -174,15 +176,55 @@ label{display:block;font-size:.86rem;color:#475569;font-weight:800;margin-bottom
     <div class="card"><h3>待辦清單</h3><div class="wrap"><table><thead><tr><th>期限</th><th>工作</th><th>優先</th><th>專案</th><th>類別</th><th>負責</th><th>狀態</th><th>備註</th><th class="no">操作</th></tr></thead><tbody id="taskRows"></tbody></table></div></div>
   </section>
 
-  <section id="settings" class="sec"><div class="card"><h3>設定與備份</h3><p>資料儲存在本機瀏覽器 localStorage。更換電腦前請先備份 JSON。</p><button class="btn b" onclick="backup()">資料備份 JSON</button> <button class="btn s" onclick="importFile.click()">匯入還原</button> <button class="btn r" onclick="clearAll()">清空資料</button><br><br><button class="btn g" onclick="csv('events')">匯出活動 CSV</button> <button class="btn g" onclick="csv('trips')">匯出校外教學 CSV</button> <button class="btn g" onclick="csv('projects')">匯出專案 CSV</button> <button class="btn g" onclick="csv('tasks')">匯出待辦 CSV</button></div></section>
+  <section id="settings" class="sec"><div class="card"><h3>設定與備份</h3><p>資料會同步到 Firebase 雲端資料庫；本機瀏覽器也會保留一份備援資料。</p><p id="cloudStatusSettings" class="summary-note">雲端連線中...</p><button class="btn b" onclick="backup()">資料備份 JSON</button> <button class="btn s" onclick="importFile.click()">匯入還原</button> <button class="btn r" onclick="clearAll()">清空資料</button><br><br><button class="btn g" onclick="csv('events')">匯出活動 CSV</button> <button class="btn g" onclick="csv('trips')">匯出校外教學 CSV</button> <button class="btn g" onclick="csv('projects')">匯出專案 CSV</button> <button class="btn g" onclick="csv('tasks')">匯出待辦 CSV</button></div></section>
 </main></div>
 <script>
-let D=JSON.parse(localStorage.getItem('bojia_director_site')||'{"plans":[],"events":[],"trips":[],"tasks":[],"projects":[],"assembly":{}}');
-D.projects=D.projects||[];D.tasks=D.tasks||[];D.trips=D.trips||[];D.plans=D.plans||[];D.tasks.forEach(x=>{if(x.type=="畢業")x.type="53屆畢業活動";if(!x.priority)x.priority="中"});D.trips.forEach(x=>{if(x.planStatus===undefined)x.planStatus="已納入";if(x.projectId===undefined)x.projectId=""});D.plans.forEach(x=>{if(x.projectId===undefined)x.projectId=""});
+const defaultData=()=>({plans:[],events:[],trips:[],tasks:[],projects:[],assembly:{}});
+let D=JSON.parse(localStorage.getItem('bojia_director_site')||JSON.stringify(defaultData()));
+let cloudReady=false, applyingCloud=false, cloudTimer=null, db=null, siteDoc=null;
+function normalizeData(){
+  D.projects=D.projects||[];D.tasks=D.tasks||[];D.trips=D.trips||[];D.plans=D.plans||[];D.assembly=D.assembly||{};
+  D.tasks.forEach(x=>{if(x.type=="畢業")x.type="53屆畢業活動";if(!x.priority)x.priority="中"});
+  D.trips.forEach(x=>{if(x.planStatus===undefined)x.planStatus="已納入";if(x.projectId===undefined)x.projectId=""});
+  D.plans.forEach(x=>{if(x.projectId===undefined)x.projectId=""});
+}
+normalizeData();
 /* 保留使用者已輸入資料，僅將舊類別名稱自動轉換為新名稱 */
 if(Array.isArray(D.events)){D.events.forEach(x=>{if(x.type==='朝會與頒獎')x.type='朝會'});}
 localStorage.setItem('bojia_director_site',JSON.stringify(D));
-const $=id=>document.getElementById(id),today=()=>new Date().toISOString().slice(0,10),uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6),esc=s=>String(s??'').replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));function save(){localStorage.setItem('bojia_director_site',JSON.stringify(D));render()}
+const $=id=>document.getElementById(id),today=()=>new Date().toISOString().slice(0,10),uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6),esc=s=>String(s??'').replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+function setCloudStatus(s){if($('cloudStatus'))cloudStatus.textContent=s;if($('cloudStatusSettings'))cloudStatusSettings.textContent=s}
+function save(){normalizeData();localStorage.setItem('bojia_director_site',JSON.stringify(D));render();scheduleCloudSave()}
+function scheduleCloudSave(){
+  if(applyingCloud||!cloudReady||!siteDoc)return;
+  setCloudStatus('雲端儲存中...');
+  clearTimeout(cloudTimer);
+  cloudTimer=setTimeout(async()=>{try{const {setDoc,serverTimestamp}=window.firestoreFns;await setDoc(siteDoc,{data:D,updatedAt:serverTimestamp()},{merge:true});setCloudStatus('雲端已儲存')}catch(e){console.error(e);setCloudStatus('雲端儲存失敗，已保留本機資料')}},600);
+}
+function applyCloudData(data){
+  applyingCloud=true;
+  D=data&&typeof data=='object'?data:defaultData();
+  normalizeData();
+  localStorage.setItem('bojia_director_site',JSON.stringify(D));
+  if(D.assembly){ad.value=D.assembly.date||ad.value;as.value=D.assembly.sem||as.value;ar.value=D.assembly.reports||ar.value;af.value=D.assembly.future||''}
+  render();
+  applyingCloud=false;
+}
+async function initCloud(){
+  try{
+    const appMod=await import('https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js');
+    const fsMod=await import('https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js');
+    const firebaseConfig={apiKey:'AIzaSyBySJhFTBp7X9yxFyk6uR4J8QTWEPeQXic',authDomain:'bjps-activity-plan.firebaseapp.com',projectId:'bjps-activity-plan',storageBucket:'bjps-activity-plan.firebasestorage.app',messagingSenderId:'494877785439',appId:'1:494877785439:web:8eb746f8b74cdc93b54aea'};
+    db=fsMod.getFirestore(appMod.initializeApp(firebaseConfig));
+    siteDoc=fsMod.doc(db,'sites','activity-plan');
+    window.firestoreFns={setDoc:fsMod.setDoc,serverTimestamp:fsMod.serverTimestamp};
+    fsMod.onSnapshot(siteDoc,async snap=>{
+      cloudReady=true;
+      if(snap.exists()){applyCloudData(snap.data().data);setCloudStatus('雲端已連線')}
+      else{await fsMod.setDoc(siteDoc,{data:D,updatedAt:fsMod.serverTimestamp()},{merge:true});setCloudStatus('雲端已建立')}
+    },e=>{console.error(e);setCloudStatus('雲端連線失敗，使用本機備援')});
+  }catch(e){console.error(e);setCloudStatus('雲端載入失敗，使用本機備援')}
+}
 function go(s){document.querySelectorAll('.sec').forEach(x=>x.classList.remove('on'));$(s).classList.add('on');document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.s==s));title.textContent={dash:'Topview',events:'Activity Log',trips:'校外教學',assembly:'朝會司儀',projects:'Project',tasks:'To-do',settings:'設定/備份'}[s]}
 document.querySelectorAll('.nav').forEach(b=>b.onclick=()=>go(b.dataset.s));
 function tag(s){return `<span class="tag ${s=='已完成'?'done':s=='進行中'?'doing':'todo'}">${esc(s)}</span>`}
@@ -328,13 +370,13 @@ function newTripForProject(id){resetTrip();tp.value=id;go('trips');scrollTo(0,0)
 
 taskF.onsubmit=e=>{e.preventDefault();let id=kid.value||uid(),o={id,due:kd.value,type:kt.value,projectId:kp.value,priority:kpri.value,owner:ko.value,status:ks.value,name:kn.value,note:kr.value};let i=D.tasks.findIndex(x=>x.id==id);i>-1?D.tasks[i]=o:D.tasks.push(o);resetTask();save()};function editTask(id){let x=D.tasks.find(y=>y.id==id);kid.value=x.id;kd.value=x.due;kt.value=x.type;kpri.value=x.priority||'中';projectOptions(x.projectId||'');kp.value=x.projectId||'';ko.value=x.owner;ks.value=x.status;kn.value=x.name;kr.value=x.note;go('tasks');scrollTo(0,0)}function resetTask(){taskF.reset();kid.value='';kd.value=today();kpri.value='中';ko.value='活動組';projectOptions('')}function done(id){let x=D.tasks.find(y=>y.id==id);x.status='已完成';save()}
 function renderA(){D.assembly={date:ad.value,sem:as.value,reports:ar.value,future:af.value};adp.textContent=ad.value;asp.textContent=as.value;let lines=ar.value.split('\n'),i=0,h='';function hc(s){return s.endsWith(':')||s.endsWith('：')}while(i<lines.length){let line=lines[i].trim();if(!line){i++;continue}if(hc(line)){let title=line.slice(0,-1),script='';i++;while(i<lines.length&&lines[i].trim()&&!hc(lines[i].trim())&&!['主席報告','師長報告'].includes(lines[i].trim())&&!lines[i].includes('中心報告')){script+=lines[i]+'\n';i++}h+=`<div class="act">${esc(title)}${script.trim()?`<div class="script">${esc(script.trim())}</div>`:''}</div>`;continue}if(['主席報告','師長報告'].includes(line)){h+=`<div class="admin">${esc(line)}</div>`}else if(line.includes('中心報告')){h+=`<div style="padding-left:24px;font-weight:800;color:#6b7280">● ${esc(line)}</div>`}else h+=`<div class="act">${esc(line)}</div>`;i++}dyn.innerHTML=h;localStorage.setItem('bojia_director_site',JSON.stringify(D))}
-[ad,as,ar,af].forEach(x=>x.oninput=renderA);
+[ad,as,ar,af].forEach(x=>x.oninput=()=>{renderA();save()});
 function seed(){if(!confirm('載入常用年度範本？'))return;D.events.push({id:uid(),date:'115-09-28',type:'節慶活動',name:'教師節敬師活動',location:'校園',time:'08:00-08:40',target:'全校',owner:'活動組',status:'規劃中',note:''},{id:uid(),date:'116-04-03',type:'節慶活動',name:'兒童節慶祝活動',location:'校園',time:'08:00-10:00',target:'全校',owner:'活動組',status:'規劃中',note:''});D.tasks.push({id:uid(),due:'115-09-15',type:'節慶',priority:'中',owner:'活動組',status:'未開始',name:'確認教師節活動流程',note:''},{id:uid(),due:'116-05-20',type:'53屆畢業活動',priority:'高',owner:'活動組',status:'未開始',name:'畢業典禮流程與司儀稿初稿',note:''});save()}
 function backup(){let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(D,null,2)],{type:'application/json'}));a.download='博嘉活動組長年度計畫備份.json';a.click();URL.revokeObjectURL(a.href)}
 importFile.onchange=e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{D=JSON.parse(r.result);save();alert('匯入成功')};r.readAsText(f)}
-function clearAll(){if(confirm('確定清空全部資料？')){localStorage.removeItem('bojia_director_site');location.reload()}}
+function clearAll(){if(confirm('確定清空全部資料？')){D=defaultData();localStorage.removeItem('bojia_director_site');save()}}
 function csv(type){let rows=type=='events'?[['日期','時間','活動','類別','地點','對象','負責','狀態'],...D.events.map(x=>[x.date,x.time,x.name,x.type,x.location,x.target,x.owner,x.status])]:type=='trips'?[['計畫表','班級/單位','所屬 Project','日期','出發','返校','地點','學生','教師','行政','總人數','備註'],...D.trips.map(x=>[x.planStatus||'已納入',x.className,projectName(x.projectId),x.date,x.start,x.return,x.location,x.students,x.teachers,x.admins,(+x.students+ +x.teachers+ +x.admins),x.note])]:type=='projects'?[['專案名稱','類別','開始','結束','負責','狀態','說明'],...D.projects.map(x=>[x.name,x.type,x.start,x.end,x.owner,x.status,x.note])]:[['期限','工作','優先順序','專案','類別','負責','狀態','備註'],...D.tasks.map(x=>[x.due,x.name,x.priority||'中',projectName(x.projectId),x.type,x.owner,x.status,x.note])];let a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+rows.map(r=>r.map(c=>`"${String(c??'').replace(/"/g,'""')}"`).join(',')).join('\n')],{type:'text/csv'}));a.download=type+'.csv';a.click()}
-window.onload=()=>{ed.value=td.value=kd.value=psd.value=today();if(D.assembly){ad.value=D.assembly.date||ad.value;as.value=D.assembly.sem||as.value;ar.value=D.assembly.reports||ar.value;af.value=D.assembly.future||''}render()}
+window.onload=()=>{ed.value=td.value=kd.value=psd.value=today();if(D.assembly){ad.value=D.assembly.date||ad.value;as.value=D.assembly.sem||as.value;ar.value=D.assembly.reports||ar.value;af.value=D.assembly.future||''}render();initCloud()}
 </script>
 </body>
 </html>
