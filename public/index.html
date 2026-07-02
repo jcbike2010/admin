@@ -194,6 +194,10 @@ if(Array.isArray(D.events)){D.events.forEach(x=>{if(x.type==='朝會與頒獎')x
 localStorage.setItem('bojia_director_site',JSON.stringify(D));
 const $=id=>document.getElementById(id),today=()=>new Date().toISOString().slice(0,10),uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6),esc=s=>String(s??'').replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
 function setCloudStatus(s){if($('cloudStatus'))cloudStatus.textContent=s;if($('cloudStatusSettings'))cloudStatusSettings.textContent=s}
+function hasMeaningfulData(data){
+  if(!data||typeof data!='object')return false;
+  return ['events','trips','tasks','projects','plans'].some(k=>Array.isArray(data[k])&&data[k].length>0)||!!(data.assembly&&Object.keys(data.assembly).some(k=>data.assembly[k]));
+}
 function save(){normalizeData();localStorage.setItem('bojia_director_site',JSON.stringify(D));render();scheduleCloudSave()}
 function scheduleCloudSave(){
   if(applyingCloud||!cloudReady||!siteDoc)return;
@@ -220,8 +224,10 @@ async function initCloud(){
     window.firestoreFns={setDoc:fsMod.setDoc,serverTimestamp:fsMod.serverTimestamp};
     fsMod.onSnapshot(siteDoc,async snap=>{
       cloudReady=true;
-      if(snap.exists()){applyCloudData(snap.data().data);setCloudStatus('雲端已連線')}
-      else{await fsMod.setDoc(siteDoc,{data:D,updatedAt:fsMod.serverTimestamp()},{merge:true});setCloudStatus('雲端已建立')}
+      let cloudData=snap.exists()?snap.data().data:null;
+      if(hasMeaningfulData(cloudData)){applyCloudData(cloudData);setCloudStatus('雲端已連線')}
+      else if(hasMeaningfulData(D)){await fsMod.setDoc(siteDoc,{data:D,updatedAt:fsMod.serverTimestamp()},{merge:true});setCloudStatus('已將本機資料上傳雲端')}
+      else{setCloudStatus(snap.exists()?'雲端已連線':'雲端已建立')}
     },e=>{console.error(e);setCloudStatus('雲端連線失敗，使用本機備援')});
   }catch(e){console.error(e);setCloudStatus('雲端載入失敗，使用本機備援')}
 }
