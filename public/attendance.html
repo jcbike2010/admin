@@ -94,6 +94,7 @@
     .topbar h2.club-main-title { color: var(--ink); font-size: 28px; font-weight: 800; line-height: 1.25; }
     .topbar h2.club-main-title .club-subtitle { display: block; margin-top: 4px; font-size: 20px; font-weight: 800; }
     .topbar .meta { color: var(--muted); font-size: 14px; margin-top: 4px; }
+    .topbar .meta .meta-danger { color: var(--danger); font-weight: 800; }
     .controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .control {
       display: grid;
@@ -705,10 +706,17 @@
       saveRecords();
       if (shouldRender) render();
     }
+    function classAttendanceStudents() {
+      return activeStudents().filter(s => s.className === state.className);
+    }
+    function isLeaveStatus(status) {
+      return ["personal", "sick"].includes(status);
+    }
     function markClassPresent() {
-      activeStudents().filter(s => s.className === state.className).forEach(s => {
+      classAttendanceStudents().forEach(s => {
         const key = studentKey(s);
         const current = morningRecordForKey(key);
+        if (isLeaveStatus(current.status)) return;
         day().morning[key] = {
           ...current,
           status: "present",
@@ -884,7 +892,17 @@
         const absentCount = activeStudents().filter(s => ["personal", "sick", "unknown"].includes(morningRecordForKey(studentKey(s)).status)).length;
         return `${data.term.label}｜${data.term.start} 到 ${data.term.end}｜應到學生 ${activeStudents().length} 位｜今日缺席學生 ${absentCount} 個`;
       }
+      if (state.view === "morning") {
+        const students = classAttendanceStudents();
+        const absentCount = students.filter(s => ["personal", "sick", "unknown"].includes(morningRecordForKey(studentKey(s)).status)).length;
+        return `${data.term.label}｜${data.term.start} 到 ${data.term.end}｜班級應到學生 ${students.length} 位｜今日缺席 ${absentCount} 個`;
+      }
       return `${data.term.label}｜${data.term.start} 到 ${data.term.end}｜有效學生 ${activeStudents().length} 位｜今日社團 ${todayClubs.length} 個`;
+    }
+    function morningMetaHtml() {
+      const students = classAttendanceStudents();
+      const absentCount = students.filter(s => ["personal", "sick", "unknown"].includes(morningRecordForKey(studentKey(s)).status)).length;
+      return `${escapeHtml(data.term.label)}｜${escapeHtml(data.term.start)} 到 ${escapeHtml(data.term.end)}｜班級應到學生 ${students.length} 位｜<span class="meta-danger">今日缺席 ${absentCount} 個</span>`;
     }
     function renderDashboard() {
       const dates = dashboardDates();
@@ -1706,7 +1724,13 @@
       } else {
         viewTitle.textContent = view.title;
       }
-      viewMeta.textContent = state.view === "pickup" ? "" : metaText;
+      if (state.view === "pickup") {
+        viewMeta.textContent = "";
+      } else if (state.view === "morning") {
+        viewMeta.innerHTML = morningMetaHtml();
+      } else {
+        viewMeta.textContent = metaText;
+      }
       document.getElementById("dateInput").value = state.date;
       document.getElementById("termLabel").textContent = `${data.term.label}｜${data.term.start} - ${data.term.end}`;
       const app = document.getElementById("app");
