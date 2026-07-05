@@ -445,7 +445,7 @@
     const views = [
       { id: "dashboard", title: "總覽", icon: "▦" },
       { id: "morning", title: "08:00 班級點名", icon: "☑" },
-      { id: "leave", title: "行政請假登記", icon: "☎" },
+      { id: "leave", title: "請假登記", navTitle: "行政端 請假登記", icon: "☎" },
       { id: "club", title: "16:10 社團點名", icon: "◉" },
       { id: "follow", title: "活動組追蹤", icon: "⌕" },
       { id: "pickup", title: "17:40 社團未接回學生", icon: "⏱" },
@@ -851,7 +851,7 @@
       const grouped = new Set(navGroups.flatMap(group => group.ids));
       const buttonHtml = v => `
         <button class="nav-btn ${state.view === v.id ? "active" : ""}" data-view="${v.id}" type="button">
-          <span class="icon">${v.icon}</span><span>${v.title}</span>
+          <span class="icon">${v.icon}</span><span>${v.navTitle || v.title}</span>
         </button>
       `;
       if (currentUser.role === "teacher" || currentUser.role === "clubTeacher") {
@@ -876,6 +876,13 @@
       const todayClubs = clubsForDate();
       if (state.view === "pickup") {
         return `${slashDate(clubTermStart)}-${slashDate(clubTermEnd)} ｜今日社團 ${todayClubs.length} 個`;
+      }
+      if (state.view === "dashboard") {
+        return `${data.term.label}｜${data.term.start} 到 ${data.term.end}｜全校學生 ${activeStudents().length} 位｜本學期社團 ${data.clubs.length} 個`;
+      }
+      if (state.view === "leave") {
+        const absentCount = activeStudents().filter(s => ["personal", "sick", "unknown"].includes(morningRecordForKey(studentKey(s)).status)).length;
+        return `${data.term.label}｜${data.term.start} 到 ${data.term.end}｜應到學生 ${activeStudents().length} 位｜今日缺席學生 ${absentCount} 個`;
       }
       return `${data.term.label}｜${data.term.start} 到 ${data.term.end}｜有效學生 ${activeStudents().length} 位｜今日社團 ${todayClubs.length} 個`;
     }
@@ -1085,7 +1092,7 @@
       return `
         <div class="two-col">
           <section class="panel">
-            <div class="panel-head"><h3>行政請假登記</h3></div>
+            <div class="panel-head"><h3>請假登記</h3></div>
             <div class="panel-body">
               <div class="filters" style="margin-bottom:12px">
                 <label class="control">請假來源
