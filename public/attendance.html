@@ -1,0 +1,1691 @@
+<!doctype html>
+<html lang="zh-Hant"><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>博嘉點名系統</title>
+  <script src="./attendance-data.js"></script>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --ink: #1f2933;
+      --muted: #64748b;
+      --line: #d8dee8;
+      --soft: #edf1f6;
+      --brand: #0f766e;
+      --brand-dark: #115e59;
+      --warn: #b45309;
+      --danger: #b91c1c;
+      --ok: #15803d;
+      --focus: #2563eb;
+      --shadow: 0 16px 42px rgba(15, 23, 42, .08);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Microsoft JhengHei", "PingFang TC", system-ui, sans-serif;
+    }
+
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    .shell { min-height: 100vh; display: grid; grid-template-columns: 248px 1fr; }
+    aside {
+      background: #17202b;
+      color: #e5edf6;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .brand h1 { margin: 0; font-size: 22px; line-height: 1.2; letter-spacing: 0; }
+    .brand p { margin: 8px 0 0; color: #aab7c8; font-size: 13px; line-height: 1.5; }
+    nav { display: grid; gap: 8px; }
+    .nav-group {
+      border: 1px solid #3b506b;
+      border-radius: 8px;
+      padding: 8px;
+      display: grid;
+      gap: 8px;
+      background: rgba(255, 255, 255, .04);
+    }
+    .nav-group-label {
+      color: #aab7c8;
+      font-size: 12px;
+      padding: 0 2px 2px;
+    }
+    .nav-btn {
+      border: 1px solid transparent;
+      background: transparent;
+      color: #d8e2ef;
+      padding: 10px 12px;
+      text-align: left;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .nav-btn.active { background: #243244; border-color: #33465e; color: #fff; }
+    .nav-btn .icon { width: 22px; text-align: center; }
+    .side-card {
+      margin-top: auto;
+      padding: 12px;
+      border: 1px solid #33465e;
+      border-radius: 8px;
+      color: #c7d2e1;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    main { padding: 22px; overflow: auto; }
+    .topbar {
+      display: flex;
+      gap: 14px;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+    .topbar h2 { margin: 0; font-size: 26px; letter-spacing: 0; }
+    .topbar h2.club-main-title { color: var(--ink); font-size: 28px; font-weight: 800; line-height: 1.25; }
+    .topbar h2.club-main-title .club-subtitle { display: block; margin-top: 4px; font-size: 20px; font-weight: 800; }
+    .topbar .meta { color: var(--muted); font-size: 14px; margin-top: 4px; }
+    .controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .control {
+      display: grid;
+      gap: 4px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    input, select, textarea {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      border-radius: 8px;
+      padding: 9px 10px;
+      min-height: 40px;
+    }
+    textarea { width: 100%; min-height: 74px; resize: vertical; }
+    .primary, .secondary, .danger-btn {
+      border: 1px solid transparent;
+      min-height: 40px;
+      border-radius: 8px;
+      padding: 9px 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .primary { background: var(--brand); color: #fff; }
+    .primary:hover { background: var(--brand-dark); }
+    .secondary { background: #fff; color: var(--ink); border-color: var(--line); }
+    .danger-btn { background: #fee2e2; color: var(--danger); border-color: #fecaca; }
+    .grid { display: grid; gap: 14px; }
+    .stats { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+    .stat {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+    .stat strong { display: block; font-size: 28px; line-height: 1.1; }
+    .stat span { display: block; margin-top: 6px; color: var(--muted); font-size: 13px; }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .panel-head {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .panel-head h3 { margin: 0; font-size: 17px; letter-spacing: 0; }
+    .panel-body { padding: 16px; }
+    .filters { display: flex; gap: 10px; flex-wrap: wrap; align-items: end; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td {
+      padding: 10px 9px;
+      border-bottom: 1px solid var(--soft);
+      text-align: left;
+      vertical-align: middle;
+      font-size: 14px;
+    }
+    th { color: var(--muted); font-weight: 700; background: #f8fafc; position: sticky; top: 0; z-index: 1; }
+    tr:last-child td { border-bottom: 0; }
+    tr.roster-new td { background: #eff6ff; }
+    tr.roster-transferred td { background: #fef2f2; }
+    .table-wrap { overflow: auto; max-height: calc(100vh - 260px); }
+    .pickup-table { table-layout: fixed; min-width: 760px; }
+    .pickup-table th:nth-child(1), .pickup-table td:nth-child(1) { width: 90px; }
+    .pickup-table th:nth-child(2), .pickup-table td:nth-child(2) { width: 190px; }
+    .pickup-table th:nth-child(3), .pickup-table td:nth-child(3) { width: 140px; }
+    .pickup-table th:nth-child(4), .pickup-table td:nth-child(4) { width: 170px; }
+    .pickup-table th:nth-child(5), .pickup-table td:nth-child(5) { width: 150px; }
+    .pickup-table.with-date { min-width: 860px; }
+    .pickup-table.with-date th:nth-child(1), .pickup-table.with-date td:nth-child(1) { width: 110px; }
+    .pickup-table.with-date th:nth-child(2), .pickup-table.with-date td:nth-child(2) { width: 90px; }
+    .pickup-table.with-date th:nth-child(3), .pickup-table.with-date td:nth-child(3) { width: 190px; }
+    .pickup-table.with-date th:nth-child(4), .pickup-table.with-date td:nth-child(4) { width: 140px; }
+    .pickup-table.with-date th:nth-child(5), .pickup-table.with-date td:nth-child(5) { width: 170px; }
+    .pickup-table.with-date th:nth-child(6), .pickup-table.with-date td:nth-child(6) { width: 150px; }
+    .name { font-weight: 700; }
+    .sub { color: var(--muted); font-size: 12px; margin-top: 3px; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      min-height: 26px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      border: 1px solid var(--line);
+      background: #fff;
+      white-space: nowrap;
+    }
+    .pill.ok { color: var(--ok); border-color: #bbf7d0; background: #f0fdf4; }
+    .pill.warn { color: var(--warn); border-color: #fed7aa; background: #fff7ed; }
+    .pill.danger { color: var(--danger); border-color: #fecaca; background: #fef2f2; }
+    .pill.info { color: var(--focus); border-color: #bfdbfe; background: #eff6ff; }
+    .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: #fff; }
+    .seg button {
+      min-height: 34px;
+      border: 0;
+      border-right: 1px solid var(--line);
+      background: #fff;
+      padding: 7px 9px;
+      color: var(--muted);
+    }
+    .seg button:last-child { border-right: 0; }
+    .seg button.active { background: var(--brand); color: #fff; }
+    .inline-note { min-width: 170px; width: 100%; }
+    .empty { color: var(--muted); text-align: center; padding: 28px; }
+    .two-col { display: grid; grid-template-columns: 1.1fr .9fr; gap: 14px; align-items: start; }
+    .search-line { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; }
+    .result-list { display: grid; gap: 8px; margin-top: 12px; }
+    .result {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      background: #fff;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+    }
+    .mobile-only { display: none; }
+    .login-screen {
+      min-height: 100vh;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: var(--bg);
+    }
+    .login-panel {
+      width: min(460px, 100%);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      padding: 22px;
+    }
+    .login-panel h1 { margin: 0 0 8px; font-size: 26px; letter-spacing: 0; }
+    .login-panel p { margin: 0 0 18px; color: var(--muted); line-height: 1.6; }
+    .login-grid { display: grid; gap: 12px; }
+
+    @media (max-width: 980px) {
+      .shell { grid-template-columns: 1fr; }
+      aside { position: sticky; top: 0; z-index: 10; border-bottom: 1px solid #33465e; }
+      nav { grid-template-columns: repeat(9, minmax(0, 1fr)); }
+      .nav-group { display: contents; }
+      .nav-group-label { display: none; }
+      .nav-btn { justify-content: center; padding: 9px 6px; }
+      .nav-btn span:last-child { display: none; }
+      .side-card { display: none; }
+      main { padding: 14px; }
+      .topbar { align-items: flex-start; flex-direction: column; }
+      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .two-col { grid-template-columns: 1fr; }
+      th, td { min-width: 110px; }
+    }
+
+    @media (max-width: 560px) {
+      .stats { grid-template-columns: 1fr; }
+      .controls, .filters { width: 100%; }
+      .control, .control input, .control select { width: 100%; }
+      .search-line { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-screen" id="loginScreen" style="display: none;">
+    <section class="login-panel">
+      <h1>博嘉點名系統</h1>
+      <p>請先輸入帳號與密碼。導師登入後會直接進入自己的 8:00 班級點名。</p>
+      <div class="login-grid">
+        <label class="control">帳號
+          <input id="loginAccount" autocomplete="username" placeholder="例如：101">
+        </label>
+        <label class="control">密碼
+          <input id="loginPassword" autocomplete="current-password" type="password" placeholder="請輸入密碼">
+        </label>
+        <div class="pill danger" id="loginError" style="display:none">帳號或密碼錯誤</div>
+        <button class="primary" id="loginBtn" type="button">登入</button>
+      </div>
+    </section>
+  </div>
+  <div class="shell" id="appShell" style="display: grid;">
+    <aside>
+      <div class="brand">
+        <h1>博嘉點名系統</h1>
+        <p id="termLabel">115學年度上學期｜2026-08-17 - 2026-12-31</p>
+      </div>
+      <nav id="nav">
+        <button class="nav-btn " data-view="dashboard" type="button">
+          <span class="icon">▦</span><span>總覽</span>
+        </button>
+      <div class="nav-group"><div class="nav-group-label">每日點名流程</div>
+        <button class="nav-btn " data-view="morning" type="button">
+          <span class="icon">☑</span><span>08:00 班級點名</span>
+        </button>
+      
+        <button class="nav-btn " data-view="leave" type="button">
+          <span class="icon">☎</span><span>行政請假登記</span>
+        </button>
+      
+        <button class="nav-btn " data-view="club" type="button">
+          <span class="icon">◉</span><span>16:00 社團點名</span>
+        </button>
+      </div>
+        <button class="nav-btn " data-view="follow" type="button">
+          <span class="icon">⌕</span><span>活動組追蹤</span>
+        </button>
+      
+        <button class="nav-btn " data-view="pickup" type="button">
+          <span class="icon">⏱</span><span>17:40 未接回學生</span>
+        </button>
+      
+        <button class="nav-btn active" data-view="pickup19" type="button">
+          <span class="icon">◷</span><span>19:00 未接回學生</span>
+        </button>
+      
+        <button class="nav-btn " data-view="classRoster" type="button">
+          <span class="icon">✎</span><span>班級學生管理</span>
+        </button>
+      
+        <button class="nav-btn " data-view="clubRoster" type="button">
+          <span class="icon">＋</span><span>社團學生管理</span>
+        </button>
+      </nav>
+      <div class="side-card">
+        <strong>流程重點</strong><br>
+        早上導師點名與行政請假會成為下午社團缺席判斷依據。
+      </div>
+    </aside>
+    <main>
+      <div class="topbar">
+        <div>
+          <h2 id="viewTitle">19:00 未接回學生</h2>
+          <div class="meta" id="viewMeta">115學年度上學期｜2026-08-17 到 2026-12-31｜有效學生 225 位｜今日社團 0 個</div>
+        </div>
+        <div class="controls">
+          <label class="control">點名日期
+            <input id="dateInput" type="date" min="2026-08-17" max="2026-12-31">
+          </label>
+          <button class="secondary" id="exportBtn" type="button">匯出今日紀錄</button>
+          <button class="danger-btn" id="clearBtn" type="button">清除今日紀錄</button>
+          <button class="secondary" id="logoutBtn" type="button">登出</button>
+        </div>
+      </div>
+      <section id="app">
+        <section class="panel" style="margin-top:14px">
+          <div class="panel-head">
+            <h3>19:00 未接回學生</h3>
+            <span class="pill danger">1 位待處理</span>
+          </div>
+          <div class="panel-body">
+            <div class="search-line">
+              <input id="pickup19Search" data-pickup-search="pickup19Search" value="林沐頡" placeholder="輸入姓名、班級或學號，加入未接回名單">
+              <button class="primary" data-pickup-search-btn="pickup19Search" type="button">搜尋</button>
+              <button class="secondary" data-pickup-clear-btn="pickup19Search" type="button">清除</button>
+            </div>
+            <div class="result-list">
+              
+        <div class="result">
+          <div><div class="name">林沐頡</div><div class="sub">一甲 114002</div></div>
+          <button class="secondary" data-pickup-add="114002" data-pickup-bucket="pickup19" type="button">已在名單</button>
+        </div>
+      
+            </div>
+          </div>
+          <div class="table-wrap">
+        <table class="pickup-table">
+          <thead><tr><th>班級</th><th>學生</th><th>電話</th><th>負責老師</th><th>最後接回時間</th></tr></thead>
+          <tbody>
+              <tr>
+                
+                <td>一甲</td>
+                <td><div class="name">林沐頡</div><div class="sub">114002</div></td>
+                <td>0981882337</td>
+                <td>
+                  <input class="inline-note" data-pickup-teacher="114002" data-pickup-bucket="pickup19" value="" placeholder="負責老師">
+                </td>
+                <td>
+                  <input data-pickup-time="114002" data-pickup-bucket="pickup19" type="time" value="19:00">
+                </td>
+              </tr>
+            </tbody>
+        </table>
+      </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const data = window.ATTENDANCE_DATA;
+    const clubTermStart = data.term.clubStart || "2026-08-31";
+    const clubTermEnd = data.term.clubEnd || "2026-12-24";
+    const weekdayLabels = ["日", "一", "二", "三", "四", "五", "六"];
+    const excludedClasses = new Set(["瓢蟲", "蜻蜓", "蝴蝶"]);
+    const teacherClassByAccount = {
+      "101": "一甲",
+      "102": "一乙",
+      "201": "二甲",
+      "202": "二乙",
+      "301": "三甲",
+      "302": "三乙",
+      "401": "四甲",
+      "402": "四乙",
+      "501": "五甲",
+      "502": "五乙",
+      "601": "六甲",
+      "602": "六乙",
+    };
+    const urlParams = new URLSearchParams(window.location.search);
+    const userStorageKey = "bojia-attendance-user-v1";
+    function loadCurrentUser() {
+      if (urlParams.get("logout") === "1") {
+        localStorage.removeItem(userStorageKey);
+        return { role: "guest", className: "" };
+      }
+      const urlRole = urlParams.get("role");
+      if (urlRole) return { role: urlRole, className: urlParams.get("class") || "" };
+      try {
+        return JSON.parse(localStorage.getItem(userStorageKey)) || { role: "guest", className: "" };
+      } catch {
+        return { role: "guest", className: "" };
+      }
+    }
+    let currentUser = loadCurrentUser();
+    function authenticate(account, password) {
+      if (account === "159" && password === "159") {
+        return { role: "admin", className: "", account };
+      }
+      if (account === "121" && password === "121") {
+        return { role: "clubTeacher", className: "", account };
+      }
+      if (teacherClassByAccount[account] && password === account) {
+        return { role: "teacher", className: teacherClassByAccount[account], account };
+      }
+      return null;
+    }
+    const views = [
+      { id: "dashboard", title: "總覽", icon: "▦" },
+      { id: "morning", title: "08:00 班級點名", icon: "☑" },
+      { id: "leave", title: "行政請假登記", icon: "☎" },
+      { id: "club", title: "16:10 社團點名", icon: "◉" },
+      { id: "follow", title: "活動組追蹤", icon: "⌕" },
+      { id: "pickup", title: "17:40 社團未接回學生", icon: "⏱" },
+      { id: "teachingFollow", title: "課後班缺席學生", icon: "◎" },
+      { id: "pickup19", title: "19:00 未接回學生", icon: "◷" },
+      { id: "classRoster", title: "班級學生管理", icon: "✎" },
+      { id: "clubRoster", title: "社團學生管理", icon: "＋" },
+    ];
+    const storageKey = "bojia-attendance-v1";
+    function todayInTaiwan() {
+      const parts = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Taipei",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }).formatToParts(new Date()).reduce((acc, part) => {
+        acc[part.type] = part.value;
+        return acc;
+      }, {});
+      return `${parts.year}-${parts.month}-${parts.day}`;
+    }
+    function initialAttendanceDate() {
+      const today = todayInTaiwan();
+      if (today >= data.term.start && today <= data.term.end) return today;
+      if (today < data.term.start) return data.term.start;
+      return data.term.end;
+    }
+    const state = {
+      view: currentUser.role === "teacher" ? "morning" : currentUser.role === "clubTeacher" ? "club" : "dashboard",
+      date: initialAttendanceDate(),
+      className: currentUser.className || data.classes.find(c => !excludedClasses.has(c.name))?.name || "",
+      clubName: data.clubs[0]?.name || "",
+      search: "",
+      adminSource: "學輔處電話",
+      adminFlash: "",
+      pickupSearch: "",
+      pickupClubName: "",
+      pickup19Search: "",
+      rosterSearch: "",
+      clubRosterSearch: "",
+      clubRosterName: data.clubs[0]?.name || "",
+      dashboardRange: "today",
+    };
+
+    function loadRecords() {
+      try { return JSON.parse(localStorage.getItem(storageKey)) || {}; }
+      catch { return {}; }
+    }
+    let records = loadRecords();
+    function saveRecords() { localStorage.setItem(storageKey, JSON.stringify(records)); }
+    function day() {
+      records[state.date] ||= { morning: {}, club: {}, follow: {} };
+      return records[state.date];
+    }
+    function dayRecord(dateText) {
+      return records[dateText] || { morning: {}, club: {}, follow: {}, pickup: {} };
+    }
+    function formatDate(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+    function parseDate(dateText) {
+      const [year, month, day] = dateText.split("-").map(Number);
+      return new Date(year, month - 1, day);
+    }
+    function slashDate(dateText) {
+      return dateText.replaceAll("-", "/");
+    }
+    function dateRangeList(startText, endText) {
+      const dates = [];
+      let current = parseDate(startText);
+      const end = parseDate(endText);
+      while (current <= end) {
+        const text = formatDate(current);
+        if (text >= data.term.start && text <= data.term.end) dates.push(text);
+        current.setDate(current.getDate() + 1);
+      }
+      return dates;
+    }
+    function dashboardDates() {
+      if (state.dashboardRange === "today") return [state.date];
+      const current = parseDate(state.date);
+      if (state.dashboardRange === "week") {
+        const dayIndex = current.getDay() || 7;
+        const monday = new Date(current);
+        monday.setDate(current.getDate() - dayIndex + 1);
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 6);
+        return dateRangeList(formatDate(monday), formatDate(sunday));
+      }
+      if (state.dashboardRange === "term") return dateRangeList(data.term.start, data.term.end);
+      const first = new Date(current.getFullYear(), current.getMonth(), 1);
+      const last = new Date(current.getFullYear(), current.getMonth() + 1, 0);
+      return dateRangeList(formatDate(first), formatDate(last));
+    }
+    function dashboardRangeLabel(dates) {
+      if (state.dashboardRange === "today") return "今日";
+      if (!dates.length) return "";
+      const label = state.dashboardRange === "week" ? "本週" : state.dashboardRange === "month" ? "本月" : "本學期";
+      return `${label}：${dates[0]} 到 ${dates[dates.length - 1]}`;
+    }
+    function studentKey(s) { return s.id || `${s.className}-${s.seat}-${s.name}`; }
+    function memberKey(m) { return m.studentId || `${m.className}-${m.name}`; }
+    function isExcludedClass(className) {
+      return excludedClasses.has(className);
+    }
+    function rosterStore() {
+      records._roster ||= { students: {}, addedStudents: [], clubMembers: {}, addedClubMembers: {} };
+      records._roster.students ||= {};
+      records._roster.addedStudents ||= [];
+      records._roster.clubMembers ||= {};
+      records._roster.addedClubMembers ||= {};
+      return records._roster;
+    }
+    function mergeRosterStudent(s) {
+      const key = studentKey(s);
+      return { ...s, ...(rosterStore().students[key] || {}) };
+    }
+    function allStudents() {
+      const added = rosterStore().addedStudents.map(s => mergeRosterStudent(s));
+      return data.students.map(s => mergeRosterStudent(s)).concat(added).filter(s => !isExcludedClass(s.className));
+    }
+    function activeStudents(dateText = state.date) {
+      return allStudents().filter(s => {
+        if (s.entryDate && dateText < s.entryDate) return false;
+        if (s.leaveDate && dateText >= s.leaveDate) return false;
+        if (s.status === "transferred" && !s.leaveDate) return false;
+        return true;
+      });
+    }
+    function findStudentByKey(key) {
+      return allStudents().find(s => studentKey(s) === key);
+    }
+    function canManageClassStudent(student) {
+      return currentUser.role !== "teacher" || student?.className === currentUser.className;
+    }
+    function setRosterStudent(key, patch, shouldRender = true) {
+      if (!canManageClassStudent(findStudentByKey(key))) return;
+      rosterStore().students[key] = { ...(rosterStore().students[key] || {}), ...patch, updatedAt: new Date().toISOString() };
+      saveRecords();
+      if (shouldRender) render();
+    }
+    function addRosterStudent(student) {
+      if (!canManageClassStudent(student)) return;
+      rosterStore().addedStudents.push(student);
+      saveRecords();
+      render();
+    }
+    function clubMemberRecord(clubName, key) {
+      return rosterStore().clubMembers?.[clubName]?.[key] || {};
+    }
+    function setClubMemberRoster(clubName, key, patch, shouldRender = true) {
+      rosterStore().clubMembers[clubName] ||= {};
+      rosterStore().clubMembers[clubName][key] = { ...clubMemberRecord(clubName, key), ...patch, updatedAt: new Date().toISOString() };
+      saveRecords();
+      if (shouldRender) render();
+    }
+    function addClubRosterMember(clubName, studentKeyValue) {
+      const student = findStudentByKey(studentKeyValue);
+      const club = data.clubs.find(c => c.name === clubName);
+      if (!student || !club) return;
+      rosterStore().addedClubMembers[clubName] ||= [];
+      const exists = effectiveClubMembers(club).some(member => memberKey(member) === studentKeyValue);
+      if (!exists) {
+        rosterStore().addedClubMembers[clubName].push({
+          seq: effectiveClubMembers(club).length + 1,
+          name: student.name,
+          className: student.className,
+          phone: phoneForStudentKey(studentKeyValue),
+          studentId: student.id,
+          matched: true,
+        });
+      }
+      setClubMemberRoster(clubName, studentKeyValue, { joinDate: state.date, status: "active" });
+    }
+    function weekdayOf(dateText) {
+      const [year, month, date] = dateText.split("-").map(Number);
+      return weekdayLabels[new Date(year, month - 1, date).getDay()];
+    }
+    function clubMeetsOnDate(club, dateText) {
+      if (dateText < clubTermStart) return false;
+      const weekday = weekdayOf(dateText);
+      return (club.weekday || club.name).includes(weekday);
+    }
+    function clubsForDate(dateText = state.date) {
+      return data.clubs.filter(club => clubMeetsOnDate(club, dateText));
+    }
+    function ensureSelectedClubForDate() {
+      const clubs = clubsForDate();
+      if (!clubs.length) return null;
+      if (!clubs.some(club => club.name === state.clubName)) state.clubName = clubs[0].name;
+      return clubs.find(club => club.name === state.clubName) || clubs[0];
+    }
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+    }
+    function statusPill(kind, text) { return `<span class="pill ${kind}">${escapeHtml(text)}</span>`; }
+    function morningRecordForKey(key) { return day().morning[key] || {}; }
+    function setMorning(key, patch, shouldRender = true) {
+      day().morning[key] = { ...morningRecordForKey(key), ...patch, updatedAt: new Date().toISOString() };
+      saveRecords();
+      if (shouldRender) render();
+    }
+    function markClassPresent() {
+      activeStudents().filter(s => s.className === state.className).forEach(s => {
+        const key = studentKey(s);
+        const current = morningRecordForKey(key);
+        day().morning[key] = {
+          ...current,
+          status: "present",
+          source: current.source || "導師登記",
+          updatedAt: new Date().toISOString(),
+        };
+      });
+      saveRecords();
+      render();
+    }
+    function clubRecord(clubName, key) {
+      const bucket = day().club[clubName] || {};
+      return bucket[key] || {};
+    }
+    function setClub(clubName, key, patch, shouldRender = true) {
+      day().club[clubName] ||= {};
+      day().club[clubName][key] = { ...clubRecord(clubName, key), ...patch, updatedAt: new Date().toISOString() };
+      saveRecords();
+      if (shouldRender) render();
+    }
+    function markClubPresent() {
+      const club = ensureSelectedClubForDate();
+      if (!club) return;
+      clubMembersForDisplay(club).forEach(member => {
+        const key = memberKey(member);
+        day().club[club.name] ||= {};
+        day().club[club.name][key] = {
+          ...clubRecord(club.name, key),
+          status: "present",
+          updatedAt: new Date().toISOString(),
+        };
+      });
+      saveRecords();
+      render();
+    }
+    function followRecord(clubName, key) {
+      const bucket = day().follow[clubName] || {};
+      return bucket[key] || {};
+    }
+    function setFollow(clubName, key, patch) {
+      day().follow[clubName] ||= {};
+      day().follow[clubName][key] = { ...followRecord(clubName, key), ...patch, updatedAt: new Date().toISOString() };
+      saveRecords();
+      render();
+    }
+    function pickupRecord(key, bucket = "pickup") {
+      return day()[bucket]?.[key] || {};
+    }
+    function setPickup(key, patch, shouldRender = true, bucket = "pickup") {
+      day()[bucket] ||= {};
+      day()[bucket][key] = { ...pickupRecord(key, bucket), ...patch, updatedAt: new Date().toISOString() };
+      saveRecords();
+      if (shouldRender) render();
+    }
+    function addPickupStudent(key, bucket = "pickup", defaultTime = "18:00") {
+      const student = findStudentByKey(key);
+      if (!student) return;
+      setPickup(key, {
+        name: student.name,
+        className: student.className,
+        studentId: student.id,
+        phone: pickupRecord(key, bucket).phone || phoneForStudentKey(key),
+        status: pickupRecord(key, bucket).status || "等待接回",
+        teacher: pickupRecord(key, bucket).teacher || "",
+        finalPickupTime: pickupRecord(key, bucket).finalPickupTime || defaultTime,
+        addedAt: pickupRecord(key, bucket).addedAt || new Date().toISOString(),
+      }, true, bucket);
+    }
+    function removePickupStudent(key) {
+      if (day().pickup) delete day().pickup[key];
+      saveRecords();
+      render();
+    }
+    function classifyMorning(rec) {
+      if (!rec.status) return { kind: "warn", text: "未點名" };
+      if (rec.status === "present") return { kind: "ok", text: "到校" };
+      if (rec.status === "personal") return { kind: "info", text: "事假" };
+      if (rec.status === "sick") return { kind: "info", text: "病假" };
+      return { kind: "danger", text: "未到未確認" };
+    }
+    function classifyClub(clubRec, morningRec) {
+      if (clubRec.status === "present") return { kind: "ok", text: "到課" };
+      if (clubRec.status === "absent") {
+        if (morningRec.status === "personal" || morningRec.status === "sick") return { kind: "info", text: "缺席-已請假" };
+        if (morningRec.status === "present") return { kind: "danger", text: "缺席-需追蹤" };
+        return { kind: "warn", text: "缺席-需補確認" };
+      }
+      return { kind: "warn", text: "未點名" };
+    }
+    function studentByMember(member) {
+      if (isExcludedClass(member.className)) return null;
+      if (member.studentId) return allStudents().find(s => s.id === member.studentId);
+      return allStudents().find(s => s.name === member.name && s.className === member.className);
+    }
+    function clubMembersForDisplay(club) {
+      return effectiveClubMembers(club).filter(member => {
+        if (isExcludedClass(member.className) || !studentByMember(member)) return false;
+        const rec = clubMemberRecord(club.name, memberKey(member));
+        if (rec.joinDate && state.date < rec.joinDate) return false;
+        if (rec.dropDate && state.date >= rec.dropDate) return false;
+        if (rec.status === "dropped" && !rec.dropDate) return false;
+        return true;
+      });
+    }
+    function effectiveClubMembers(club) {
+      const added = rosterStore().addedClubMembers?.[club.name] || [];
+      const seen = new Set();
+      return club.members.concat(added).filter(member => {
+        const key = memberKey(member);
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+    function phoneForStudentKey(key) {
+      const student = findStudentByKey(key);
+      if (student?.phone) return student.phone;
+      for (const club of data.clubs) {
+        const member = club.members.find(m => memberKey(m) === key || m.studentId === key);
+        if (member?.phone) return member.phone;
+      }
+      if (!student) return "";
+      for (const club of data.clubs) {
+        const member = club.members.find(m => m.name === student.name && m.className === student.className && m.phone);
+        if (member?.phone) return member.phone;
+      }
+      return "";
+    }
+    function buildNav() {
+      const teacherViews = new Set(["morning", "classRoster"]);
+      const visibleViews = currentUser.role === "teacher"
+        ? views.filter(v => teacherViews.has(v.id))
+        : currentUser.role === "clubTeacher"
+          ? views.filter(v => v.id === "club")
+          : views;
+      const navGroups = [
+        { label: "每日點名流程", ids: ["morning", "leave", "club"] },
+        { label: "活動組追蹤", ids: ["follow", "pickup", "teachingFollow", "pickup19"] },
+      ];
+      const grouped = new Set(navGroups.flatMap(group => group.ids));
+      const buttonHtml = v => `
+        <button class="nav-btn ${state.view === v.id ? "active" : ""}" data-view="${v.id}" type="button">
+          <span class="icon">${v.icon}</span><span>${v.title}</span>
+        </button>
+      `;
+      if (currentUser.role === "teacher" || currentUser.role === "clubTeacher") {
+        document.getElementById("nav").innerHTML = visibleViews.map(buttonHtml).join("");
+      } else {
+        document.getElementById("nav").innerHTML = visibleViews.map(v => {
+          const navGroup = navGroups.find(group => group.ids.includes(v.id));
+          if (navGroup && v.id === navGroup.ids[0]) {
+            const groupItems = visibleViews.filter(item => navGroup.ids.includes(item.id)).map(buttonHtml).join("");
+            return `<div class="nav-group"><div class="nav-group-label">${navGroup.label}</div>${groupItems}</div>`;
+          }
+          if (grouped.has(v.id)) return "";
+          return buttonHtml(v);
+        }).join("");
+      }
+      document.querySelectorAll(".nav-btn").forEach(btn => btn.addEventListener("click", () => {
+        state.view = btn.dataset.view;
+        render();
+      }));
+    }
+    function baseMeta() {
+      const todayClubs = clubsForDate();
+      if (state.view === "pickup") {
+        return `${slashDate(clubTermStart)}-${slashDate(clubTermEnd)} ｜今日社團 ${todayClubs.length} 個`;
+      }
+      return `${data.term.label}｜${data.term.start} 到 ${data.term.end}｜有效學生 ${activeStudents().length} 位｜今日社團 ${todayClubs.length} 個`;
+    }
+    function renderDashboard() {
+      const dates = dashboardDates();
+      let morningClassDone = 0;
+      let lateCount = 0;
+      let leaveCount = 0;
+      let clubAbsent = 0;
+      let needFollow = [];
+      dates.forEach(dateText => {
+        const record = dayRecord(dateText);
+        const morningClassSet = new Set();
+        activeStudents(dateText).forEach(s => {
+          const rec = record.morning?.[studentKey(s)] || {};
+          if (rec.status) morningClassSet.add(s.className);
+          if (rec.status === "late") lateCount++;
+          if (["personal", "sick"].includes(rec.status)) leaveCount++;
+        });
+        morningClassDone += morningClassSet.size;
+        clubsForDate(dateText).forEach(club => clubMembersForDisplay(club).forEach(member => {
+          const key = memberKey(member);
+          const rec = record.club?.[club.name]?.[key] || {};
+          if (rec.status === "absent") {
+            clubAbsent++;
+            const s = studentByMember(member);
+            const mrec = s ? (record.morning?.[studentKey(s)] || {}) : {};
+            if (mrec.status === "present" || !["personal", "sick"].includes(mrec.status)) {
+              needFollow.push({ date: dateText, club, member, morning: mrec, follow: record.follow?.[club.name]?.[key] || {} });
+            }
+          }
+        }));
+      });
+      let clubDoneCount = 0;
+      dates.forEach(dateText => {
+        const record = dayRecord(dateText);
+        clubsForDate(dateText).forEach(club => {
+          const hasClubRecord = clubMembersForDisplay(club).some(member => {
+            const key = memberKey(member);
+            return Boolean(record.club?.[club.name]?.[key]?.status);
+          });
+          if (hasClubRecord) clubDoneCount++;
+        });
+      });
+      return `
+        <section class="panel" style="margin-bottom:14px">
+          <div class="panel-head">
+            <h3>總覽範圍</h3>
+            <div class="filters">
+              <div class="seg" id="dashboardRange">
+                <button class="${state.dashboardRange === "today" ? "active" : ""}" data-range="today" type="button">今日</button>
+                <button class="${state.dashboardRange === "week" ? "active" : ""}" data-range="week" type="button">本週</button>
+                <button class="${state.dashboardRange === "month" ? "active" : ""}" data-range="month" type="button">本月</button>
+                <button class="${state.dashboardRange === "term" ? "active" : ""}" data-range="term" type="button">本學期</button>
+              </div>
+              <span class="pill info">${escapeHtml(dashboardRangeLabel(dates))}</span>
+            </div>
+          </div>
+        </section>
+        <div class="grid stats">
+          <div class="stat"><strong>${morningClassDone}</strong><span>8:00已點名班級</span></div>
+          <div class="stat"><strong>${lateCount}</strong><span>遲到人數</span></div>
+          <div class="stat"><strong>${leaveCount}</strong><span>事/病假人數</span></div>
+          <div class="stat"><strong>${clubDoneCount}</strong><span>社團已點名班級</span></div>
+          <div class="stat"><strong>${clubAbsent}</strong><span>社團學生缺席人數</span></div>
+        </div>
+        <div class="grid" style="margin-top:14px">
+          <section class="panel">
+            <div class="panel-head"><h3>活動組優先追蹤名單</h3><span class="pill danger">${clubAbsent} 筆社團未到</span></div>
+            <div class="table-wrap">${followTable(needFollow)}</div>
+          </section>
+          ${renderPickupPanel(false, dates)}
+          ${renderTeachingFollowPanel(false, dates)}
+          ${renderPickupPanel(false, dates, { bucket: "pickup19", title: "19:00 未接回學生", searchProp: "pickup19Search", defaultTime: "19:00" })}
+          <section class="panel">
+            <div class="panel-head"><h3>社團學生狀態（加退選）</h3></div>
+            <div class="table-wrap">${clubRosterChangeTable(dates)}</div>
+          </section>
+        </div>
+      `;
+    }
+    function clubRosterChangeTable(dates) {
+      if (!dates.length) return `<div class="empty">目前沒有社團加退選異動。</div>`;
+      const startDate = dates[0];
+      const endDate = dates[dates.length - 1];
+      const rows = [];
+      data.clubs.forEach(club => {
+        effectiveClubMembers(club).forEach(member => {
+          if (isExcludedClass(member.className) || !studentByMember(member)) return;
+          const key = memberKey(member);
+          const rec = clubMemberRecord(club.name, key);
+          if (rec.joinDate && rec.joinDate > clubTermStart && rec.joinDate >= startDate && rec.joinDate <= endDate) {
+            rows.push({ club, member, date: rec.joinDate, kind: "加入", pill: statusPill(rec.joinDate > state.date ? "info" : "ok", rec.joinDate > state.date ? "預計加入" : "已加入") });
+          }
+          if (rec.status === "dropped" && rec.dropDate && rec.dropDate >= startDate && rec.dropDate <= endDate) {
+            rows.push({ club, member, date: rec.dropDate, kind: "退選", pill: statusPill(rec.dropDate > state.date ? "warn" : "danger", rec.dropDate > state.date ? "預計退選" : "已退選") });
+          }
+        });
+      });
+      rows.sort((a, b) => a.date.localeCompare(b.date) || a.club.name.localeCompare(b.club.name) || a.member.className.localeCompare(b.member.className));
+      if (!rows.length) return `<div class="empty">目前沒有社團加退選異動。</div>`;
+      return `
+        <table>
+          <thead><tr><th>日期</th><th>社團</th><th>學生</th><th>異動</th><th>狀態</th></tr></thead>
+          <tbody>${rows.map(row => `
+            <tr>
+              <td>${escapeHtml(row.date)}</td>
+              <td>${escapeHtml(row.club.name)}</td>
+              <td><div class="name">${escapeHtml(row.member.name || "")}</div><div class="sub">${escapeHtml(row.member.className || "")} ${escapeHtml(row.member.studentId || "")}</div></td>
+              <td>${escapeHtml(row.kind)}</td>
+              <td>${row.pill}</td>
+            </tr>
+          `).join("")}</tbody>
+        </table>
+      `;
+    }
+    function classOptions() {
+      const counts = new Map();
+      activeStudents().forEach(s => counts.set(s.className, (counts.get(s.className) || 0) + 1));
+      const classNames = [...new Set(data.classes.filter(c => !isExcludedClass(c.name)).map(c => c.name).concat([...counts.keys()]))];
+      return classNames.map(name => `<option value="${escapeHtml(name)}" ${state.className === name ? "selected" : ""}>${escapeHtml(name)}（${counts.get(name) || 0}）</option>`).join("");
+    }
+    function renderLogin() {
+      document.getElementById("loginScreen").style.display = "flex";
+      document.getElementById("appShell").style.display = "none";
+      const accountInput = document.getElementById("loginAccount");
+      const passwordInput = document.getElementById("loginPassword");
+      const error = document.getElementById("loginError");
+      const submitLogin = () => {
+        const user = authenticate(accountInput.value.trim(), passwordInput.value.trim());
+        if (!user) {
+          error.style.display = "inline-flex";
+          return;
+        }
+        error.style.display = "none";
+        currentUser = user;
+        localStorage.setItem(userStorageKey, JSON.stringify(currentUser));
+        state.view = currentUser.role === "teacher" ? "morning" : currentUser.role === "clubTeacher" ? "club" : "dashboard";
+        if (currentUser.className) state.className = currentUser.className;
+        render();
+      };
+      document.getElementById("loginBtn").onclick = submitLogin;
+      [accountInput, passwordInput].forEach(input => {
+        input.onkeydown = event => {
+          if (event.key === "Enter") submitLogin();
+        };
+      });
+      accountInput.focus();
+    }
+    function clubOptions() {
+      return clubsForDate().map(c => `<option value="${escapeHtml(c.name)}" ${state.clubName === c.name ? "selected" : ""}>${escapeHtml(c.name)}（${clubMembersForDisplay(c).length}）</option>`).join("");
+    }
+    function renderMorning() {
+      const students = activeStudents().filter(s => s.className === state.className);
+      return `
+        <section class="panel">
+          <div class="panel-head">
+            <h3>8:00 班級點名</h3>
+            <div class="filters">
+              <label class="control">班級<select id="classSelect" ${currentUser.role === "teacher" ? "disabled" : ""}>${classOptions()}</select></label>
+              <button class="primary" id="markClassPresentBtn" type="button">全到</button>
+              ${currentUser.role === "teacher" ? `<span class="pill info">導師模式：${escapeHtml(state.className)}</span>` : ""}
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>座號</th><th>學生</th><th>狀態</th><th>請假來源</th><th>備註</th></tr></thead>
+              <tbody>${students.map(s => morningRow(s)).join("")}</tbody>
+            </table>
+          </div>
+        </section>
+      `;
+    }
+    function morningRow(s) {
+      const key = studentKey(s);
+      const rec = morningRecordForKey(key);
+      const status = rec.status || "";
+      return `
+        <tr>
+          <td>${escapeHtml(s.seat)}</td>
+          <td><div class="name">${escapeHtml(s.name)}</div><div class="sub">${escapeHtml(s.className)} ${escapeHtml(s.id)}</div></td>
+          <td>
+            <div class="seg" data-morning="${escapeHtml(key)}">
+              ${morningButton("present", "到校", status)}
+              ${morningButton("personal", "事假", status)}
+              ${morningButton("sick", "病假", status)}
+              ${morningButton("unknown", "未確認", status)}
+            </div>
+          </td>
+          <td>
+            <select data-morning-source="${escapeHtml(key)}">
+              ${["", "導師登記", "學輔處電話", "教研中心電話", "其他"].map(x => `<option value="${x}" ${rec.source === x ? "selected" : ""}>${x || "未填"}</option>`).join("")}
+            </select>
+          </td>
+          <td><input class="inline-note" data-morning-note="${escapeHtml(key)}" value="${escapeHtml(rec.note || "")}" placeholder="例如：家長 7:50 來電"></td>
+        </tr>
+      `;
+    }
+    function morningButton(value, label, current) {
+      return `<button class="${current === value ? "active" : ""}" data-value="${value}" type="button">${label}</button>`;
+    }
+    function renderLeave() {
+      const results = activeStudents().filter(s => {
+        const q = state.search.trim();
+        return q && `${s.name} ${s.className} ${s.id}`.includes(q);
+      }).slice(0, 20);
+      return `
+        <div class="two-col">
+          <section class="panel">
+            <div class="panel-head"><h3>行政請假登記</h3></div>
+            <div class="panel-body">
+              <div class="filters" style="margin-bottom:12px">
+                <label class="control">請假來源
+                  <select id="adminSourceSelect">
+                    ${["學輔處電話", "教研中心電話", "導師登記", "其他"].map(x => `<option value="${x}" ${state.adminSource === x ? "selected" : ""}>${x}</option>`).join("")}
+                  </select>
+                </label>
+              </div>
+              <div class="search-line">
+                <input id="studentSearch" value="${escapeHtml(state.search)}" placeholder="輸入姓名、班級或學號搜尋">
+                <button class="primary" id="searchBtn" type="button">搜尋</button>
+                <button class="secondary" id="clearSearchBtn" type="button">清除</button>
+              </div>
+              <div class="result-list">
+                ${state.adminFlash ? `<div class="pill ok">${escapeHtml(state.adminFlash)}</div>` : ""}
+                ${results.length ? results.map(s => leaveResult(s)).join("") : `<div class="empty">請先搜尋學生，再登記事假或病假。</div>`}
+              </div>
+            </div>
+          </section>
+          <section class="panel">
+            <div class="panel-head"><h3>今日行政代登紀錄</h3></div>
+            <div class="table-wrap">${adminLeaveTable()}</div>
+          </section>
+        </div>
+      `;
+    }
+    function leaveResult(s) {
+      const key = studentKey(s);
+      const rec = morningRecordForKey(key);
+      return `
+        <div class="result">
+          <div><div class="name">${escapeHtml(s.name)}</div><div class="sub">${escapeHtml(s.className)} ${escapeHtml(s.id)} ${statusPill(classifyMorning(rec).kind, classifyMorning(rec).text)}</div></div>
+          <div class="seg" data-admin-leave="${escapeHtml(key)}">
+            <button data-value="personal" type="button">事假</button>
+            <button data-value="sick" type="button">病假</button>
+            <button data-value="unknown" type="button">未確認</button>
+          </div>
+        </div>
+      `;
+    }
+    function adminLeaveTable() {
+      const rows = activeStudents().filter(s => ["personal", "sick", "unknown"].includes(morningRecordForKey(studentKey(s)).status))
+        .map(s => {
+          const rec = morningRecordForKey(studentKey(s));
+          const p = classifyMorning(rec);
+          return `<tr><td>${escapeHtml(s.className)}</td><td><span class="name">${escapeHtml(s.name)}</span></td><td>${statusPill(p.kind, p.text)}</td><td>${escapeHtml(rec.source || "")}</td><td>${escapeHtml(rec.note || "")}</td></tr>`;
+        }).join("");
+      return rows ? `<table><thead><tr><th>班級</th><th>姓名</th><th>狀態</th><th>來源</th><th>備註</th></tr></thead><tbody>${rows}</tbody></table>` : `<div class="empty">今日尚無請假或未確認紀錄。</div>`;
+    }
+    function renderClub() {
+      const club = ensureSelectedClubForDate();
+      if (!club) {
+        return `
+          <section class="panel">
+            <div class="panel-head"><h3>16:10 社團點名</h3><span class="pill warn">${escapeHtml(state.date)} 無社團課</span></div>
+            <div class="empty">社團從 ${clubTermStart} 開始上課；此日期沒有需要社團老師點名的社團。</div>
+          </section>
+        `;
+      }
+      state.clubName = club.name;
+      return `
+        <section class="panel">
+          <div class="panel-head">
+            <h3>16:10 社團點名</h3>
+            <div class="filters">
+              <label class="control">社團<select id="clubSelect">${clubOptions()}</select></label>
+              <button class="primary" id="markClubPresentBtn" type="button">全到</button>
+              <span class="pill info">${escapeHtml(state.date)} 星期${weekdayOf(state.date)}</span>
+              <span class="pill info">${club.dates.length} 次課程</span>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>序號</th><th>學生</th><th>電話</th><th>社團點名</th><th>早上狀態</th><th>備註</th></tr></thead>
+              <tbody>${clubMembersForDisplay(club).map(m => clubRow(club, m)).join("")}</tbody>
+            </table>
+          </div>
+        </section>
+      `;
+    }
+    function clubRow(club, member) {
+      const key = memberKey(member);
+      const s = studentByMember(member);
+      const morning = s ? morningRecordForKey(studentKey(s)) : {};
+      const morningPill = classifyMorning(morning);
+      const rec = clubRecord(club.name, key);
+      const latestPhone = phoneForStudentKey(key) || member.phone;
+      return `
+        <tr>
+          <td>${member.seq}</td>
+          <td><div class="name">${escapeHtml(member.name)}</div><div class="sub">${escapeHtml(member.className)} ${member.matched ? "" : "未在全校名單自動配對"}</div></td>
+          <td>${escapeHtml(latestPhone)}</td>
+          <td>
+            <div class="seg" data-club="${escapeHtml(club.name)}" data-member="${escapeHtml(key)}">
+              <button class="${rec.status === "present" ? "active" : ""}" data-value="present" type="button">到課</button>
+              <button class="${rec.status === "absent" ? "active" : ""}" data-value="absent" type="button">未到</button>
+            </div>
+          </td>
+          <td>${statusPill(morningPill.kind, morningPill.text)}</td>
+          <td><input class="inline-note" data-club-note="${escapeHtml(club.name)}" data-member="${escapeHtml(key)}" value="${escapeHtml(rec.note || "")}" placeholder="社團老師備註"></td>
+        </tr>
+      `;
+    }
+    function collectNeedFollow() {
+      const items = [];
+      clubsForDate().forEach(club => clubMembersForDisplay(club).forEach(member => {
+        const key = memberKey(member);
+        const rec = clubRecord(club.name, key);
+        if (rec.status !== "absent") return;
+        const s = studentByMember(member);
+        const morning = s ? morningRecordForKey(studentKey(s)) : {};
+        const autoClosed = morning.status === "personal" || morning.status === "sick";
+        if (!autoClosed) items.push({ club, member, morning, follow: followRecord(club.name, key) });
+      }));
+      return items;
+    }
+    function renderFollow() {
+      const items = collectNeedFollow();
+      return `
+        <section class="panel">
+          <div class="panel-head"><h3>社團學生缺席</h3><span class="pill danger">${items.length} 位需處理</span></div>
+          <div class="table-wrap">${followTable(items, true)}</div>
+        </section>
+        ${renderPickupPanel(false)}
+      `;
+    }
+    function renderTeachingFollowPanel(editable = true, dateList = [state.date]) {
+      const rows = [];
+      return `
+        <section class="panel">
+          <div class="panel-head">
+            <h3>課後班缺席學生</h3>
+            <span class="pill info">${dateList.length} 日範圍</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>日期</th><th>班級</th><th>學生</th><th>課後班</th><th>缺席狀態</th><th>1900 未接回學生</th><th>備註</th></tr></thead>
+              <tbody>${rows.length ? rows.join("") : `<tr><td colspan="7"><div class="empty">目前沒有課後班缺席學生紀錄。</div></td></tr>`}</tbody>
+            </table>
+          </div>
+        </section>
+      `;
+    }
+    function followTable(items, editable = false) {
+      if (!items.length) return `<div class="empty">目前沒有需要活動組追蹤的社團缺席學生。</div>`;
+      return `
+        <table>
+          <thead><tr><th>社團</th><th>學生</th><th>電話</th><th>早上狀態</th><th>追蹤結果</th><th>紀錄</th></tr></thead>
+          <tbody>${items.map(item => {
+            const key = memberKey(item.member);
+            const mp = classifyMorning(item.morning);
+            const fr = item.follow || {};
+            return `
+              <tr>
+                <td>${escapeHtml(item.club.name)}</td>
+                <td><div class="name">${escapeHtml(item.member.name)}</div><div class="sub">${escapeHtml(item.member.className)}</div></td>
+                <td>${escapeHtml(phoneForStudentKey(key) || item.member.phone)}</td>
+                <td>${statusPill(mp.kind, mp.text)}</td>
+                <td>
+                  ${editable ? `
+                    <select data-follow-status="${escapeHtml(item.club.name)}" data-member="${escapeHtml(key)}">
+                      ${["", "已請假", "人在校內其他地點", "聯繫家長中", "未確認"].map(x => `<option value="${x}" ${fr.status === x ? "selected" : ""}>${x || "待處理"}</option>`).join("")}
+                    </select>
+                  ` : statusPill(fr.status ? "info" : "warn", fr.status || "待處理")}
+                </td>
+                <td>${editable ? `<input class="inline-note" data-follow-note="${escapeHtml(item.club.name)}" data-member="${escapeHtml(key)}" value="${escapeHtml(fr.note || "")}" placeholder="例如：在圖書館、家長已接回">` : escapeHtml(fr.note || "")}</td>
+              </tr>
+            `;
+          }).join("")}</tbody>
+        </table>
+      `;
+    }
+    function renderPickupPanel(editable = true, dateList = [state.date], options = {}) {
+      const bucket = options.bucket || "pickup";
+      const title = options.title || "17:40 社團未接回學生";
+      const searchProp = options.searchProp || "pickupSearch";
+      const defaultTime = options.defaultTime || "18:00";
+      const q = state[searchProp].trim();
+      const todayClubs = clubsForDate();
+      if (bucket === "pickup" && state.pickupClubName && !todayClubs.some(club => club.name === state.pickupClubName)) state.pickupClubName = "";
+      const selectedPickupClub = todayClubs.find(club => club.name === state.pickupClubName);
+      const clubResults = selectedPickupClub ? clubMembersForDisplay(selectedPickupClub)
+        .map(member => studentByMember(member))
+        .filter(Boolean) : [];
+      const searchResults = activeStudents().filter(s => q && `${s.name} ${s.className} ${s.id}`.includes(q)).slice(0, 12);
+      const results = bucket === "pickup" ? clubResults : searchResults;
+      const pickupRows = dateList.flatMap(dateText => Object.entries(dayRecord(dateText)[bucket] || {})
+        .map(([key, rec]) => ({ key, rec, date: dateText })))
+        .filter(item => !isExcludedClass(item.rec.className));
+      const waitingCount = pickupRows.filter(item => !item.rec.finalPickupTime || item.rec.finalPickupTime === defaultTime).length;
+      return `
+        <section class="panel" style="margin-top:14px">
+          <div class="panel-head">
+            <h3>${escapeHtml(title)}</h3>
+            <span class="pill ${waitingCount ? "danger" : "ok"}">${waitingCount} 位待處理</span>
+          </div>
+          ${editable ? `<div class="panel-body">
+            ${bucket === "pickup" ? `
+              <div class="filters">
+                <label class="control">當天社團
+                  <select id="pickupClubSelect">
+                    <option value="">請選擇社團</option>
+                    ${todayClubs.map(club => `<option value="${escapeHtml(club.name)}" ${state.pickupClubName === club.name ? "selected" : ""}>${escapeHtml(club.name)}（${clubMembersForDisplay(club).length}）</option>`).join("")}
+                  </select>
+                </label>
+                ${state.pickupClubName ? `<span class="pill info">${results.length} 位學生</span><button class="primary" id="pickupClubDoneBtn" type="button">完成</button>` : ""}
+              </div>
+            ` : `
+              <div class="search-line">
+                <input id="${escapeHtml(searchProp)}" data-pickup-search="${escapeHtml(searchProp)}" value="${escapeHtml(state[searchProp])}" placeholder="輸入姓名、班級或學號，加入未接回名單">
+                <button class="primary" data-pickup-search-btn="${escapeHtml(searchProp)}" type="button">搜尋</button>
+                <button class="secondary" data-pickup-clear-btn="${escapeHtml(searchProp)}" type="button">清除</button>
+              </div>
+            `}
+            <div class="result-list">
+              ${state.pickupClubName ? results.map(s => pickupResult(s, bucket)).join("") : ""}
+            </div>
+          </div>` : ""}
+          <div class="table-wrap">${pickupTable(pickupRows, editable, dateList.length > 1, bucket, defaultTime)}</div>
+        </section>
+      `;
+    }
+    function pickupResult(s, bucket = "pickup") {
+      const key = studentKey(s);
+      const exists = !!day()[bucket]?.[key];
+      return `
+        <div class="result">
+          <div><div class="name">${escapeHtml(s.name)}</div><div class="sub">${escapeHtml(s.className)} ${escapeHtml(s.id)}</div></div>
+          <button class="${exists ? "secondary" : "primary"}" data-pickup-add="${escapeHtml(key)}" data-pickup-bucket="${escapeHtml(bucket)}" type="button">${exists ? "已在名單" : "加入未接回"}</button>
+        </div>
+      `;
+    }
+    function pickupTable(items, editable = true, showDate = false, bucket = "pickup", defaultTime = "18:00") {
+      if (!items.length) return `<div class="empty">今日尚無未接回學生。</div>`;
+      return `
+        <table class="pickup-table ${showDate ? "with-date" : ""}">
+          <thead><tr>${showDate ? "<th>日期</th>" : ""}<th>班級</th><th>學生</th><th>電話</th><th>負責老師</th><th>最後接回時間</th></tr></thead>
+          <tbody>${items.map(({ key, rec, date }) => {
+            const phone = phoneForStudentKey(key) || rec.phone;
+            const finalTime = rec.finalPickupTime || defaultTime;
+            return `
+              <tr>
+                ${showDate ? `<td>${escapeHtml(date || "")}</td>` : ""}
+                <td>${escapeHtml(rec.className || "")}</td>
+                <td><div class="name">${escapeHtml(rec.name || "")}</div><div class="sub">${escapeHtml(rec.studentId || "")}</div></td>
+                <td>${escapeHtml(phone || "")}</td>
+                <td>
+                  ${editable ? `<input class="inline-note" data-pickup-teacher="${escapeHtml(key)}" data-pickup-bucket="${escapeHtml(bucket)}" value="${escapeHtml(rec.teacher || "")}" placeholder="負責老師">` : escapeHtml(rec.teacher || "")}
+                </td>
+                <td>
+                  ${editable ? `<input data-pickup-time="${escapeHtml(key)}" data-pickup-bucket="${escapeHtml(bucket)}" type="time" value="${escapeHtml(finalTime)}">` : escapeHtml(finalTime)}
+                </td>
+              </tr>
+            `;
+          }).join("")}</tbody>
+        </table>
+      `;
+    }
+    function renderClassRoster() {
+      const teacherClass = currentUser.role === "teacher" ? currentUser.className : "";
+      const students = allStudents()
+        .filter(s => !teacherClass || s.className === teacherClass)
+        .slice(0, 120);
+      const newCount = students.filter(s => isNewRosterStudent(s)).length;
+      const scheduledTransferCount = students.filter(s => isScheduledTransferStudent(s)).length;
+      const transferredCount = students.filter(s => isTransferredRosterStudent(s)).length;
+      return `
+        <div class="grid">
+          <section class="panel">
+            <div class="panel-head"><h3>新增學生</h3></div>
+            <div class="panel-body">
+              <div class="filters">
+                <label class="control">班級<input id="newStudentClass" value="${escapeHtml(teacherClass)}" ${teacherClass ? "disabled" : ""} placeholder="例如：二甲"></label>
+                <label class="control">座號<input id="newStudentSeat" placeholder="座號"></label>
+                <label class="control">學號<input id="newStudentId" placeholder="可留空自動產生"></label>
+                <label class="control">姓名<input id="newStudentName" placeholder="學生姓名"></label>
+                <label class="control">電話<input id="newStudentPhone" placeholder="家長電話"></label>
+                <label class="control">入班日期<input id="newStudentEntry" type="date" value="${escapeHtml(state.date)}"></label>
+                <button class="primary" id="addRosterStudentBtn" type="button">新增學生</button>
+              </div>
+            </div>
+          </section>
+          <section class="panel">
+            <div class="panel-head">
+              <h3>學生資料</h3>
+              <div class="filters">
+                <span class="pill info">${newCount} 位新轉入</span>
+                <span class="pill warn">${scheduledTransferCount} 位預計轉出</span>
+                <span class="pill danger">${transferredCount} 位已轉出</span>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>班級</th><th>座號</th><th>學生</th><th>電話</th><th>狀態</th><th>異動</th><th>入班日期</th><th>轉出日期</th></tr></thead>
+                <tbody>${students.map(s => rosterRow(s)).join("")}</tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      `;
+    }
+    function isNewRosterStudent(s) {
+      return Boolean(s.entryDate && s.entryDate > data.term.start && s.status !== "transferred");
+    }
+    function isScheduledTransferStudent(s) {
+      return Boolean(s.status === "transferred" && s.leaveDate && state.date < s.leaveDate);
+    }
+    function isTransferredRosterStudent(s) {
+      return Boolean(s.status === "transferred" && (!s.leaveDate || state.date >= s.leaveDate));
+    }
+    function rosterRow(s) {
+      const key = studentKey(s);
+      const isScheduledTransfer = isScheduledTransferStudent(s);
+      const isTransferred = isTransferredRosterStudent(s);
+      const isNew = isNewRosterStudent(s);
+      const rowClass = isTransferred ? "roster-transferred" : isNew || isScheduledTransfer ? "roster-new" : "";
+      const changePills = [
+        isNew ? statusPill("info", "新轉入") : "",
+        isScheduledTransfer ? statusPill("warn", "預計轉出") : "",
+        isTransferred ? statusPill("danger", "已轉出") : "",
+      ].join("");
+      return `
+        <tr class="${rowClass}">
+          <td>${escapeHtml(s.className || "")}</td>
+          <td>${escapeHtml(s.seat || "")}</td>
+          <td><div class="name">${escapeHtml(s.name || "")}</div><div class="sub">${escapeHtml(s.id || key)}</div></td>
+          <td><input class="inline-note" data-roster-phone="${escapeHtml(key)}" value="${escapeHtml(s.phone || phoneForStudentKey(key) || "")}" placeholder="電話"></td>
+          <td>
+            <select data-roster-status="${escapeHtml(key)}">
+              <option value="active" ${s.status !== "transferred" ? "selected" : ""}>在學</option>
+              <option value="transferred" ${s.status === "transferred" ? "selected" : ""}>已轉出</option>
+            </select>
+          </td>
+          <td>${changePills || statusPill("ok", "一般在學")}</td>
+          <td><input data-roster-entry="${escapeHtml(key)}" type="date" value="${escapeHtml(s.entryDate || data.term.start)}"></td>
+          <td><input data-roster-leave="${escapeHtml(key)}" type="date" value="${escapeHtml(s.leaveDate || "")}"></td>
+        </tr>
+      `;
+    }
+    function renderClubRoster() {
+      const club = data.clubs.find(c => c.name === state.clubRosterName) || data.clubs[0];
+      state.clubRosterName = club?.name || "";
+      const q = state.clubRosterSearch.trim();
+      const candidates = activeStudents().filter(s => q && `${s.name} ${s.className} ${s.id}`.includes(q)).slice(0, 12);
+      const members = club ? effectiveClubMembers(club).filter(m => !isExcludedClass(m.className) && studentByMember(m)) : [];
+      const currentCount = club ? clubMembersForDisplay(club).length : 0;
+      const scheduledJoinCount = club ? members.filter(member => isScheduledClubJoin(club, member)).length : 0;
+      const scheduledDropCount = club ? members.filter(member => isScheduledClubDrop(club, member)).length : 0;
+      const droppedCount = club ? members.filter(member => isDroppedClubMember(club, member)).length : 0;
+      return `
+        <div class="grid">
+          <section class="panel">
+            <div class="panel-head">
+              <h3>加入社團學生</h3>
+              <div class="filters">
+                <label class="control">社團<select id="clubRosterSelect">${data.clubs.map(c => `<option value="${escapeHtml(c.name)}" ${state.clubRosterName === c.name ? "selected" : ""}>${escapeHtml(c.name)}</option>`).join("")}</select></label>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="search-line">
+                <input id="clubRosterSearch" value="${escapeHtml(state.clubRosterSearch)}" placeholder="搜尋姓名、班級或學號，加入目前社團">
+                <button class="primary" id="clubRosterSearchBtn" type="button">搜尋</button>
+                <button class="secondary" id="clubRosterClearBtn" type="button">清除</button>
+              </div>
+              <div class="result-list">
+                ${candidates.map(s => clubRosterCandidate(s, club)).join("") || `<div class="empty">搜尋學生後，可加入目前選定社團。</div>`}
+              </div>
+            </div>
+          </section>
+          <section class="panel">
+            <div class="panel-head">
+              <h3>社團名冊</h3>
+              <div class="filters">
+                <span class="pill info">目前 ${currentCount} 位</span>
+                <span class="pill info">${scheduledJoinCount} 位預計加入</span>
+                <span class="pill warn">${scheduledDropCount} 位預計退選</span>
+                <span class="pill danger">${droppedCount} 位已退選</span>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>序號</th><th>班級</th><th>學生</th><th>電話</th><th>狀態</th><th>異動</th><th>加入日期</th><th>退選日期</th></tr></thead>
+                <tbody>${members.map(member => clubRosterRow(club, member)).join("")}</tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      `;
+    }
+    function isScheduledClubJoin(club, member) {
+      const rec = clubMemberRecord(club.name, memberKey(member));
+      return Boolean(rec.joinDate && state.date < rec.joinDate);
+    }
+    function isScheduledClubDrop(club, member) {
+      const rec = clubMemberRecord(club.name, memberKey(member));
+      return Boolean(rec.status === "dropped" && rec.dropDate && state.date < rec.dropDate);
+    }
+    function isDroppedClubMember(club, member) {
+      const rec = clubMemberRecord(club.name, memberKey(member));
+      return Boolean(rec.status === "dropped" && (!rec.dropDate || state.date >= rec.dropDate));
+    }
+    function clubRosterCandidate(s, club) {
+      const key = studentKey(s);
+      const exists = club ? effectiveClubMembers(club).some(member => memberKey(member) === key) : false;
+      return `
+        <div class="result">
+          <div><div class="name">${escapeHtml(s.name)}</div><div class="sub">${escapeHtml(s.className)} ${escapeHtml(s.id)} ${escapeHtml(phoneForStudentKey(key) || "")}</div></div>
+          <button class="${exists ? "secondary" : "primary"}" data-club-roster-add="${escapeHtml(key)}" type="button">${exists ? "已在社團" : "加入社團"}</button>
+        </div>
+      `;
+    }
+    function clubRosterRow(club, member) {
+      const key = memberKey(member);
+      const student = studentByMember(member);
+      const rec = clubMemberRecord(club.name, key);
+      const status = rec.status || "active";
+      const scheduledJoin = isScheduledClubJoin(club, member);
+      const scheduledDrop = isScheduledClubDrop(club, member);
+      const dropped = isDroppedClubMember(club, member);
+      const rowClass = dropped ? "roster-transferred" : scheduledJoin || scheduledDrop ? "roster-new" : "";
+      const changePills = [
+        scheduledJoin ? statusPill("info", "預計加入") : "",
+        scheduledDrop ? statusPill("warn", "預計退選") : "",
+        dropped ? statusPill("danger", "已退選") : "",
+      ].join("");
+      return `
+        <tr class="${rowClass}">
+          <td>${escapeHtml(member.seq || "")}</td>
+          <td>${escapeHtml(member.className || "")}</td>
+          <td><div class="name">${escapeHtml(member.name || "")}</div><div class="sub">${escapeHtml(member.studentId || student?.id || key)}</div></td>
+          <td>${escapeHtml(phoneForStudentKey(key) || member.phone || "")}</td>
+          <td>
+            <select data-club-member-status="${escapeHtml(club.name)}" data-member="${escapeHtml(key)}">
+              <option value="active" ${status !== "dropped" ? "selected" : ""}>參加中</option>
+              <option value="dropped" ${status === "dropped" ? "selected" : ""}>已退選</option>
+            </select>
+          </td>
+          <td>${changePills || statusPill("ok", "參加中")}</td>
+          <td><input data-club-member-join="${escapeHtml(club.name)}" data-member="${escapeHtml(key)}" type="date" value="${escapeHtml(rec.joinDate || clubTermStart)}"></td>
+          <td><input data-club-member-drop="${escapeHtml(club.name)}" data-member="${escapeHtml(key)}" type="date" value="${escapeHtml(rec.dropDate || "")}"></td>
+        </tr>
+      `;
+    }
+    function bindEvents() {
+      document.getElementById("classSelect")?.addEventListener("change", e => { state.className = e.target.value; render(); });
+      document.getElementById("markClassPresentBtn")?.addEventListener("click", markClassPresent);
+      document.getElementById("clubSelect")?.addEventListener("change", e => { state.clubName = e.target.value; render(); });
+      document.getElementById("markClubPresentBtn")?.addEventListener("click", markClubPresent);
+      document.getElementById("pickupClubSelect")?.addEventListener("change", e => { state.pickupClubName = e.target.value; render(); });
+      document.getElementById("pickupClubDoneBtn")?.addEventListener("click", () => { state.pickupClubName = ""; render(); });
+      document.querySelectorAll("#dashboardRange button").forEach(btn => btn.addEventListener("click", e => {
+        state.dashboardRange = e.target.dataset.range;
+        render();
+      }));
+      document.getElementById("adminSourceSelect")?.addEventListener("change", e => { state.adminSource = e.target.value; });
+      document.getElementById("studentSearch")?.addEventListener("input", e => { state.search = e.target.value; });
+      document.getElementById("studentSearch")?.addEventListener("keydown", e => {
+        if (e.key === "Enter") {
+          state.search = e.target.value;
+          render();
+        }
+      });
+      document.getElementById("searchBtn")?.addEventListener("click", () => {
+        state.search = document.getElementById("studentSearch")?.value || "";
+        render();
+      });
+      document.getElementById("clearSearchBtn")?.addEventListener("click", () => {
+        state.search = "";
+        render();
+      });
+      document.querySelectorAll("[data-pickup-search]").forEach(input => input.addEventListener("input", e => { state[e.target.dataset.pickupSearch] = e.target.value; }));
+      document.querySelectorAll("[data-pickup-search]").forEach(input => input.addEventListener("keydown", e => {
+        if (e.key === "Enter") {
+          state[e.target.dataset.pickupSearch] = e.target.value;
+          render();
+        }
+      }));
+      document.querySelectorAll("[data-pickup-search-btn]").forEach(btn => btn.addEventListener("click", e => {
+        const prop = e.target.dataset.pickupSearchBtn;
+        state[prop] = document.getElementById(prop)?.value || "";
+        render();
+      }));
+      document.querySelectorAll("[data-pickup-clear-btn]").forEach(btn => btn.addEventListener("click", e => {
+        state[e.target.dataset.pickupClearBtn] = "";
+        render();
+      }));
+      document.getElementById("clubRosterSelect")?.addEventListener("change", e => {
+        state.clubRosterName = e.target.value;
+        render();
+      });
+      document.getElementById("clubRosterSearch")?.addEventListener("input", e => { state.clubRosterSearch = e.target.value; });
+      document.getElementById("clubRosterSearch")?.addEventListener("keydown", e => {
+        if (e.key === "Enter") {
+          state.clubRosterSearch = e.target.value;
+          render();
+        }
+      });
+      document.getElementById("clubRosterSearchBtn")?.addEventListener("click", () => {
+        state.clubRosterSearch = document.getElementById("clubRosterSearch")?.value || "";
+        render();
+      });
+      document.getElementById("clubRosterClearBtn")?.addEventListener("click", () => {
+        state.clubRosterSearch = "";
+        render();
+      });
+      document.getElementById("addRosterStudentBtn")?.addEventListener("click", () => {
+        const name = document.getElementById("newStudentName")?.value.trim();
+        const className = document.getElementById("newStudentClass")?.value.trim();
+        if (!name || !className) {
+          alert("請至少輸入班級與姓名。");
+          return;
+        }
+        if (isExcludedClass(className)) {
+          alert("瓢蟲、蜻蜓、蝴蝶不納入此點名系統。");
+          return;
+        }
+        const seat = document.getElementById("newStudentSeat")?.value.trim() || "";
+        const idInput = document.getElementById("newStudentId")?.value.trim();
+        const id = idInput || `custom-${Date.now()}`;
+        addRosterStudent({
+          id,
+          name,
+          className,
+          seat,
+          phone: document.getElementById("newStudentPhone")?.value.trim() || "",
+          status: "active",
+          entryDate: document.getElementById("newStudentEntry")?.value || state.date,
+        });
+      });
+      document.querySelectorAll("[data-morning] button").forEach(btn => btn.addEventListener("click", e => {
+        const group = e.target.closest("[data-morning]");
+        const key = group.dataset.morning;
+        setMorning(key, { status: e.target.dataset.value, source: morningRecordForKey(key).source || "導師登記" }, false);
+        group.querySelectorAll("button").forEach(button => button.classList.toggle("active", button === e.target));
+      }));
+      document.querySelectorAll("[data-morning-source]").forEach(input => input.addEventListener("change", e => setMorning(e.target.dataset.morningSource, { source: e.target.value }, false)));
+      document.querySelectorAll("[data-morning-note]").forEach(input => input.addEventListener("change", e => setMorning(e.target.dataset.morningNote, { note: e.target.value }, false)));
+      document.querySelectorAll("[data-admin-leave] button").forEach(btn => btn.addEventListener("click", e => {
+        const key = e.target.closest("[data-admin-leave]").dataset.adminLeave;
+        const student = findStudentByKey(key);
+        if (student) state.className = student.className;
+        state.adminFlash = student ? `${student.className} ${student.name} 已同步到8:00班級點名` : "已同步到8:00班級點名";
+        setMorning(key, { status: e.target.dataset.value, source: state.adminSource });
+      }));
+      document.querySelectorAll("[data-club] button").forEach(btn => btn.addEventListener("click", e => {
+        const wrap = e.target.closest("[data-club]");
+        setClub(wrap.dataset.club, wrap.dataset.member, { status: e.target.dataset.value }, false);
+        wrap.querySelectorAll("button").forEach(button => button.classList.toggle("active", button === e.target));
+      }));
+      document.querySelectorAll("[data-club-note]").forEach(input => input.addEventListener("change", e => setClub(e.target.dataset.clubNote, e.target.dataset.member, { note: e.target.value })));
+      document.querySelectorAll("[data-follow-status]").forEach(input => input.addEventListener("change", e => setFollow(e.target.dataset.followStatus, e.target.dataset.member, { status: e.target.value })));
+      document.querySelectorAll("[data-follow-note]").forEach(input => input.addEventListener("change", e => setFollow(e.target.dataset.followNote, e.target.dataset.member, { note: e.target.value })));
+      document.querySelectorAll("[data-pickup-add]").forEach(btn => btn.addEventListener("click", e => {
+        const bucket = e.target.dataset.pickupBucket || "pickup";
+        addPickupStudent(e.target.dataset.pickupAdd, bucket, bucket === "pickup19" ? "19:00" : "18:00");
+      }));
+      document.querySelectorAll("[data-pickup-teacher]").forEach(input => {
+        input.addEventListener("input", e => setPickup(e.target.dataset.pickupTeacher, { teacher: e.target.value }, false, e.target.dataset.pickupBucket || "pickup"));
+        input.addEventListener("change", e => setPickup(e.target.dataset.pickupTeacher, { teacher: e.target.value }, false, e.target.dataset.pickupBucket || "pickup"));
+      });
+      document.querySelectorAll("[data-pickup-time]").forEach(input => {
+        input.addEventListener("input", e => setPickup(e.target.dataset.pickupTime, { finalPickupTime: e.target.value }, false, e.target.dataset.pickupBucket || "pickup"));
+        input.addEventListener("change", e => setPickup(e.target.dataset.pickupTime, { finalPickupTime: e.target.value }, false, e.target.dataset.pickupBucket || "pickup"));
+      });
+      document.querySelectorAll("[data-roster-phone]").forEach(input => {
+        input.addEventListener("input", e => setRosterStudent(e.target.dataset.rosterPhone, { phone: e.target.value }, false));
+        input.addEventListener("change", e => setRosterStudent(e.target.dataset.rosterPhone, { phone: e.target.value }, false));
+      });
+      document.querySelectorAll("[data-roster-status]").forEach(input => input.addEventListener("change", e => {
+        const patch = { status: e.target.value };
+        if (e.target.value === "transferred" && !findStudentByKey(e.target.dataset.rosterStatus)?.leaveDate) patch.leaveDate = state.date;
+        if (e.target.value === "active") patch.leaveDate = "";
+        setRosterStudent(e.target.dataset.rosterStatus, patch);
+      }));
+      document.querySelectorAll("[data-roster-entry]").forEach(input => input.addEventListener("change", e => setRosterStudent(e.target.dataset.rosterEntry, { entryDate: e.target.value })));
+      document.querySelectorAll("[data-roster-leave]").forEach(input => input.addEventListener("change", e => setRosterStudent(e.target.dataset.rosterLeave, { leaveDate: e.target.value })));
+      document.querySelectorAll("[data-club-roster-add]").forEach(btn => btn.addEventListener("click", e => addClubRosterMember(state.clubRosterName, e.target.dataset.clubRosterAdd)));
+      document.querySelectorAll("[data-club-member-status]").forEach(input => input.addEventListener("change", e => {
+        const patch = { status: e.target.value };
+        if (e.target.value === "dropped" && !clubMemberRecord(e.target.dataset.clubMemberStatus, e.target.dataset.member).dropDate) patch.dropDate = state.date;
+        if (e.target.value === "active") patch.dropDate = "";
+        setClubMemberRoster(e.target.dataset.clubMemberStatus, e.target.dataset.member, patch);
+      }));
+      document.querySelectorAll("[data-club-member-join]").forEach(input => input.addEventListener("change", e => setClubMemberRoster(e.target.dataset.clubMemberJoin, e.target.dataset.member, { joinDate: e.target.value })));
+      document.querySelectorAll("[data-club-member-drop]").forEach(input => input.addEventListener("change", e => setClubMemberRoster(e.target.dataset.clubMemberDrop, e.target.dataset.member, { dropDate: e.target.value })));
+    }
+    function render() {
+      if (currentUser.role === "guest") {
+        renderLogin();
+        return;
+      }
+      document.getElementById("loginScreen").style.display = "none";
+      document.getElementById("appShell").style.display = "grid";
+      if (state.view === "roster") state.view = "classRoster";
+      if (currentUser.role === "teacher") {
+        const allowedTeacherViews = new Set(["morning", "classRoster"]);
+        if (!allowedTeacherViews.has(state.view)) state.view = "morning";
+        state.className = currentUser.className || state.className;
+      }
+      if (currentUser.role === "clubTeacher") {
+        state.view = "club";
+      }
+      buildNav();
+      const view = views.find(v => v.id === state.view) || views[0];
+      const viewTitle = document.getElementById("viewTitle");
+      const viewMeta = document.getElementById("viewMeta");
+      const metaText = baseMeta();
+      viewTitle.classList.toggle("club-main-title", state.view === "pickup");
+      if (state.view === "pickup") {
+        viewTitle.innerHTML = `115-1課外社團<span class="club-subtitle">${escapeHtml(metaText)}</span>`;
+      } else {
+        viewTitle.textContent = view.title;
+      }
+      viewMeta.textContent = state.view === "pickup" ? "" : metaText;
+      document.getElementById("dateInput").value = state.date;
+      document.getElementById("termLabel").textContent = `${data.term.label}｜${data.term.start} - ${data.term.end}`;
+      const app = document.getElementById("app");
+      if (state.view === "morning") app.innerHTML = renderMorning();
+      else if (state.view === "leave") app.innerHTML = renderLeave();
+      else if (state.view === "club") app.innerHTML = renderClub();
+      else if (state.view === "follow") app.innerHTML = renderFollow();
+      else if (state.view === "pickup") app.innerHTML = renderPickupPanel(true);
+      else if (state.view === "teachingFollow") app.innerHTML = renderTeachingFollowPanel(true);
+      else if (state.view === "pickup19") app.innerHTML = renderPickupPanel(true, [state.date], { bucket: "pickup19", title: "19:00 未接回學生", searchProp: "pickup19Search", defaultTime: "19:00" });
+      else if (state.view === "classRoster") app.innerHTML = renderClassRoster();
+      else if (state.view === "clubRoster") app.innerHTML = renderClubRoster();
+      else app.innerHTML = renderDashboard();
+      bindEvents();
+    }
+    document.getElementById("dateInput").min = data.term.start;
+    document.getElementById("dateInput").max = data.term.end;
+    document.getElementById("dateInput").addEventListener("change", e => { state.date = e.target.value; render(); });
+    document.getElementById("clearBtn").addEventListener("click", () => {
+      if (!confirm(`確定清除 ${state.date} 的點名紀錄？名冊資料不會被刪除。`)) return;
+      delete records[state.date];
+      saveRecords();
+      render();
+    });
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      localStorage.removeItem(userStorageKey);
+      currentUser = { role: "guest", className: "" };
+      state.view = "dashboard";
+      render();
+    });
+    document.getElementById("exportBtn").addEventListener("click", () => {
+      const payload = { date: state.date, records: day(), exportedAt: new Date().toISOString() };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `attendance-${state.date}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+    render();
+  </script>
+
+
+</body><div id="codex-browser-sidebar-comments-root" style="position: fixed; inset: 0px; pointer-events: none; z-index: 2147483647;"></div></html>
