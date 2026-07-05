@@ -4,6 +4,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>博嘉點名系統</title>
   <script src="./attendance-data.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore-compat.js"></script>
   <style>
     :root {
       color-scheme: light;
@@ -453,6 +455,17 @@
       { id: "clubRoster", title: "社團學生管理", icon: "＋" },
     ];
     const storageKey = "bojia-attendance-v1";
+    const firebaseConfig = {
+      apiKey: "AIzaSyBySJhFTBp7X9yxFyk6uR4J8QTWEPeQXic",
+      authDomain: "bjps-activity-plan.firebaseapp.com",
+      projectId: "bjps-activity-plan",
+      storageBucket: "bjps-activity-plan.firebasestorage.app",
+      messagingSenderId: "494877785439",
+      appId: "1:494877785439:web:8eb746f8b74cdc93b54aea",
+    };
+    let cloudDocRef = null;
+    let cloudApplyingRecords = false;
+    let cloudSaveTimer = null;
     function todayInTaiwan() {
       const parts = new Intl.DateTimeFormat("en-CA", {
         timeZone: "Asia/Taipei",
@@ -493,7 +506,50 @@
       catch { return {}; }
     }
     let records = loadRecords();
-    function saveRecords() { localStorage.setItem(storageKey, JSON.stringify(records)); }
+    function saveLocalRecords() {
+      localStorage.setItem(storageKey, JSON.stringify(records));
+    }
+    function hasMeaningfulRecords(value) {
+      if (!value || typeof value !== "object") return false;
+      return Object.values(value).some(item => JSON.stringify(item || {}) !== "{}");
+    }
+    function scheduleCloudSave() {
+      if (cloudApplyingRecords || !cloudDocRef) return;
+      clearTimeout(cloudSaveTimer);
+      cloudSaveTimer = setTimeout(() => {
+        cloudDocRef.set({
+          records,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        }, { merge: true }).catch(error => console.warn("Cloud save failed", error));
+      }, 600);
+    }
+    function saveRecords() {
+      saveLocalRecords();
+      scheduleCloudSave();
+    }
+    function setupCloudSync() {
+      if (!window.firebase?.initializeApp || !window.firebase?.firestore) return;
+      try {
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        cloudDocRef = firebase.firestore().collection("attendance").doc("shared");
+        cloudDocRef.onSnapshot(snapshot => {
+          const cloudRecords = snapshot.exists ? snapshot.data()?.records : null;
+          if (!hasMeaningfulRecords(cloudRecords)) {
+            if (hasMeaningfulRecords(records)) scheduleCloudSave();
+            return;
+          }
+          if (JSON.stringify(cloudRecords) === JSON.stringify(records)) return;
+          cloudApplyingRecords = true;
+          records = cloudRecords;
+          saveLocalRecords();
+          cloudApplyingRecords = false;
+          if (currentUser.role !== "guest") render();
+        }, error => console.warn("Cloud sync failed", error));
+        if (hasMeaningfulRecords(records)) scheduleCloudSave();
+      } catch (error) {
+        console.warn("Cloud setup failed", error);
+      }
+    }
     function day() {
       records[state.date] ||= { morning: {}, club: {}, follow: {} };
       return records[state.date];
@@ -1685,6 +1741,7 @@
       URL.revokeObjectURL(url);
     });
     render();
+    setupCloudSync();
   </script>
 
 
