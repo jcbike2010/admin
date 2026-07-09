@@ -4,6 +4,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>博嘉點名系統</title>
   <script src="./attendance-data.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore-compat.js"></script>
   <style>
@@ -82,7 +83,7 @@
       font-size: 13px;
       line-height: 1.5;
     }
-    main { padding: 22px; overflow: auto; }
+    main { padding: 22px; overflow: visible; }
     .topbar {
       display: flex;
       gap: 14px;
@@ -110,6 +111,7 @@
       padding: 9px 10px;
       min-height: 40px;
     }
+    input[type="checkbox"] { width: 18px; height: 18px; min-height: 0; padding: 0; }
     textarea { width: 100%; min-height: 74px; resize: vertical; }
     .primary, .secondary, .danger-btn {
       border: 1px solid transparent;
@@ -134,6 +136,35 @@
       padding: 16px;
       box-shadow: var(--shadow);
     }
+    .stat.stat-class {
+      background: linear-gradient(180deg, #eff6ff 0%, #ffffff 100%);
+      border-color: #bfdbfe;
+      box-shadow: inset 0 4px 0 #2563eb, var(--shadow);
+    }
+    .stat.stat-after-care {
+      background: linear-gradient(180deg, #ecfdf5 0%, #ffffff 100%);
+      border-color: #a7f3d0;
+      box-shadow: inset 0 4px 0 #059669, var(--shadow);
+    }
+    .stat.stat-club {
+      background: linear-gradient(180deg, #fff7ed 0%, #ffffff 100%);
+      border-color: #fed7aa;
+      box-shadow: inset 0 4px 0 #ea580c, var(--shadow);
+    }
+    .stat.stat-class span { color: #1d4ed8; }
+    .stat.stat-after-care span { color: #047857; }
+    .stat.stat-club span { color: #c2410c; }
+    button.stat {
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
+      font: inherit;
+      color: var(--ink);
+    }
+    button.stat.active {
+      border-color: var(--brand);
+      box-shadow: inset 0 0 0 1px var(--brand), var(--shadow);
+    }
     .stat strong { display: block; font-size: 28px; line-height: 1.1; }
     .stat span { display: block; margin-top: 6px; color: var(--muted); font-size: 13px; }
     .panel {
@@ -141,7 +172,7 @@
       border: 1px solid var(--line);
       border-radius: 8px;
       box-shadow: var(--shadow);
-      overflow: hidden;
+      overflow: visible;
     }
     .panel-head {
       padding: 14px 16px;
@@ -167,7 +198,7 @@
     tr:last-child td { border-bottom: 0; }
     tr.roster-new td { background: #eff6ff; }
     tr.roster-transferred td { background: #fef2f2; }
-    .table-wrap { overflow: auto; max-height: calc(100vh - 260px); }
+    .table-wrap { overflow: visible; max-height: none; }
     .pickup-table { table-layout: fixed; min-width: 760px; }
     .pickup-table th:nth-child(1), .pickup-table td:nth-child(1) { width: 90px; }
     .pickup-table th:nth-child(2), .pickup-table td:nth-child(2) { width: 190px; }
@@ -332,7 +363,7 @@
       </nav>
       <div class="side-card">
         <strong>流程重點</strong><br>
-        早上導師點名與行政請假會成為下午社團缺席判斷依據。
+        早上導師點名與行政請假會成為課照和社團缺席判斷依據。
       </div>
     </aside>
     <main>
@@ -401,12 +432,22 @@
     const clubTermEnd = data.term.clubEnd || "2026-12-24";
     const afterCareTermStart = data.term.start || "2026-08-17";
     const afterCareTermEnd = data.term.end || "2026-12-31";
+    const nationalHolidayDates = new Set([
+      "2026-09-25",
+      "2026-09-28",
+      "2026-10-09",
+      "2026-10-10",
+      "2026-10-25",
+      "2026-10-26",
+      "2026-12-25",
+    ]);
     const weekdayLabels = ["日", "一", "二", "三", "四", "五", "六"];
     const afterCareGradeGroups = [
-      { id: "low", label: "一二年級", grades: ["一", "二"], count: 10 },
-      { id: "middle", label: "三四年級", grades: ["三", "四"], count: 10 },
-      { id: "high", label: "五六年級", grades: ["五", "六"], count: 10 },
+      { id: "low", label: "一二年級", grades: ["一", "二"], perGrade: 5 },
+      { id: "middle", label: "三四年級", grades: ["三", "四"], perGrade: 5 },
+      { id: "high", label: "五六年級", grades: ["五", "六"], perGrade: 5 },
     ];
+    const followStatusOptions = ["", "已請假", "遲到已到", "人在校內其他地點", "聯繫家長中", "未確認"];
     const excludedClasses = new Set(["瓢蟲", "蜻蜓", "蝴蝶"]);
     const teacherClassByAccount = {
       "101": "一甲",
@@ -459,13 +500,14 @@
       { id: "leave", title: "請假登記", navTitle: "行政端 請假登記", icon: "☎" },
       { id: "afterCare", title: "課照班點名", icon: "◍" },
       { id: "club", title: "16:10 社團點名", icon: "◉" },
+      { id: "teachingFollow", title: "課照班異常缺席", icon: "◎" },
       { id: "follow", title: "活動組追蹤", icon: "⌕" },
-      { id: "pickup", title: "17:40 社團未接回學生", icon: "⏱" },
-      { id: "teachingFollow", title: "課後班缺席學生", icon: "◎" },
+      { id: "pickup", title: "17:40 社團未接回學生", navTitle: "17:40 未接回學生", icon: "⏱" },
       { id: "pickup19", title: "19:00 未接回學生", icon: "◷" },
       { id: "classRoster", title: "班級學生管理", icon: "✎" },
       { id: "clubRoster", title: "社團學生管理", icon: "＋" },
       { id: "afterCareRoster", title: "課照學生管理", icon: "⊕" },
+      { id: "rosterImport", title: "新學期名冊匯入", icon: "⇧" },
     ];
     const storageKey = "bojia-attendance-v1";
     const firebaseConfig = {
@@ -505,14 +547,23 @@
       search: "",
       adminSource: "學輔處電話",
       adminFlash: "",
+      followSyncFlash: null,
       pickupSearch: "",
       pickupClubName: "",
       pickup19Search: "",
       rosterSearch: "",
       clubRosterSearch: "",
       clubRosterName: data.clubs[0]?.name || "",
+      afterCareGroupId: afterCareGradeGroups[0]?.id || "",
       afterCareRosterSearch: "",
       dashboardRange: "today",
+      morningRange: "today",
+      morningDetailStatus: "",
+      rosterImportPreview: null,
+      rosterImportFileName: "",
+      rosterImportError: "",
+      rosterImportLoading: false,
+      rosterImportMessage: "",
     };
 
     function loadRecords() {
@@ -541,6 +592,18 @@
       saveLocalRecords();
       scheduleCloudSave();
     }
+    function saveRecordsImmediately() {
+      saveLocalRecords();
+      clearTimeout(cloudSaveTimer);
+      if (!cloudDocRef) {
+        scheduleCloudSave();
+        return;
+      }
+      cloudDocRef.set({
+        records,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      }, { merge: true }).catch(error => console.warn("Immediate cloud save failed", error));
+    }
     function setupCloudSync() {
       if (!window.firebase?.initializeApp || !window.firebase?.firestore) return;
       try {
@@ -557,7 +620,7 @@
           records = cloudRecords;
           saveLocalRecords();
           cloudApplyingRecords = false;
-          if (currentUser.role !== "guest") render();
+          if (currentUser.role !== "guest") render({ preserveScroll: true });
         }, error => console.warn("Cloud sync failed", error));
         if (hasMeaningfulRecords(records)) scheduleCloudSave();
       } catch (error) {
@@ -565,15 +628,16 @@
       }
     }
     function day() {
-      records[state.date] ||= { morning: {}, club: {}, afterCare: {}, follow: {} };
+      records[state.date] ||= { morning: {}, club: {}, afterCare: {}, follow: {}, afterCareFollow: {} };
       records[state.date].morning ||= {};
       records[state.date].club ||= {};
       records[state.date].afterCare ||= {};
       records[state.date].follow ||= {};
+      records[state.date].afterCareFollow ||= {};
       return records[state.date];
     }
     function dayRecord(dateText) {
-      return records[dateText] || { morning: {}, club: {}, afterCare: {}, follow: {}, pickup: {} };
+      return records[dateText] || { morning: {}, club: {}, afterCare: {}, follow: {}, afterCareFollow: {}, pickup: {} };
     }
     function formatDate(date) {
       const year = date.getFullYear();
@@ -599,10 +663,10 @@
       }
       return dates;
     }
-    function dashboardDates() {
-      if (state.dashboardRange === "today") return [state.date];
+    function datesForRange(range) {
+      if (range === "today") return [state.date];
       const current = parseDate(state.date);
-      if (state.dashboardRange === "week") {
+      if (range === "week") {
         const dayIndex = current.getDay() || 7;
         const monday = new Date(current);
         monday.setDate(current.getDate() - dayIndex + 1);
@@ -610,16 +674,38 @@
         sunday.setDate(monday.getDate() + 6);
         return dateRangeList(formatDate(monday), formatDate(sunday));
       }
-      if (state.dashboardRange === "term") return dateRangeList(data.term.start, data.term.end);
+      if (range === "term") return dateRangeList(data.term.start, data.term.end);
       const first = new Date(current.getFullYear(), current.getMonth(), 1);
       const last = new Date(current.getFullYear(), current.getMonth() + 1, 0);
       return dateRangeList(formatDate(first), formatDate(last));
     }
-    function dashboardRangeLabel(dates) {
-      if (state.dashboardRange === "today") return "今日";
+    function rangeLabel(range, dates) {
+      if (range === "today") return "今日";
       if (!dates.length) return "";
-      const label = state.dashboardRange === "week" ? "本週" : state.dashboardRange === "month" ? "本月" : "本學期";
+      const label = range === "week" ? "本週" : range === "month" ? "本月" : "本學期";
       return `${label}：${dates[0]} 到 ${dates[dates.length - 1]}`;
+    }
+    function dashboardDates() {
+      return datesForRange(state.dashboardRange);
+    }
+    function dashboardRangeLabel(dates) {
+      return rangeLabel(state.dashboardRange, dates);
+    }
+    function isWeekday(dateText) {
+      const dayIndex = parseDate(dateText).getDay();
+      return dayIndex >= 1 && dayIndex <= 5;
+    }
+    function warnForNonSchoolDate(dateText) {
+      if (nationalHolidayDates.has(dateText)) {
+        alert("今天是國定假日");
+        return;
+      }
+      if (!isWeekday(dateText)) alert("今天是週末");
+    }
+    function morningStatDates() {
+      const dates = datesForRange(state.morningRange);
+      if (state.morningRange === "today") return dates;
+      return dates.filter(dateText => isWeekday(dateText) && !nationalHolidayDates.has(dateText));
     }
     function studentKey(s) { return s.id || `${s.className}-${s.seat}-${s.name}`; }
     function memberKey(m) { return m.studentId || `${m.className}-${m.name}`; }
@@ -627,7 +713,7 @@
       return excludedClasses.has(className);
     }
     function rosterStore() {
-      records._roster ||= { students: {}, addedStudents: [], clubMembers: {}, addedClubMembers: {}, afterCareMembers: {}, addedAfterCareMembers: [] };
+      records._roster ||= { students: {}, addedStudents: [], clubMembers: {}, addedClubMembers: {}, afterCareMembers: {}, addedAfterCareMembers: [], importedStudents: null, importMeta: null };
       records._roster.students ||= {};
       records._roster.addedStudents ||= [];
       records._roster.clubMembers ||= {};
@@ -642,7 +728,9 @@
     }
     function allStudents() {
       const added = rosterStore().addedStudents.map(s => mergeRosterStudent(s));
-      return data.students.map(s => mergeRosterStudent(s)).concat(added).filter(s => !isExcludedClass(s.className));
+      const imported = rosterStore().importedStudents;
+      const baseStudents = Array.isArray(imported) && imported.length ? imported : data.students;
+      return baseStudents.map(s => mergeRosterStudent(s)).concat(added).filter(s => !isExcludedClass(s.className));
     }
     function activeStudents(dateText = state.date) {
       return allStudents().filter(s => {
@@ -668,6 +756,242 @@
       if (!canManageClassStudent(student)) return;
       rosterStore().addedStudents.push(student);
       saveRecords();
+      render();
+    }
+    function cleanImportedCell(value) {
+      if (value === null || value === undefined) return "";
+      return String(value).trim();
+    }
+    function normalizeImportedId(value) {
+      return cleanImportedCell(value).replace(/\.0$/, "").replace(/\s+/g, "");
+    }
+    function normalizeImportedPhone(value) {
+      let text = cleanImportedCell(value).replace(/[\s\-()]/g, "");
+      if (/^9\d{8}$/.test(text)) text = `0${text}`;
+      return text;
+    }
+    function addImportIssue(list, message, limit = 30) {
+      if (list.length < limit) list.push(message);
+    }
+    function parseImportedSchoolWorkbook(workbook) {
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      if (!worksheet) throw new Error("Excel 沒有可讀取的工作表。");
+      const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: false, defval: "" })
+        .map(row => row.map(cleanImportedCell));
+      const headerRows = rows
+        .map((row, index) => ({ row, index }))
+        .filter(item => item.row.filter(value => value === "座號").length >= 2 && item.row.includes("姓名"))
+        .map(item => item.index);
+      if (!headerRows.length) throw new Error("找不到班級名冊欄位，請確認格式與目前的全校學生名單相同。");
+
+      const phoneLabels = new Set(["電話", "聯絡電話", "家長電話", "手機", "行動電話"]);
+      const students = [];
+      const classNames = new Set();
+      const classesWithoutPhone = new Set();
+
+      headerRows.forEach((headerIndex, headerPosition) => {
+        const header = rows[headerIndex] || [];
+        const title = rows[headerIndex - 1] || [];
+        const nextHeaderIndex = headerRows[headerPosition + 1] ?? rows.length;
+        const starts = [];
+        header.forEach((label, columnIndex) => {
+          if (label === "座號") starts.push(columnIndex);
+        });
+        starts.forEach((startColumn, blockIndex) => {
+          const endColumn = starts[blockIndex + 1] ?? Math.max(header.length, title.length);
+          const labels = header.slice(startColumn, endColumn);
+          const className = cleanImportedCell(title[startColumn]);
+          const nameOffset = labels.indexOf("姓名");
+          const idOffset = labels.indexOf("學號");
+          const seatOffset = labels.indexOf("座號");
+          const genderOffset = labels.indexOf("性別");
+          const phoneOffset = labels.findIndex(label => phoneLabels.has(label));
+          if (!className || nameOffset < 0 || seatOffset < 0) return;
+          if (isExcludedClass(className)) return;
+          classNames.add(className);
+          if (phoneOffset < 0) classesWithoutPhone.add(className);
+
+          for (let rowIndex = headerIndex + 1; rowIndex < nextHeaderIndex; rowIndex++) {
+            const row = rows[rowIndex] || [];
+            const name = cleanImportedCell(row[startColumn + nameOffset]);
+            if (!name || name === "姓名" || name.startsWith("導師") || ["應到人數", "實到人數"].includes(name)) continue;
+            students.push({
+              id: idOffset >= 0 ? normalizeImportedId(row[startColumn + idOffset]) : "",
+              name,
+              className,
+              seat: normalizeImportedId(row[startColumn + seatOffset]),
+              gender: genderOffset >= 0 ? cleanImportedCell(row[startColumn + genderOffset]) : "",
+              phone: phoneOffset >= 0 ? normalizeImportedPhone(row[startColumn + phoneOffset]) : "",
+              sourceRow: rowIndex + 1,
+              status: "active",
+              entryDate: data.term.start,
+            });
+          }
+        });
+      });
+
+      return {
+        sheetName,
+        students,
+        classNames: [...classNames],
+        classesWithoutPhone: [...classesWithoutPhone],
+      };
+    }
+    function buildRosterImportPreview(parsed, fileName) {
+      const errors = [];
+      const warnings = [];
+      const idSeen = new Map();
+      const seatSeen = new Map();
+      const currentStudents = allStudents();
+      const currentById = new Map(currentStudents.map(student => [studentKey(student), student]));
+
+      parsed.students.forEach(student => {
+        if (!student.id) addImportIssue(errors, `第 ${student.sourceRow} 列：${student.className} ${student.name} 缺少學號。`);
+        if (!student.className) addImportIssue(errors, `第 ${student.sourceRow} 列：${student.name || "未命名學生"} 缺少班級。`);
+        if (!student.seat) addImportIssue(errors, `第 ${student.sourceRow} 列：${student.className} ${student.name} 缺少座號。`);
+        if (!student.name) addImportIssue(errors, `第 ${student.sourceRow} 列缺少姓名。`);
+        if (student.id) {
+          if (idSeen.has(student.id)) addImportIssue(errors, `學號 ${student.id} 重複：第 ${idSeen.get(student.id)}、${student.sourceRow} 列。`);
+          else idSeen.set(student.id, student.sourceRow);
+        }
+        const seatKey = `${student.className}|${student.seat}`;
+        if (student.className && student.seat) {
+          if (seatSeen.has(seatKey)) addImportIssue(errors, `${student.className} 座號 ${student.seat} 重複。`);
+          else seatSeen.set(seatKey, student.sourceRow);
+        }
+      });
+
+      if (!parsed.students.length) errors.push("Excel 中沒有可匯入的學生。");
+      if (parsed.classesWithoutPhone.length) {
+        warnings.push(`以下班級沒有電話欄：${parsed.classesWithoutPhone.join("、")}。匯入時將保留同學號的現有電話。`);
+      }
+      const missingPhones = parsed.students.filter(student => !student.phone).length;
+      if (missingPhones) warnings.push(`${missingPhones} 位學生未填電話；同學號學生會保留現有電話。`);
+
+      const students = parsed.students.map(student => {
+        const current = currentById.get(student.id);
+        return {
+          ...student,
+          phone: student.phone || current?.phone || "",
+        };
+      });
+      const importedById = new Map(students.filter(student => student.id).map(student => [student.id, student]));
+      const changes = [];
+      let addedCount = 0;
+      let changedCount = 0;
+      let unchangedCount = 0;
+
+      students.forEach(student => {
+        const current = currentById.get(student.id);
+        if (!current) {
+          addedCount++;
+          changes.push({ kind: "新增", before: null, after: student });
+          return;
+        }
+        const fields = ["name", "className", "seat", "phone"];
+        const changedFields = fields.filter(field => cleanImportedCell(current[field]) !== cleanImportedCell(student[field]));
+        if (changedFields.length) {
+          changedCount++;
+          changes.push({ kind: "異動", before: current, after: student, changedFields });
+        } else {
+          unchangedCount++;
+        }
+      });
+
+      let removedCount = 0;
+      currentStudents.forEach(student => {
+        const key = studentKey(student);
+        if (!importedById.has(key)) {
+          removedCount++;
+          changes.push({ kind: "不續用", before: student, after: null });
+        }
+      });
+
+      const classCounts = [...students.reduce((map, student) => {
+        map.set(student.className, (map.get(student.className) || 0) + 1);
+        return map;
+      }, new Map()).entries()]
+        .sort((a, b) => a[0].localeCompare(b[0], "zh-Hant"))
+        .map(([name, count]) => ({ name, count }));
+
+      return {
+        fileName,
+        sheetName: parsed.sheetName,
+        students,
+        classCounts,
+        changes,
+        errors,
+        warnings,
+        addedCount,
+        changedCount,
+        unchangedCount,
+        removedCount,
+      };
+    }
+    async function handleRosterImportFile(file) {
+      if (currentUser.role !== "admin" || !file) return;
+      state.rosterImportLoading = true;
+      state.rosterImportError = "";
+      state.rosterImportMessage = "";
+      state.rosterImportPreview = null;
+      state.rosterImportFileName = file.name;
+      render();
+      try {
+        if (!window.XLSX?.read) throw new Error("Excel 讀取元件尚未載入，請重新整理頁面後再試。");
+        const workbook = XLSX.read(await file.arrayBuffer(), { type: "array" });
+        const parsed = parseImportedSchoolWorkbook(workbook);
+        state.rosterImportPreview = buildRosterImportPreview(parsed, file.name);
+      } catch (error) {
+        state.rosterImportError = error?.message || "Excel 讀取失敗。";
+      } finally {
+        state.rosterImportLoading = false;
+        render();
+      }
+    }
+    function applyRosterImport() {
+      if (currentUser.role !== "admin") return;
+      const preview = state.rosterImportPreview;
+      if (!preview || preview.errors.length) return;
+      const confirmed = document.getElementById("confirmRosterImport")?.checked;
+      if (!confirmed) {
+        alert("請先勾選不可還原確認。");
+        return;
+      }
+      const accepted = confirm(`確定匯入 ${preview.students.length} 位學生，並直接清除目前所有測試點名紀錄？此動作無法還原。`);
+      if (!accepted) return;
+
+      records = {
+        _roster: {
+          students: {},
+          addedStudents: [],
+          importedStudents: preview.students.map(student => {
+            const { sourceRow, ...savedStudent } = student;
+            return savedStudent;
+          }),
+          importMeta: {
+            termId: data.term.id,
+            label: data.term.label,
+            effectiveDate: data.term.start,
+            fileName: preview.fileName,
+            importedAt: new Date().toISOString(),
+            studentCount: preview.students.length,
+            classCounts: preview.classCounts,
+            testRecordsCleared: true,
+          },
+          clubMembers: {},
+          addedClubMembers: {},
+          afterCareMembers: {},
+          addedAfterCareMembers: [],
+        },
+      };
+      state.date = data.term.start;
+      state.className = preview.classCounts[0]?.name || "";
+      state.rosterImportPreview = null;
+      state.rosterImportFileName = "";
+      state.rosterImportError = "";
+      state.rosterImportMessage = `已匯入 ${preview.students.length} 位學生，並清除測試點名紀錄。`;
+      saveRecordsImmediately();
       render();
     }
     function clubMemberRecord(clubName, key) {
@@ -708,7 +1032,7 @@
     }
     function defaultAfterCareMembers() {
       const members = [];
-      const source = data.students.map(s => mergeRosterStudent(s)).filter(s => {
+      const source = allStudents().filter(s => {
         if (isExcludedClass(s.className)) return false;
         if (s.entryDate && afterCareTermStart < s.entryDate) return false;
         if (s.leaveDate && afterCareTermStart >= s.leaveDate) return false;
@@ -716,20 +1040,23 @@
         return true;
       });
       afterCareGradeGroups.forEach(group => {
-        source
-          .filter(s => group.grades.includes(gradeOfClass(s.className)))
-          .slice()
-          .sort((a, b) => seededScore(studentKey(a)) - seededScore(studentKey(b)) || studentKey(a).localeCompare(studentKey(b)))
-          .slice(0, group.count)
-          .forEach(s => members.push({
-            seq: members.length + 1,
-            name: s.name,
-            className: s.className,
-            phone: phoneForStudentKey(studentKey(s)) || s.phone || "",
-            studentId: s.id,
-            group: group.label,
-            matched: true,
-          }));
+        group.grades.forEach(grade => {
+          source
+            .filter(s => gradeOfClass(s.className) === grade)
+            .slice()
+            .sort((a, b) => seededScore(studentKey(a)) - seededScore(studentKey(b)) || studentKey(a).localeCompare(studentKey(b)))
+            .slice(0, group.perGrade)
+            .forEach(s => members.push({
+              seq: members.length + 1,
+              name: s.name,
+              className: s.className,
+              phone: phoneForStudentKey(studentKey(s)) || s.phone || "",
+              studentId: s.id,
+              group: group.label,
+              groupId: group.id,
+              matched: true,
+            }));
+        });
       });
       return members;
     }
@@ -751,9 +1078,10 @@
         return true;
       }).map((member, index) => ({ ...member, seq: index + 1 }));
     }
-    function afterCareMembersForDisplay(dateText = state.date) {
+    function afterCareMembersForDisplay(dateText = state.date, groupId = "") {
       return effectiveAfterCareMembers().filter(member => {
         if (isExcludedClass(member.className) || !studentByMember(member)) return false;
+        if (groupId && member.groupId !== groupId) return false;
         const rec = afterCareMemberRecord(memberKey(member));
         if (rec.joinDate && dateText < rec.joinDate) return false;
         if (rec.dropDate && dateText >= rec.dropDate) return false;
@@ -773,6 +1101,7 @@
           phone: phoneForStudentKey(studentKeyValue),
           studentId: student.id,
           group: afterCareGradeGroups.find(group => group.grades.includes(gradeOfClass(student.className)))?.label || "",
+          groupId: afterCareGradeGroups.find(group => group.grades.includes(gradeOfClass(student.className)))?.id || "",
           matched: true,
         });
       }
@@ -783,7 +1112,7 @@
       return weekdayLabels[new Date(year, month - 1, date).getDay()];
     }
     function clubMeetsOnDate(club, dateText) {
-      if (dateText < clubTermStart) return false;
+      if (dateText < clubTermStart || dateText > clubTermEnd) return false;
       const weekday = weekdayOf(dateText);
       return (club.weekday || club.name).includes(weekday);
     }
@@ -805,6 +1134,68 @@
       day().morning[key] = { ...morningRecordForKey(key), ...patch, updatedAt: new Date().toISOString() };
       saveRecords();
       if (shouldRender) render();
+    }
+    function followAttendanceTarget(result) {
+      if (!result) return null;
+      return result === "遲到已到"
+        ? { status: "present", label: "到課" }
+        : { status: "absent", label: "未到" };
+    }
+    function attendanceNoteWithFollow(currentNote, follow) {
+      const preservedNotes = String(currentNote || "")
+        .split("；")
+        .map(note => note.trim())
+        .filter(note => note && !note.startsWith("行政追蹤："));
+      const detail = follow.note ? `（${follow.note}）` : "";
+      return preservedNotes.concat(`行政追蹤：${follow.status}${detail}`).join("；");
+    }
+    function syncClubFollowToAttendance(clubName, key) {
+      const follow = followRecord(clubName, key);
+      const target = followAttendanceTarget(follow.status);
+      if (!target) return;
+      const student = findStudentByKey(key);
+      const current = clubRecord(clubName, key);
+      state.followSyncFlash = {
+        kind: "ok",
+        message: `${student?.className || ""} ${student?.name || "學生"}的社團點名已更新為${target.label}。`.trim(),
+      };
+      setClub(clubName, key, {
+        status: target.status,
+        note: attendanceNoteWithFollow(current.note, follow),
+      });
+    }
+    function syncAfterCareFollowToAttendance(key) {
+      const follow = afterCareFollowRecord(key);
+      const target = followAttendanceTarget(follow.status);
+      if (!target) return;
+      const student = findStudentByKey(key);
+      const current = afterCareRecord(key);
+      state.followSyncFlash = {
+        kind: "ok",
+        message: `${student?.className || ""} ${student?.name || "學生"}的課照點名已更新為${target.label}。`.trim(),
+      };
+      setAfterCare(key, {
+        status: target.status,
+        note: attendanceNoteWithFollow(current.note, follow),
+      });
+    }
+    function followSyncFlashHtml() {
+      if (!state.followSyncFlash) return "";
+      return `<div class="panel-body"><span class="pill ${escapeHtml(state.followSyncFlash.kind)}">${escapeHtml(state.followSyncFlash.message)}</span></div>`;
+    }
+    function captureScrollState() {
+      return {
+        windowX: window.scrollX,
+        windowY: window.scrollY,
+      };
+    }
+    function restoreScrollState(scrollState, keepMorningKey = "") {
+      if (!scrollState) return;
+      window.scrollTo(scrollState.windowX, scrollState.windowY);
+      if (keepMorningKey) {
+        const group = Array.from(document.querySelectorAll("[data-morning]")).find(item => item.dataset.morning === keepMorningKey);
+        group?.closest("tr")?.scrollIntoView({ block: "nearest" });
+      }
     }
     function classAttendanceStudents() {
       return activeStudents().filter(s => s.className === state.className);
@@ -861,7 +1252,7 @@
       if (shouldRender) render();
     }
     function markAfterCarePresent() {
-      afterCareMembersForDisplay().forEach(member => {
+      afterCareMembersForDisplay(state.date, state.afterCareGroupId).forEach(member => {
         const key = memberKey(member);
         day().afterCare[key] = {
           ...afterCareRecord(key),
@@ -876,14 +1267,32 @@
       const bucket = day().follow[clubName] || {};
       return bucket[key] || {};
     }
-    function setFollow(clubName, key, patch) {
+    function setFollow(clubName, key, patch, shouldRender = true) {
       day().follow[clubName] ||= {};
       day().follow[clubName][key] = { ...followRecord(clubName, key), ...patch, updatedAt: new Date().toISOString() };
       saveRecords();
-      render();
+      if (shouldRender) render();
+    }
+    function afterCareFollowRecord(key) {
+      return day().afterCareFollow?.[key] || {};
+    }
+    function setAfterCareFollow(key, patch, shouldRender = true) {
+      day().afterCareFollow[key] = { ...afterCareFollowRecord(key), ...patch, updatedAt: new Date().toISOString() };
+      saveRecords();
+      if (shouldRender) render();
     }
     function pickupRecord(key, bucket = "pickup") {
       return day()[bucket]?.[key] || {};
+    }
+    function clubPickupStudentKeysForDate(dateText) {
+      const keys = new Set();
+      clubsForDate(dateText).forEach(club => {
+        clubMembersForDisplay(club, dateText).forEach(member => {
+          const student = studentByMember(member);
+          if (student) keys.add(studentKey(student));
+        });
+      });
+      return keys;
     }
     function setPickup(key, patch, shouldRender = true, bucket = "pickup") {
       day()[bucket] ||= {};
@@ -892,6 +1301,7 @@
       if (shouldRender) render();
     }
     function addPickupStudent(key, bucket = "pickup", defaultTime = "18:00") {
+      if (bucket === "pickup" && !clubPickupStudentKeysForDate(state.date).has(key)) return;
       const student = findStudentByKey(key);
       if (!student) return;
       setPickup(key, {
@@ -915,7 +1325,8 @@
       if (rec.status === "present") return { kind: "ok", text: "到校" };
       if (rec.status === "personal") return { kind: "info", text: "事假" };
       if (rec.status === "sick") return { kind: "info", text: "病假" };
-      return { kind: "danger", text: "未到未確認" };
+      if (rec.status === "unknown") return { kind: "warn", text: "其他" };
+      return { kind: "danger", text: "未到" };
     }
     function classifyClub(clubRec, morningRec) {
       if (clubRec.status === "present") return { kind: "ok", text: "到課" };
@@ -926,17 +1337,40 @@
       }
       return { kind: "warn", text: "未點名" };
     }
+    function classifyAfterCare(rec) {
+      if (!rec) return { kind: "info", text: "無" };
+      if (rec.status === "present") return { kind: "ok", text: "到課" };
+      if (rec.status === "absent") return { kind: "danger", text: "未到" };
+      return { kind: "warn", text: "未點名" };
+    }
     function studentByMember(member) {
       if (isExcludedClass(member.className)) return null;
       if (member.studentId) return allStudents().find(s => s.id === member.studentId);
       return allStudents().find(s => s.name === member.name && s.className === member.className);
     }
-    function clubMembersForDisplay(club) {
+    function afterCareRecordForStudent(student, dateText = state.date, record = dayRecord(dateText)) {
+      if (!student) return null;
+      const key = studentKey(student);
+      const member = afterCareMembersForDisplay(dateText).find(m => memberKey(m) === key || m.studentId === student.id || (m.name === student.name && m.className === student.className));
+      return member ? (record.afterCare?.[memberKey(member)] || {}) : null;
+    }
+    function clubAbsenceFollowContext(member, dateText = state.date, record = dayRecord(dateText)) {
+      const student = studentByMember(member);
+      const morning = student ? (record.morning?.[studentKey(student)] || {}) : {};
+      const afterCare = student ? afterCareRecordForStudent(student, dateText, record) : null;
+      const afterCareSupportsFollow = afterCare === null || afterCare.status === "present";
+      return {
+        morning,
+        afterCare,
+        shouldFollow: !["personal", "sick"].includes(morning.status) && afterCareSupportsFollow,
+      };
+    }
+    function clubMembersForDisplay(club, dateText = state.date) {
       return effectiveClubMembers(club).filter(member => {
         if (isExcludedClass(member.className) || !studentByMember(member)) return false;
         const rec = clubMemberRecord(club.name, memberKey(member));
-        if (rec.joinDate && state.date < rec.joinDate) return false;
-        if (rec.dropDate && state.date >= rec.dropDate) return false;
+        if (rec.joinDate && dateText < rec.joinDate) return false;
+        if (rec.dropDate && dateText >= rec.dropDate) return false;
         if (rec.status === "dropped" && !rec.dropDate) return false;
         return true;
       });
@@ -976,7 +1410,7 @@
             : views;
       const navGroups = [
         { label: "每日點名流程", ids: ["morning", "leave", "afterCare", "club"] },
-        { label: "活動組追蹤", ids: ["follow", "pickup", "teachingFollow", "pickup19"] },
+        { label: "行政端追蹤", ids: ["teachingFollow", "follow", "pickup", "pickup19"] },
       ];
       const grouped = new Set(navGroups.flatMap(group => group.ids));
       const buttonHtml = v => `
@@ -1002,13 +1436,16 @@
         render();
       }));
     }
+    function clubEnrollmentCountForMeta() {
+      return data.clubs.reduce((sum, club) => sum + clubMembersForDisplay(club).length, 0);
+    }
     function baseMeta() {
       const todayClubs = clubsForDate();
       if (state.view === "pickup") {
         return `${slashDate(clubTermStart)}-${slashDate(clubTermEnd)} ｜今日社團 ${todayClubs.length} 個`;
       }
       if (state.view === "dashboard") {
-        return `${data.term.label}｜${data.term.start} 到 ${data.term.end}｜全校學生 ${activeStudents().length} 位｜本學期社團 ${data.clubs.length} 個`;
+        return `${data.term.label}｜${data.term.start} 到 ${data.term.end}｜全校學生 ${activeStudents().length} 位｜課照 ${afterCareGradeGroups.length} 班 ${afterCareMembersForDisplay().length} 位｜社團 ${data.clubs.length} 個 ${clubEnrollmentCountForMeta()} 位`;
       }
       if (state.view === "leave") {
         const absentCount = activeStudents().filter(s => ["personal", "sick", "unknown"].includes(morningRecordForKey(studentKey(s)).status)).length;
@@ -1020,9 +1457,11 @@
         return `${data.term.label}｜${data.term.start} 到 ${data.term.end}｜班級應到學生 ${students.length} 位｜今日缺席 ${absentCount} 個`;
       }
       if (state.view === "afterCare" || state.view === "afterCareRoster") {
-        const members = afterCareMembersForDisplay();
+        const group = selectedAfterCareGroup();
+        const members = state.view === "afterCare" ? afterCareMembersForDisplay(state.date, state.afterCareGroupId) : afterCareMembersForDisplay();
         const absentCount = members.filter(member => afterCareRecord(memberKey(member)).status === "absent").length;
-        return `${data.term.label}｜${afterCareTermStart} 到 ${afterCareTermEnd}｜課照學生 ${members.length} 位｜今日缺席 ${absentCount} 位`;
+        const label = state.view === "afterCare" ? `${group.label}課照學生` : "課照學生";
+        return `${data.term.label}｜${afterCareTermStart} 到 ${afterCareTermEnd}｜${label} ${members.length} 位｜今日缺席 ${absentCount} 位`;
       }
       return `${data.term.label}｜${data.term.start} 到 ${data.term.end}｜有效學生 ${activeStudents().length} 位｜今日社團 ${todayClubs.length} 個`;
     }
@@ -1034,8 +1473,10 @@
     function renderDashboard() {
       const dates = dashboardDates();
       let morningClassDone = 0;
-      let lateCount = 0;
-      let leaveCount = 0;
+      let personalLeaveCount = 0;
+      let sickLeaveCount = 0;
+      let afterCareDoneCount = 0;
+      let afterCareAbsent = 0;
       let clubAbsent = 0;
       let needFollow = [];
       dates.forEach(dateText => {
@@ -1044,19 +1485,32 @@
         activeStudents(dateText).forEach(s => {
           const rec = record.morning?.[studentKey(s)] || {};
           if (rec.status) morningClassSet.add(s.className);
-          if (rec.status === "late") lateCount++;
-          if (["personal", "sick"].includes(rec.status)) leaveCount++;
+          if (rec.status === "personal") personalLeaveCount++;
+          if (rec.status === "sick") sickLeaveCount++;
         });
         morningClassDone += morningClassSet.size;
-        clubsForDate(dateText).forEach(club => clubMembersForDisplay(club).forEach(member => {
+        afterCareGradeGroups.forEach(group => {
+          const members = afterCareMembersForDisplay(dateText, group.id);
+          if (members.some(member => Boolean(record.afterCare?.[memberKey(member)]?.status))) afterCareDoneCount++;
+          members.forEach(member => {
+            if (record.afterCare?.[memberKey(member)]?.status === "absent") afterCareAbsent++;
+          });
+        });
+        clubsForDate(dateText).forEach(club => clubMembersForDisplay(club, dateText).forEach(member => {
           const key = memberKey(member);
           const rec = record.club?.[club.name]?.[key] || {};
           if (rec.status === "absent") {
             clubAbsent++;
-            const s = studentByMember(member);
-            const mrec = s ? (record.morning?.[studentKey(s)] || {}) : {};
-            if (mrec.status === "present" || !["personal", "sick"].includes(mrec.status)) {
-              needFollow.push({ date: dateText, club, member, morning: mrec, follow: record.follow?.[club.name]?.[key] || {} });
+            const context = clubAbsenceFollowContext(member, dateText, record);
+            if (context.shouldFollow) {
+              needFollow.push({
+                date: dateText,
+                club,
+                member,
+                morning: context.morning,
+                afterCare: context.afterCare,
+                follow: record.follow?.[club.name]?.[key] || {},
+              });
             }
           }
         }));
@@ -1065,7 +1519,7 @@
       dates.forEach(dateText => {
         const record = dayRecord(dateText);
         clubsForDate(dateText).forEach(club => {
-          const hasClubRecord = clubMembersForDisplay(club).some(member => {
+          const hasClubRecord = clubMembersForDisplay(club, dateText).some(member => {
             const key = memberKey(member);
             return Boolean(record.club?.[club.name]?.[key]?.status);
           });
@@ -1088,19 +1542,27 @@
           </div>
         </section>
         <div class="grid stats">
-          <div class="stat"><strong>${morningClassDone}</strong><span>8:00已點名班級</span></div>
-          <div class="stat"><strong>${lateCount}</strong><span>遲到人數</span></div>
-          <div class="stat"><strong>${leaveCount}</strong><span>事/病假人數</span></div>
-          <div class="stat"><strong>${clubDoneCount}</strong><span>社團已點名班級</span></div>
-          <div class="stat"><strong>${clubAbsent}</strong><span>社團學生缺席人數</span></div>
+          ${state.dashboardRange === "today" ? `
+            <div class="stat stat-class"><strong>${morningClassDone}</strong><span>8:00已點名班級</span></div>
+            <div class="stat stat-class"><strong>${personalLeaveCount + sickLeaveCount}</strong><span>事/病假人數</span></div>
+            <div class="stat stat-after-care"><strong>${afterCareDoneCount}</strong><span>課照已點名班級</span></div>
+            <div class="stat stat-after-care"><strong>${afterCareAbsent}</strong><span>課照學生缺席人數</span></div>
+            <div class="stat stat-club"><strong>${clubDoneCount}</strong><span>社團已點名班級</span></div>
+            <div class="stat stat-club"><strong>${clubAbsent}</strong><span>社團學生缺席人數</span></div>
+          ` : `
+            <div class="stat stat-class"><strong>${sickLeaveCount}</strong><span>全校病假人數</span></div>
+            <div class="stat stat-class"><strong>${personalLeaveCount}</strong><span>全校事假人數</span></div>
+            <div class="stat stat-after-care"><strong>${afterCareAbsent}</strong><span>課照缺席人數</span></div>
+            <div class="stat stat-club"><strong>${clubAbsent}</strong><span>社團缺席人數</span></div>
+          `}
         </div>
         <div class="grid" style="margin-top:14px">
+          ${renderTeachingFollowPanel(false, dates)}
           <section class="panel">
-            <div class="panel-head"><h3>活動組優先追蹤名單</h3><span class="pill danger">${clubAbsent} 筆社團未到</span></div>
+            <div class="panel-head"><h3>社團異常缺席</h3><span class="pill danger">${needFollow.length} 筆異常缺席</span></div>
             <div class="table-wrap">${followTable(needFollow)}</div>
           </section>
           ${renderPickupPanel(false, dates)}
-          ${renderTeachingFollowPanel(false, dates)}
           ${renderPickupPanel(false, dates, { bucket: "pickup19", title: "19:00 未接回學生", searchProp: "pickup19Search", defaultTime: "19:00" })}
           <section class="panel">
             <div class="panel-head"><h3>社團學生狀態（加退選）</h3></div>
@@ -1147,7 +1609,11 @@
     function classOptions() {
       const counts = new Map();
       activeStudents().forEach(s => counts.set(s.className, (counts.get(s.className) || 0) + 1));
-      const classNames = [...new Set(data.classes.filter(c => !isExcludedClass(c.name)).map(c => c.name).concat([...counts.keys()]))];
+      const imported = rosterStore().importedStudents;
+      const configuredNames = Array.isArray(imported) && imported.length
+        ? []
+        : data.classes.filter(c => !isExcludedClass(c.name)).map(c => c.name);
+      const classNames = [...new Set(configuredNames.concat([...counts.keys()]))];
       return classNames.map(name => `<option value="${escapeHtml(name)}" ${state.className === name ? "selected" : ""}>${escapeHtml(name)}（${counts.get(name) || 0}）</option>`).join("");
     }
     function renderLogin() {
@@ -1180,9 +1646,121 @@
     function clubOptions() {
       return clubsForDate().map(c => `<option value="${escapeHtml(c.name)}" ${state.clubName === c.name ? "selected" : ""}>${escapeHtml(c.name)}（${clubMembersForDisplay(c).length}）</option>`).join("");
     }
+    function selectedAfterCareGroup() {
+      return afterCareGradeGroups.find(group => group.id === state.afterCareGroupId) || afterCareGradeGroups[0];
+    }
+    function afterCareGroupOptions() {
+      return afterCareGradeGroups.map(group => {
+        const count = afterCareMembersForDisplay(state.date, group.id).length;
+        return `<option value="${escapeHtml(group.id)}" ${state.afterCareGroupId === group.id ? "selected" : ""}>${escapeHtml(group.label)}（${count}）</option>`;
+      }).join("");
+    }
+    const morningTodayStatDefs = [
+      { value: "present", label: "到校" },
+      { value: "late", label: "遲到" },
+      { value: "personal", label: "事假" },
+      { value: "sick", label: "病假" },
+      { value: "unknown", label: "其他" },
+      { value: "notMarked", label: "未點名" },
+    ];
+    const morningSummaryStatDefs = [
+      { value: "personal", label: "事假" },
+      { value: "sick", label: "病假" },
+      { value: "other", label: "其他" },
+    ];
+    function morningStatDefsForRange(range) {
+      return range === "today" ? morningTodayStatDefs : morningSummaryStatDefs;
+    }
+    function morningStatLabel(status) {
+      return morningTodayStatDefs.concat(morningSummaryStatDefs).find(item => item.value === status)?.label || status;
+    }
+    function morningStatKind(status) {
+      if (status === "present") return "ok";
+      if (status === "personal" || status === "sick") return "info";
+      if (status === "unknown" || status === "notMarked" || status === "other") return "warn";
+      if (status === "late") return "danger";
+      return "info";
+    }
+    function morningStatBucket(status, range) {
+      if (range === "today") return status || "notMarked";
+      if (status === "personal" || status === "sick") return status;
+      if (status && status !== "present") return "other";
+      return "";
+    }
+    function morningStatsForClass() {
+      const dates = morningStatDates();
+      const defs = morningStatDefsForRange(state.morningRange);
+      const itemsByStatus = Object.fromEntries(defs.map(item => [item.value, []]));
+      dates.forEach(dateText => {
+        const record = dayRecord(dateText);
+        activeStudents(dateText)
+          .filter(s => s.className === state.className)
+          .forEach(s => {
+            const rec = record.morning?.[studentKey(s)] || {};
+            const status = morningStatBucket(rec.status || "", state.morningRange);
+            if (!status) return;
+            if (!itemsByStatus[status]) itemsByStatus[status] = [];
+            itemsByStatus[status].push({ date: dateText, student: s, rec, status, rawStatus: rec.status || "notMarked" });
+          });
+      });
+      return { dates, itemsByStatus };
+    }
+    function renderMorningStats() {
+      const { dates, itemsByStatus } = morningStatsForClass();
+      const defs = morningStatDefsForRange(state.morningRange);
+      const detailStatus = defs.some(item => item.value === state.morningDetailStatus) ? state.morningDetailStatus : "";
+      const detailRows = detailStatus ? itemsByStatus[detailStatus] || [] : [];
+      return `
+        <section class="panel" style="margin-bottom:14px">
+          <div class="panel-head">
+            <h3>8:00 班級點名統計</h3>
+            <div class="filters">
+              <div class="seg" id="morningRange">
+                <button class="${state.morningRange === "today" ? "active" : ""}" data-range="today" type="button">今日</button>
+                <button class="${state.morningRange === "week" ? "active" : ""}" data-range="week" type="button">本週</button>
+                <button class="${state.morningRange === "month" ? "active" : ""}" data-range="month" type="button">本月</button>
+                <button class="${state.morningRange === "term" ? "active" : ""}" data-range="term" type="button">本學期</button>
+              </div>
+              <span class="pill info">${escapeHtml(rangeLabel(state.morningRange, dates))}</span>
+              ${state.morningRange === "today" ? "" : `<span class="pill info">已排除週末與國定假日</span>`}
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="grid stats">
+              ${defs.map(item => `
+                <button class="stat ${detailStatus === item.value ? "active" : ""}" data-morning-stat="${escapeHtml(item.value)}" type="button" aria-label="查看${escapeHtml(item.label)}名單">
+                  <strong>${(itemsByStatus[item.value] || []).length}</strong>
+                  <span>${escapeHtml(item.label)}</span>
+                </button>
+              `).join("")}
+            </div>
+            ${detailStatus ? `
+              <div class="table-wrap" style="margin-top:14px">
+                ${detailRows.length ? `
+                  <table>
+                    <thead><tr><th>日期</th><th>班級</th><th>學生</th><th>狀態</th></tr></thead>
+                    <tbody>
+                      ${detailRows.map(item => `
+                        <tr>
+                          <td>${escapeHtml(item.date)}</td>
+                          <td>${escapeHtml(item.student.className)}</td>
+                          <td><span class="name">${escapeHtml(item.student.name)}</span></td>
+                          <td>${statusPill(morningStatKind(item.rawStatus), item.status === "other" ? `其他（${morningStatLabel(item.rawStatus)}）` : morningStatLabel(item.status))}</td>
+                        </tr>
+                      `).join("")}
+                    </tbody>
+                  </table>
+                ` : `<div class="empty">${escapeHtml(rangeLabel(state.morningRange, dates))}沒有${escapeHtml(morningStatLabel(detailStatus))}學生。</div>`}
+              </div>
+            ` : ""}
+          </div>
+        </section>
+      `;
+    }
     function renderMorning() {
       const students = activeStudents().filter(s => s.className === state.className);
       return `
+        ${renderMorningStats()}
         <section class="panel">
           <div class="panel-head">
             <h3>8:00 班級點名</h3>
@@ -1214,7 +1792,7 @@
               ${morningButton("present", "到校", status)}
               ${morningButton("personal", "事假", status)}
               ${morningButton("sick", "病假", status)}
-              ${morningButton("unknown", "未確認", status)}
+              ${morningButton("unknown", "其他", status)}
             </div>
           </td>
           <td>
@@ -1273,7 +1851,7 @@
           <div class="seg" data-admin-leave="${escapeHtml(key)}">
             <button data-value="personal" type="button">事假</button>
             <button data-value="sick" type="button">病假</button>
-            <button data-value="unknown" type="button">未確認</button>
+            <button data-value="unknown" type="button">其他</button>
           </div>
         </div>
       `;
@@ -1285,7 +1863,7 @@
           const p = classifyMorning(rec);
           return `<tr><td>${escapeHtml(s.className)}</td><td><span class="name">${escapeHtml(s.name)}</span></td><td>${statusPill(p.kind, p.text)}</td><td>${escapeHtml(rec.source || "")}</td><td>${escapeHtml(rec.note || "")}</td></tr>`;
         }).join("");
-      return rows ? `<table><thead><tr><th>班級</th><th>姓名</th><th>狀態</th><th>來源</th><th>備註</th></tr></thead><tbody>${rows}</tbody></table>` : `<div class="empty">今日尚無請假或未確認紀錄。</div>`;
+      return rows ? `<table><thead><tr><th>班級</th><th>姓名</th><th>狀態</th><th>來源</th><th>備註</th></tr></thead><tbody>${rows}</tbody></table>` : `<div class="empty">今日尚無請假或其他紀錄。</div>`;
     }
     function renderClub() {
       const club = ensureSelectedClubForDate();
@@ -1311,7 +1889,7 @@
           </div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>序號</th><th>學生</th><th>電話</th><th>社團點名</th><th>早上狀態</th><th>備註</th></tr></thead>
+              <thead><tr><th>序號</th><th>學生</th><th>電話</th><th>社團點名</th><th>早上狀態</th><th>課照班點名</th><th>備註</th></tr></thead>
               <tbody>${clubMembersForDisplay(club).map(m => clubRow(club, m)).join("")}</tbody>
             </table>
           </div>
@@ -1323,6 +1901,7 @@
       const s = studentByMember(member);
       const morning = s ? morningRecordForKey(studentKey(s)) : {};
       const morningPill = classifyMorning(morning);
+      const afterCarePill = classifyAfterCare(afterCareRecordForStudent(s));
       const rec = clubRecord(club.name, key);
       const latestPhone = phoneForStudentKey(key) || member.phone;
       return `
@@ -1337,6 +1916,7 @@
             </div>
           </td>
           <td>${statusPill(morningPill.kind, morningPill.text)}</td>
+          <td>${statusPill(afterCarePill.kind, afterCarePill.text)}</td>
           <td><input class="inline-note" data-club-note="${escapeHtml(club.name)}" data-member="${escapeHtml(key)}" value="${escapeHtml(rec.note || "")}" placeholder="社團老師備註"></td>
         </tr>
       `;
@@ -1350,15 +1930,17 @@
           </section>
         `;
       }
-      const members = afterCareMembersForDisplay();
+      const group = selectedAfterCareGroup();
+      const members = afterCareMembersForDisplay(state.date, group.id);
       return `
         <section class="panel">
           <div class="panel-head">
             <h3>課照班點名</h3>
             <div class="filters">
+              <label class="control">年段<select id="afterCareGroupSelect">${afterCareGroupOptions()}</select></label>
               <button class="primary" id="markAfterCarePresentBtn" type="button">全到</button>
               <span class="pill info">${escapeHtml(state.date)} 星期${weekdayOf(state.date)}</span>
-              <span class="pill info">${members.length} 位學生</span>
+              <span class="pill info">${escapeHtml(group.label)} ${members.length} 位學生</span>
             </div>
           </div>
           <div class="table-wrap">
@@ -1379,7 +1961,7 @@
       return `
         <tr>
           <td>${escapeHtml(member.seq || "")}</td>
-          <td><div class="name">${escapeHtml(member.name || "")}</div><div class="sub">${escapeHtml(member.className || "")} ${escapeHtml(member.group || "")}</div></td>
+          <td><div class="name">${escapeHtml(member.name || "")}</div><div class="sub">${escapeHtml(member.className || "")}</div></td>
           <td>${escapeHtml(phoneForStudentKey(key) || member.phone || "")}</td>
           <td>
             <div class="seg" data-after-care="${escapeHtml(key)}">
@@ -1398,10 +1980,16 @@
         const key = memberKey(member);
         const rec = clubRecord(club.name, key);
         if (rec.status !== "absent") return;
-        const s = studentByMember(member);
-        const morning = s ? morningRecordForKey(studentKey(s)) : {};
-        const autoClosed = morning.status === "personal" || morning.status === "sick";
-        if (!autoClosed) items.push({ club, member, morning, follow: followRecord(club.name, key) });
+        const context = clubAbsenceFollowContext(member);
+        if (context.shouldFollow) {
+          items.push({
+            club,
+            member,
+            morning: context.morning,
+            afterCare: context.afterCare,
+            follow: followRecord(club.name, key),
+          });
+        }
       }));
       return items;
     }
@@ -1409,40 +1997,23 @@
       const items = collectNeedFollow();
       return `
         <section class="panel">
-          <div class="panel-head"><h3>社團學生缺席</h3><span class="pill danger">${items.length} 位需處理</span></div>
+          <div class="panel-head"><h3>社團學生異常缺席</h3><span class="pill danger">${items.length} 位需處理</span></div>
+          ${followSyncFlashHtml()}
           <div class="table-wrap">${followTable(items, true)}</div>
         </section>
         ${renderPickupPanel(false)}
       `;
     }
     function renderTeachingFollowPanel(editable = true, dateList = [state.date]) {
-      const rows = collectAfterCareAbsences(dateList).map(item => {
-        const morningPill = classifyMorning(item.morning);
-        const pickup19 = item.record.pickup19?.[item.key] || {};
-        return `
-          <tr>
-            <td>${escapeHtml(item.date)}</td>
-            <td>${escapeHtml(item.member.className || "")}</td>
-            <td><div class="name">${escapeHtml(item.member.name || "")}</div><div class="sub">${escapeHtml(item.member.studentId || "")}</div></td>
-            <td>${statusPill("danger", "未到")}</td>
-            <td>${statusPill(morningPill.kind, morningPill.text)}</td>
-            <td>${pickup19.status ? statusPill("info", pickup19.status) : statusPill("warn", "尚未列入")}</td>
-            <td>${escapeHtml(item.afterCare.note || "")}</td>
-          </tr>
-        `;
-      });
+      const items = collectAfterCareAbsences(dateList);
       return `
         <section class="panel">
           <div class="panel-head">
-            <h3>課後班缺席學生</h3>
-            <span class="pill info">${dateList.length} 日範圍</span>
+            <h3>課照班異常缺席</h3>
+            <span class="pill danger">${items.length} 位需處理</span>
           </div>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>日期</th><th>班級</th><th>學生</th><th>課後班</th><th>缺席狀態</th><th>1900 未接回學生</th><th>備註</th></tr></thead>
-              <tbody>${rows.length ? rows.join("") : `<tr><td colspan="7"><div class="empty">目前沒有課後班缺席學生紀錄。</div></td></tr>`}</tbody>
-            </table>
-          </div>
+          ${editable ? followSyncFlashHtml() : ""}
+          <div class="table-wrap">${afterCareFollowTable(items, editable, dateList.length > 1)}</div>
         </section>
       `;
     }
@@ -1455,41 +2026,89 @@
           const afterCare = record.afterCare?.[key] || {};
           if (afterCare.status !== "absent") return;
           const student = studentByMember(member);
+          const morning = student ? (record.morning?.[studentKey(student)] || {}) : {};
+          if (["personal", "sick"].includes(morning.status)) return;
           rows.push({
             date: dateText,
             key,
             member,
             afterCare,
-            morning: student ? (record.morning?.[studentKey(student)] || {}) : {},
-            record,
+            morning,
+            follow: record.afterCareFollow?.[key] || {},
           });
         });
       });
       return rows;
     }
-    function followTable(items, editable = false) {
-      if (!items.length) return `<div class="empty">目前沒有需要活動組追蹤的社團缺席學生。</div>`;
+    function afterCareFollowTable(items, editable = false, showDate = false) {
+      if (!items.length) return `<div class="empty">目前沒有需要行政端追蹤的課照班異常缺席紀錄。</div>`;
       return `
         <table>
-          <thead><tr><th>社團</th><th>學生</th><th>電話</th><th>早上狀態</th><th>追蹤結果</th><th>紀錄</th></tr></thead>
+          <thead><tr>${showDate ? "<th>日期</th>" : ""}<th>課照班</th><th>學生</th><th>電話</th><th>早上狀態</th><th>課照班點名</th><th>追蹤結果</th><th>紀錄</th>${editable ? "<th>課照點名</th>" : ""}</tr></thead>
+          <tbody>${items.map(item => {
+            const morningPill = classifyMorning(item.morning);
+            const follow = item.follow || {};
+            const target = followAttendanceTarget(follow.status);
+            return `
+              <tr>
+                ${showDate ? `<td>${escapeHtml(item.date)}</td>` : ""}
+                <td>${escapeHtml(item.member.group || "課照班")}</td>
+                <td><div class="name">${escapeHtml(item.member.name || "")}</div><div class="sub">${escapeHtml(item.member.className || "")}</div></td>
+                <td>${escapeHtml(phoneForStudentKey(item.key) || item.member.phone || "")}</td>
+                <td>${statusPill(morningPill.kind, morningPill.text)}</td>
+                <td>${statusPill("danger", "未到")}</td>
+                <td>
+                  ${editable ? `
+                    <select data-after-care-follow-status="${escapeHtml(item.key)}">
+                      ${followStatusOptions.map(value => `<option value="${value}" ${follow.status === value ? "selected" : ""}>${value || "待處理"}</option>`).join("")}
+                    </select>
+                  ` : statusPill(follow.status ? "info" : "warn", follow.status || "待處理")}
+                </td>
+                <td>${editable ? `<input class="inline-note" data-after-care-follow-note="${escapeHtml(item.key)}" value="${escapeHtml(follow.note || "")}" placeholder="例如：在圖書館、家長已接回">` : escapeHtml(follow.note || "")}</td>
+                ${editable ? `
+                  <td>
+                    <button class="secondary" data-sync-after-care-follow="${escapeHtml(item.key)}" type="button" ${target ? "" : "disabled"}>更新課照點名</button>
+                    ${target ? `<div class="sub">更新為${escapeHtml(target.label)}</div>` : ""}
+                  </td>
+                ` : ""}
+              </tr>
+            `;
+          }).join("")}</tbody>
+        </table>
+      `;
+    }
+    function followTable(items, editable = false) {
+      if (!items.length) return `<div class="empty">目前沒有需要活動組追蹤的社團學生異常缺席紀錄。</div>`;
+      return `
+        <table>
+          <thead><tr><th>社團</th><th>學生</th><th>電話</th><th>早上狀態</th><th>課照班點名</th><th>追蹤結果</th><th>紀錄</th>${editable ? "<th>社團點名</th>" : ""}</tr></thead>
           <tbody>${items.map(item => {
             const key = memberKey(item.member);
             const mp = classifyMorning(item.morning);
+            const ap = classifyAfterCare(item.afterCare);
             const fr = item.follow || {};
+            const target = followAttendanceTarget(fr.status);
             return `
               <tr>
                 <td>${escapeHtml(item.club.name)}</td>
                 <td><div class="name">${escapeHtml(item.member.name)}</div><div class="sub">${escapeHtml(item.member.className)}</div></td>
                 <td>${escapeHtml(phoneForStudentKey(key) || item.member.phone)}</td>
                 <td>${statusPill(mp.kind, mp.text)}</td>
+                <td>${statusPill(ap.kind, ap.text)}</td>
                 <td>
                   ${editable ? `
                     <select data-follow-status="${escapeHtml(item.club.name)}" data-member="${escapeHtml(key)}">
-                      ${["", "已請假", "人在校內其他地點", "聯繫家長中", "未確認"].map(x => `<option value="${x}" ${fr.status === x ? "selected" : ""}>${x || "待處理"}</option>`).join("")}
+                      ${followStatusOptions.map(x => `<option value="${x}" ${fr.status === x ? "selected" : ""}>${x || "待處理"}</option>`).join("")}
                     </select>
                   ` : statusPill(fr.status ? "info" : "warn", fr.status || "待處理")}
                 </td>
                 <td>${editable ? `<input class="inline-note" data-follow-note="${escapeHtml(item.club.name)}" data-member="${escapeHtml(key)}" value="${escapeHtml(fr.note || "")}" placeholder="例如：在圖書館、家長已接回">` : escapeHtml(fr.note || "")}</td>
+                ${editable ? `
+                  <td>
+                    <button class="secondary" data-sync-club-follow="${escapeHtml(key)}" data-club-name="${escapeHtml(item.club.name)}" type="button" ${target ? "" : "disabled"}>更新社團點名</button>
+                    ${target ? `<div class="sub">更新為${escapeHtml(target.label)}</div>` : ""}
+                  </td>
+                ` : ""}
               </tr>
             `;
           }).join("")}</tbody>
@@ -1512,7 +2131,8 @@
       const results = bucket === "pickup" ? clubResults : searchResults;
       const pickupRows = dateList.flatMap(dateText => Object.entries(dayRecord(dateText)[bucket] || {})
         .map(([key, rec]) => ({ key, rec, date: dateText })))
-        .filter(item => !isExcludedClass(item.rec.className));
+        .filter(item => !isExcludedClass(item.rec.className))
+        .filter(item => bucket !== "pickup" || clubPickupStudentKeysForDate(item.date).has(item.key));
       const waitingCount = pickupRows.filter(item => !item.rec.finalPickupTime || item.rec.finalPickupTime === defaultTime).length;
       return `
         <section class="panel" style="margin-top:14px">
@@ -1580,6 +2200,121 @@
             `;
           }).join("")}</tbody>
         </table>
+      `;
+    }
+    function rosterImportIssueList(items, kind) {
+      if (!items.length) return "";
+      return `
+        <section class="panel">
+          <div class="panel-head">
+            <h3>${kind === "danger" ? "必須修正" : "匯入提醒"}</h3>
+            <span class="pill ${kind}">${items.length} 項</span>
+          </div>
+          <div class="panel-body">
+            ${items.map(item => `<div class="result"><div>${escapeHtml(item)}</div></div>`).join("")}
+          </div>
+        </section>
+      `;
+    }
+    function rosterImportChangeRow(change) {
+      const before = change.before;
+      const after = change.after;
+      const display = after || before || {};
+      const kind = change.kind === "新增" ? "info" : change.kind === "異動" ? "warn" : "danger";
+      const beforeText = before ? `${before.className || ""} ${before.seat || ""}號｜${before.phone || "無電話"}` : "無";
+      const afterText = after ? `${after.className || ""} ${after.seat || ""}號｜${after.phone || "無電話"}` : "不列入新名冊";
+      return `
+        <tr>
+          <td>${statusPill(kind, change.kind)}</td>
+          <td><div class="name">${escapeHtml(display.name || "")}</div><div class="sub">${escapeHtml(display.id || "")}</div></td>
+          <td>${escapeHtml(beforeText)}</td>
+          <td>${escapeHtml(afterText)}</td>
+        </tr>
+      `;
+    }
+    function renderRosterImport() {
+      if (currentUser.role !== "admin") return `<div class="empty">此功能僅限行政人員使用。</div>`;
+      const preview = state.rosterImportPreview;
+      const importMeta = rosterStore().importMeta;
+      return `
+        <div class="grid">
+          <section class="panel">
+            <div class="panel-head">
+              <h3>115-1 全校學生名冊</h3>
+              ${importMeta ? statusPill("ok", `目前 ${importMeta.studentCount || 0} 位`) : statusPill("warn", "尚未匯入正式名冊")}
+            </div>
+            <div class="panel-body">
+              <div class="filters">
+                <label class="control">生效日期<input type="date" value="${escapeHtml(data.term.start)}" disabled></label>
+                <label class="control">全校學生名單
+                  <input id="rosterImportFile" type="file" accept=".xlsx,.xls">
+                </label>
+                ${state.rosterImportLoading ? statusPill("info", "讀取中") : ""}
+              </div>
+              ${importMeta ? `
+                <div class="sub" style="margin-top:10px">
+                  ${escapeHtml(importMeta.fileName || "")}｜${escapeHtml(importMeta.importedAt ? new Date(importMeta.importedAt).toLocaleString("zh-TW") : "")}
+                </div>
+              ` : ""}
+              ${state.rosterImportMessage ? `<div style="margin-top:12px">${statusPill("ok", state.rosterImportMessage)}</div>` : ""}
+              ${state.rosterImportError ? `<div style="margin-top:12px">${statusPill("danger", state.rosterImportError)}</div>` : ""}
+            </div>
+          </section>
+        </div>
+        ${preview ? `
+          <div class="grid stats" style="margin-top:14px">
+            <div class="stat"><strong>${preview.students.length}</strong><span>匯入學生</span></div>
+            <div class="stat"><strong>${preview.classCounts.length}</strong><span>班級數</span></div>
+            <div class="stat"><strong>${preview.addedCount}</strong><span>新增學生</span></div>
+            <div class="stat"><strong>${preview.changedCount}</strong><span>資料異動</span></div>
+            <div class="stat"><strong>${preview.removedCount}</strong><span>不續用學生</span></div>
+          </div>
+          <div class="grid" style="margin-top:14px">
+            <section class="panel">
+              <div class="panel-head">
+                <h3>班級人數</h3>
+                <span class="pill info">${escapeHtml(preview.sheetName)}</span>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>班級</th><th>人數</th></tr></thead>
+                  <tbody>${preview.classCounts.map(item => `<tr><td>${escapeHtml(item.name)}</td><td>${item.count}</td></tr>`).join("")}</tbody>
+                </table>
+              </div>
+            </section>
+            ${rosterImportIssueList(preview.errors, "danger")}
+            ${rosterImportIssueList(preview.warnings, "warn")}
+            <section class="panel">
+              <div class="panel-head">
+                <h3>名冊差異</h3>
+                <span class="pill info">${preview.changes.length} 筆</span>
+              </div>
+              <div class="table-wrap">
+                ${preview.changes.length ? `
+                  <table>
+                    <thead><tr><th>異動</th><th>學生</th><th>目前資料</th><th>新名冊</th></tr></thead>
+                    <tbody>${preview.changes.slice(0, 200).map(rosterImportChangeRow).join("")}</tbody>
+                  </table>
+                ` : `<div class="empty">新名冊與目前名冊相同。</div>`}
+              </div>
+            </section>
+            <section class="panel">
+              <div class="panel-head">
+                <h3>正式匯入</h3>
+                ${preview.errors.length ? statusPill("danger", "無法匯入") : statusPill("ok", "檢查通過")}
+              </div>
+              <div class="panel-body">
+                <label class="result">
+                  <input id="confirmRosterImport" type="checkbox" ${preview.errors.length ? "disabled" : ""}>
+                  <span>我確認直接清除目前所有測試點名紀錄，且不建立備份。</span>
+                </label>
+                <div style="margin-top:12px">
+                  <button class="danger-btn" id="applyRosterImportBtn" type="button" disabled>正式匯入並清除測試紀錄</button>
+                </div>
+              </div>
+            </section>
+          </div>
+        ` : ""}
       `;
     }
     function renderClassRoster() {
@@ -1869,15 +2604,30 @@
       `;
     }
     function bindEvents() {
-      document.getElementById("classSelect")?.addEventListener("change", e => { state.className = e.target.value; render(); });
+      document.getElementById("classSelect")?.addEventListener("change", e => {
+        state.className = e.target.value;
+        state.morningDetailStatus = "";
+        render();
+      });
       document.getElementById("markClassPresentBtn")?.addEventListener("click", markClassPresent);
       document.getElementById("clubSelect")?.addEventListener("change", e => { state.clubName = e.target.value; render(); });
       document.getElementById("markClubPresentBtn")?.addEventListener("click", markClubPresent);
+      document.getElementById("afterCareGroupSelect")?.addEventListener("change", e => { state.afterCareGroupId = e.target.value; render(); });
       document.getElementById("markAfterCarePresentBtn")?.addEventListener("click", markAfterCarePresent);
       document.getElementById("pickupClubSelect")?.addEventListener("change", e => { state.pickupClubName = e.target.value; render(); });
       document.getElementById("pickupClubDoneBtn")?.addEventListener("click", () => { state.pickupClubName = ""; render(); });
       document.querySelectorAll("#dashboardRange button").forEach(btn => btn.addEventListener("click", e => {
         state.dashboardRange = e.target.dataset.range;
+        render();
+      }));
+      document.querySelectorAll("#morningRange button").forEach(btn => btn.addEventListener("click", e => {
+        state.morningRange = e.currentTarget.dataset.range;
+        state.morningDetailStatus = "";
+        render();
+      }));
+      document.querySelectorAll("[data-morning-stat]").forEach(btn => btn.addEventListener("click", e => {
+        const status = e.currentTarget.dataset.morningStat;
+        state.morningDetailStatus = state.morningDetailStatus === status ? "" : status;
         render();
       }));
       document.getElementById("adminSourceSelect")?.addEventListener("change", e => { state.adminSource = e.target.value; });
@@ -1970,6 +2720,15 @@
           entryDate: document.getElementById("newStudentEntry")?.value || state.date,
         });
       });
+      document.getElementById("rosterImportFile")?.addEventListener("change", e => {
+        const file = e.target.files?.[0];
+        if (file) handleRosterImportFile(file);
+      });
+      document.getElementById("confirmRosterImport")?.addEventListener("change", e => {
+        const applyButton = document.getElementById("applyRosterImportBtn");
+        if (applyButton) applyButton.disabled = !e.target.checked || Boolean(state.rosterImportPreview?.errors.length);
+      });
+      document.getElementById("applyRosterImportBtn")?.addEventListener("click", applyRosterImport);
       document.querySelectorAll("[data-morning] button").forEach(btn => btn.addEventListener("click", e => {
         const group = e.target.closest("[data-morning]");
         const key = group.dataset.morning;
@@ -1997,15 +2756,31 @@
         wrap.querySelectorAll("button").forEach(button => button.classList.toggle("active", button === e.target));
       }));
       document.querySelectorAll("[data-after-care-note]").forEach(input => input.addEventListener("change", e => setAfterCare(e.target.dataset.afterCareNote, { note: e.target.value })));
-      document.querySelectorAll("[data-follow-status]").forEach(input => input.addEventListener("change", e => setFollow(e.target.dataset.followStatus, e.target.dataset.member, { status: e.target.value })));
-      document.querySelectorAll("[data-follow-note]").forEach(input => input.addEventListener("change", e => setFollow(e.target.dataset.followNote, e.target.dataset.member, { note: e.target.value })));
+      document.querySelectorAll("[data-follow-status]").forEach(input => input.addEventListener("change", e => {
+        state.followSyncFlash = null;
+        setFollow(e.target.dataset.followStatus, e.target.dataset.member, { status: e.target.value });
+      }));
+      document.querySelectorAll("[data-follow-note]").forEach(input => input.addEventListener("change", e => setFollow(e.target.dataset.followNote, e.target.dataset.member, { note: e.target.value }, false)));
+      document.querySelectorAll("[data-after-care-follow-status]").forEach(input => input.addEventListener("change", e => {
+        state.followSyncFlash = null;
+        setAfterCareFollow(e.target.dataset.afterCareFollowStatus, { status: e.target.value });
+      }));
+      document.querySelectorAll("[data-after-care-follow-note]").forEach(input => input.addEventListener("change", e => setAfterCareFollow(e.target.dataset.afterCareFollowNote, { note: e.target.value }, false)));
+      document.querySelectorAll("[data-sync-club-follow]").forEach(button => button.addEventListener("click", e => {
+        syncClubFollowToAttendance(e.currentTarget.dataset.clubName, e.currentTarget.dataset.syncClubFollow);
+      }));
+      document.querySelectorAll("[data-sync-after-care-follow]").forEach(button => button.addEventListener("click", e => {
+        syncAfterCareFollowToAttendance(e.currentTarget.dataset.syncAfterCareFollow);
+      }));
       document.querySelectorAll("[data-pickup-add]").forEach(btn => btn.addEventListener("click", e => {
         const bucket = e.target.dataset.pickupBucket || "pickup";
         addPickupStudent(e.target.dataset.pickupAdd, bucket, bucket === "pickup19" ? "19:00" : "18:00");
       }));
       document.querySelectorAll("[data-pickup-teacher]").forEach(input => {
-        input.addEventListener("input", e => setPickup(e.target.dataset.pickupTeacher, { teacher: e.target.value }, false, e.target.dataset.pickupBucket || "pickup"));
         input.addEventListener("change", e => setPickup(e.target.dataset.pickupTeacher, { teacher: e.target.value }, false, e.target.dataset.pickupBucket || "pickup"));
+        input.addEventListener("keydown", e => {
+          if (e.key === "Enter") e.currentTarget.blur();
+        });
       });
       document.querySelectorAll("[data-pickup-time]").forEach(input => {
         input.addEventListener("input", e => setPickup(e.target.dataset.pickupTime, { finalPickupTime: e.target.value }, false, e.target.dataset.pickupBucket || "pickup"));
@@ -2042,7 +2817,9 @@
       document.querySelectorAll("[data-after-care-member-join]").forEach(input => input.addEventListener("change", e => setAfterCareMemberRoster(e.target.dataset.afterCareMemberJoin, { joinDate: e.target.value })));
       document.querySelectorAll("[data-after-care-member-drop]").forEach(input => input.addEventListener("change", e => setAfterCareMemberRoster(e.target.dataset.afterCareMemberDrop, { dropDate: e.target.value })));
     }
-    function render() {
+    function render(options = {}) {
+      const preserveScroll = options.preserveScroll === true;
+      const scrollState = preserveScroll ? captureScrollState() : null;
       if (currentUser.role === "guest") {
         renderLogin();
         return;
@@ -2060,6 +2837,10 @@
       }
       if (currentUser.role === "afterCareTeacher") {
         state.view = "afterCare";
+      }
+      if (currentUser.role === "admin") {
+        const availableClasses = [...new Set(activeStudents().map(student => student.className))];
+        if (availableClasses.length && !availableClasses.includes(state.className)) state.className = availableClasses[0];
       }
       buildNav();
       const view = views.find(v => v.id === state.view) || views[0];
@@ -2093,12 +2874,25 @@
       else if (state.view === "classRoster") app.innerHTML = renderClassRoster();
       else if (state.view === "clubRoster") app.innerHTML = renderClubRoster();
       else if (state.view === "afterCareRoster") app.innerHTML = renderAfterCareRoster();
+      else if (state.view === "rosterImport") app.innerHTML = renderRosterImport();
       else app.innerHTML = renderDashboard();
       bindEvents();
+      if (preserveScroll) {
+        const restore = () => restoreScrollState(scrollState, options.keepMorningKey || "");
+        requestAnimationFrame(() => {
+          restore();
+          requestAnimationFrame(restore);
+          setTimeout(restore, 80);
+        });
+      }
     }
     document.getElementById("dateInput").min = data.term.start;
     document.getElementById("dateInput").max = data.term.end;
-    document.getElementById("dateInput").addEventListener("change", e => { state.date = e.target.value; render(); });
+    document.getElementById("dateInput").addEventListener("change", e => {
+      state.date = e.target.value;
+      warnForNonSchoolDate(state.date);
+      render();
+    });
     document.getElementById("clearBtn").addEventListener("click", () => {
       if (!confirm(`確定清除 ${state.date} 的點名紀錄？名冊資料不會被刪除。`)) return;
       delete records[state.date];
