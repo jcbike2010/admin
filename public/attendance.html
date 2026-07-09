@@ -399,7 +399,14 @@
     const data = window.ATTENDANCE_DATA;
     const clubTermStart = data.term.clubStart || "2026-08-31";
     const clubTermEnd = data.term.clubEnd || "2026-12-24";
+    const afterCareTermStart = data.term.start || "2026-08-17";
+    const afterCareTermEnd = data.term.end || "2026-12-31";
     const weekdayLabels = ["日", "一", "二", "三", "四", "五", "六"];
+    const afterCareGradeGroups = [
+      { id: "low", label: "一二年級", grades: ["一", "二"], count: 10 },
+      { id: "middle", label: "三四年級", grades: ["三", "四"], count: 10 },
+      { id: "high", label: "五六年級", grades: ["五", "六"], count: 10 },
+    ];
     const excludedClasses = new Set(["瓢蟲", "蜻蜓", "蝴蝶"]);
     const teacherClassByAccount = {
       "101": "一甲",
@@ -438,6 +445,9 @@
       if (account === "121" && password === "121") {
         return { role: "clubTeacher", className: "", account };
       }
+      if (account === "111" && password === "111") {
+        return { role: "afterCareTeacher", className: "", account };
+      }
       if (teacherClassByAccount[account] && password === account) {
         return { role: "teacher", className: teacherClassByAccount[account], account };
       }
@@ -447,6 +457,7 @@
       { id: "dashboard", title: "總覽", icon: "▦" },
       { id: "morning", title: "08:00 班級點名", icon: "☑" },
       { id: "leave", title: "請假登記", navTitle: "行政端 請假登記", icon: "☎" },
+      { id: "afterCare", title: "課照班點名", icon: "◍" },
       { id: "club", title: "16:10 社團點名", icon: "◉" },
       { id: "follow", title: "活動組追蹤", icon: "⌕" },
       { id: "pickup", title: "17:40 社團未接回學生", icon: "⏱" },
@@ -454,6 +465,7 @@
       { id: "pickup19", title: "19:00 未接回學生", icon: "◷" },
       { id: "classRoster", title: "班級學生管理", icon: "✎" },
       { id: "clubRoster", title: "社團學生管理", icon: "＋" },
+      { id: "afterCareRoster", title: "課照學生管理", icon: "⊕" },
     ];
     const storageKey = "bojia-attendance-v1";
     const firebaseConfig = {
@@ -486,7 +498,7 @@
       return data.term.end;
     }
     const state = {
-      view: currentUser.role === "teacher" ? "morning" : currentUser.role === "clubTeacher" ? "club" : "dashboard",
+      view: currentUser.role === "teacher" ? "morning" : currentUser.role === "clubTeacher" ? "club" : currentUser.role === "afterCareTeacher" ? "afterCare" : "dashboard",
       date: initialAttendanceDate(),
       className: currentUser.className || data.classes.find(c => !excludedClasses.has(c.name))?.name || "",
       clubName: data.clubs[0]?.name || "",
@@ -499,6 +511,7 @@
       rosterSearch: "",
       clubRosterSearch: "",
       clubRosterName: data.clubs[0]?.name || "",
+      afterCareRosterSearch: "",
       dashboardRange: "today",
     };
 
@@ -552,11 +565,15 @@
       }
     }
     function day() {
-      records[state.date] ||= { morning: {}, club: {}, follow: {} };
+      records[state.date] ||= { morning: {}, club: {}, afterCare: {}, follow: {} };
+      records[state.date].morning ||= {};
+      records[state.date].club ||= {};
+      records[state.date].afterCare ||= {};
+      records[state.date].follow ||= {};
       return records[state.date];
     }
     function dayRecord(dateText) {
-      return records[dateText] || { morning: {}, club: {}, follow: {}, pickup: {} };
+      return records[dateText] || { morning: {}, club: {}, afterCare: {}, follow: {}, pickup: {} };
     }
     function formatDate(date) {
       const year = date.getFullYear();
@@ -610,11 +627,13 @@
       return excludedClasses.has(className);
     }
     function rosterStore() {
-      records._roster ||= { students: {}, addedStudents: [], clubMembers: {}, addedClubMembers: {} };
+      records._roster ||= { students: {}, addedStudents: [], clubMembers: {}, addedClubMembers: {}, afterCareMembers: {}, addedAfterCareMembers: [] };
       records._roster.students ||= {};
       records._roster.addedStudents ||= [];
       records._roster.clubMembers ||= {};
       records._roster.addedClubMembers ||= {};
+      records._roster.afterCareMembers ||= {};
+      records._roster.addedAfterCareMembers ||= [];
       return records._roster;
     }
     function mergeRosterStudent(s) {
@@ -677,6 +696,87 @@
         });
       }
       setClubMemberRoster(clubName, studentKeyValue, { joinDate: state.date, status: "active" });
+    }
+    function gradeOfClass(className = "") {
+      return String(className).trim().slice(0, 1);
+    }
+    function seededScore(value) {
+      let hash = 0;
+      const text = `aftercare-115-1-${value}`;
+      for (let i = 0; i < text.length; i++) hash = (hash * 31 + text.charCodeAt(i)) >>> 0;
+      return hash;
+    }
+    function defaultAfterCareMembers() {
+      const members = [];
+      const source = data.students.map(s => mergeRosterStudent(s)).filter(s => {
+        if (isExcludedClass(s.className)) return false;
+        if (s.entryDate && afterCareTermStart < s.entryDate) return false;
+        if (s.leaveDate && afterCareTermStart >= s.leaveDate) return false;
+        if (s.status === "transferred" && !s.leaveDate) return false;
+        return true;
+      });
+      afterCareGradeGroups.forEach(group => {
+        source
+          .filter(s => group.grades.includes(gradeOfClass(s.className)))
+          .slice()
+          .sort((a, b) => seededScore(studentKey(a)) - seededScore(studentKey(b)) || studentKey(a).localeCompare(studentKey(b)))
+          .slice(0, group.count)
+          .forEach(s => members.push({
+            seq: members.length + 1,
+            name: s.name,
+            className: s.className,
+            phone: phoneForStudentKey(studentKey(s)) || s.phone || "",
+            studentId: s.id,
+            group: group.label,
+            matched: true,
+          }));
+      });
+      return members;
+    }
+    function afterCareMemberRecord(key) {
+      return rosterStore().afterCareMembers?.[key] || {};
+    }
+    function setAfterCareMemberRoster(key, patch, shouldRender = true) {
+      rosterStore().afterCareMembers[key] = { ...afterCareMemberRecord(key), ...patch, updatedAt: new Date().toISOString() };
+      saveRecords();
+      if (shouldRender) render();
+    }
+    function effectiveAfterCareMembers() {
+      const added = rosterStore().addedAfterCareMembers || [];
+      const seen = new Set();
+      return defaultAfterCareMembers().concat(added).filter(member => {
+        const key = memberKey(member);
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      }).map((member, index) => ({ ...member, seq: index + 1 }));
+    }
+    function afterCareMembersForDisplay(dateText = state.date) {
+      return effectiveAfterCareMembers().filter(member => {
+        if (isExcludedClass(member.className) || !studentByMember(member)) return false;
+        const rec = afterCareMemberRecord(memberKey(member));
+        if (rec.joinDate && dateText < rec.joinDate) return false;
+        if (rec.dropDate && dateText >= rec.dropDate) return false;
+        if (rec.status === "dropped" && !rec.dropDate) return false;
+        return true;
+      });
+    }
+    function addAfterCareRosterMember(studentKeyValue) {
+      const student = findStudentByKey(studentKeyValue);
+      if (!student) return;
+      const exists = effectiveAfterCareMembers().some(member => memberKey(member) === studentKeyValue);
+      if (!exists) {
+        rosterStore().addedAfterCareMembers.push({
+          seq: effectiveAfterCareMembers().length + 1,
+          name: student.name,
+          className: student.className,
+          phone: phoneForStudentKey(studentKeyValue),
+          studentId: student.id,
+          group: afterCareGradeGroups.find(group => group.grades.includes(gradeOfClass(student.className)))?.label || "",
+          matched: true,
+        });
+      }
+      setAfterCareMemberRoster(studentKeyValue, { joinDate: state.date, status: "active" });
     }
     function weekdayOf(dateText) {
       const [year, month, date] = dateText.split("-").map(Number);
@@ -745,6 +845,26 @@
         day().club[club.name] ||= {};
         day().club[club.name][key] = {
           ...clubRecord(club.name, key),
+          status: "present",
+          updatedAt: new Date().toISOString(),
+        };
+      });
+      saveRecords();
+      render();
+    }
+    function afterCareRecord(key) {
+      return day().afterCare[key] || {};
+    }
+    function setAfterCare(key, patch, shouldRender = true) {
+      day().afterCare[key] = { ...afterCareRecord(key), ...patch, updatedAt: new Date().toISOString() };
+      saveRecords();
+      if (shouldRender) render();
+    }
+    function markAfterCarePresent() {
+      afterCareMembersForDisplay().forEach(member => {
+        const key = memberKey(member);
+        day().afterCare[key] = {
+          ...afterCareRecord(key),
           status: "present",
           updatedAt: new Date().toISOString(),
         };
@@ -851,9 +971,11 @@
         ? views.filter(v => teacherViews.has(v.id))
         : currentUser.role === "clubTeacher"
           ? views.filter(v => v.id === "club")
-          : views;
+          : currentUser.role === "afterCareTeacher"
+            ? views.filter(v => v.id === "afterCare")
+            : views;
       const navGroups = [
-        { label: "每日點名流程", ids: ["morning", "leave", "club"] },
+        { label: "每日點名流程", ids: ["morning", "leave", "afterCare", "club"] },
         { label: "活動組追蹤", ids: ["follow", "pickup", "teachingFollow", "pickup19"] },
       ];
       const grouped = new Set(navGroups.flatMap(group => group.ids));
@@ -862,7 +984,7 @@
           <span class="icon">${v.icon}</span><span>${v.navTitle || v.title}</span>
         </button>
       `;
-      if (currentUser.role === "teacher" || currentUser.role === "clubTeacher") {
+      if (currentUser.role === "teacher" || currentUser.role === "clubTeacher" || currentUser.role === "afterCareTeacher") {
         document.getElementById("nav").innerHTML = visibleViews.map(buttonHtml).join("");
       } else {
         document.getElementById("nav").innerHTML = visibleViews.map(v => {
@@ -896,6 +1018,11 @@
         const students = classAttendanceStudents();
         const absentCount = students.filter(s => ["personal", "sick", "unknown"].includes(morningRecordForKey(studentKey(s)).status)).length;
         return `${data.term.label}｜${data.term.start} 到 ${data.term.end}｜班級應到學生 ${students.length} 位｜今日缺席 ${absentCount} 個`;
+      }
+      if (state.view === "afterCare" || state.view === "afterCareRoster") {
+        const members = afterCareMembersForDisplay();
+        const absentCount = members.filter(member => afterCareRecord(memberKey(member)).status === "absent").length;
+        return `${data.term.label}｜${afterCareTermStart} 到 ${afterCareTermEnd}｜課照學生 ${members.length} 位｜今日缺席 ${absentCount} 位`;
       }
       return `${data.term.label}｜${data.term.start} 到 ${data.term.end}｜有效學生 ${activeStudents().length} 位｜今日社團 ${todayClubs.length} 個`;
     }
@@ -1038,7 +1165,7 @@
         error.style.display = "none";
         currentUser = user;
         localStorage.setItem(userStorageKey, JSON.stringify(currentUser));
-        state.view = currentUser.role === "teacher" ? "morning" : currentUser.role === "clubTeacher" ? "club" : "dashboard";
+        state.view = currentUser.role === "teacher" ? "morning" : currentUser.role === "clubTeacher" ? "club" : currentUser.role === "afterCareTeacher" ? "afterCare" : "dashboard";
         if (currentUser.className) state.className = currentUser.className;
         render();
       };
@@ -1214,6 +1341,57 @@
         </tr>
       `;
     }
+    function renderAfterCare() {
+      if (state.date < afterCareTermStart || state.date > afterCareTermEnd) {
+        return `
+          <section class="panel">
+            <div class="panel-head"><h3>課照班點名</h3><span class="pill warn">${escapeHtml(state.date)} 非課照班點名期間</span></div>
+            <div class="empty">課照班點名期間為 ${afterCareTermStart} 到 ${afterCareTermEnd}。</div>
+          </section>
+        `;
+      }
+      const members = afterCareMembersForDisplay();
+      return `
+        <section class="panel">
+          <div class="panel-head">
+            <h3>課照班點名</h3>
+            <div class="filters">
+              <button class="primary" id="markAfterCarePresentBtn" type="button">全到</button>
+              <span class="pill info">${escapeHtml(state.date)} 星期${weekdayOf(state.date)}</span>
+              <span class="pill info">${members.length} 位學生</span>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>序號</th><th>學生</th><th>電話</th><th>課照點名</th><th>早上狀態</th><th>備註</th></tr></thead>
+              <tbody>${members.map(member => afterCareRow(member)).join("")}</tbody>
+            </table>
+          </div>
+        </section>
+      `;
+    }
+    function afterCareRow(member) {
+      const key = memberKey(member);
+      const s = studentByMember(member);
+      const morning = s ? morningRecordForKey(studentKey(s)) : {};
+      const morningPill = classifyMorning(morning);
+      const rec = afterCareRecord(key);
+      return `
+        <tr>
+          <td>${escapeHtml(member.seq || "")}</td>
+          <td><div class="name">${escapeHtml(member.name || "")}</div><div class="sub">${escapeHtml(member.className || "")} ${escapeHtml(member.group || "")}</div></td>
+          <td>${escapeHtml(phoneForStudentKey(key) || member.phone || "")}</td>
+          <td>
+            <div class="seg" data-after-care="${escapeHtml(key)}">
+              <button class="${rec.status === "present" ? "active" : ""}" data-value="present" type="button">到課</button>
+              <button class="${rec.status === "absent" ? "active" : ""}" data-value="absent" type="button">未到</button>
+            </div>
+          </td>
+          <td>${statusPill(morningPill.kind, morningPill.text)}</td>
+          <td><input class="inline-note" data-after-care-note="${escapeHtml(key)}" value="${escapeHtml(rec.note || "")}" placeholder="課照老師備註"></td>
+        </tr>
+      `;
+    }
     function collectNeedFollow() {
       const items = [];
       clubsForDate().forEach(club => clubMembersForDisplay(club).forEach(member => {
@@ -1238,7 +1416,21 @@
       `;
     }
     function renderTeachingFollowPanel(editable = true, dateList = [state.date]) {
-      const rows = [];
+      const rows = collectAfterCareAbsences(dateList).map(item => {
+        const morningPill = classifyMorning(item.morning);
+        const pickup19 = item.record.pickup19?.[item.key] || {};
+        return `
+          <tr>
+            <td>${escapeHtml(item.date)}</td>
+            <td>${escapeHtml(item.member.className || "")}</td>
+            <td><div class="name">${escapeHtml(item.member.name || "")}</div><div class="sub">${escapeHtml(item.member.studentId || "")}</div></td>
+            <td>${statusPill("danger", "未到")}</td>
+            <td>${statusPill(morningPill.kind, morningPill.text)}</td>
+            <td>${pickup19.status ? statusPill("info", pickup19.status) : statusPill("warn", "尚未列入")}</td>
+            <td>${escapeHtml(item.afterCare.note || "")}</td>
+          </tr>
+        `;
+      });
       return `
         <section class="panel">
           <div class="panel-head">
@@ -1253,6 +1445,27 @@
           </div>
         </section>
       `;
+    }
+    function collectAfterCareAbsences(dateList = [state.date]) {
+      const rows = [];
+      dateList.forEach(dateText => {
+        const record = dayRecord(dateText);
+        afterCareMembersForDisplay(dateText).forEach(member => {
+          const key = memberKey(member);
+          const afterCare = record.afterCare?.[key] || {};
+          if (afterCare.status !== "absent") return;
+          const student = studentByMember(member);
+          rows.push({
+            date: dateText,
+            key,
+            member,
+            afterCare,
+            morning: student ? (record.morning?.[studentKey(student)] || {}) : {},
+            record,
+          });
+        });
+      });
+      return rows;
     }
     function followTable(items, editable = false) {
       if (!items.length) return `<div class="empty">目前沒有需要活動組追蹤的社團缺席學生。</div>`;
@@ -1554,11 +1767,113 @@
         </tr>
       `;
     }
+    function renderAfterCareRoster() {
+      const q = state.afterCareRosterSearch.trim();
+      const candidates = activeStudents().filter(s => q && `${s.name} ${s.className} ${s.id}`.includes(q)).slice(0, 12);
+      const members = effectiveAfterCareMembers().filter(m => !isExcludedClass(m.className) && studentByMember(m));
+      const currentCount = afterCareMembersForDisplay().length;
+      const scheduledJoinCount = members.filter(member => isScheduledAfterCareJoin(member)).length;
+      const scheduledDropCount = members.filter(member => isScheduledAfterCareDrop(member)).length;
+      const droppedCount = members.filter(member => isDroppedAfterCareMember(member)).length;
+      return `
+        <div class="grid">
+          <section class="panel">
+            <div class="panel-head">
+              <h3>加入課照學生</h3>
+              <span class="pill info">初始名單：一二年級 10 位、三四年級 10 位、五六年級 10 位</span>
+            </div>
+            <div class="panel-body">
+              <div class="search-line">
+                <input id="afterCareRosterSearch" value="${escapeHtml(state.afterCareRosterSearch)}" placeholder="搜尋姓名、班級或學號，加入課照班">
+                <button class="primary" id="afterCareRosterSearchBtn" type="button">搜尋</button>
+                <button class="secondary" id="afterCareRosterClearBtn" type="button">清除</button>
+              </div>
+              <div class="result-list">
+                ${candidates.map(s => afterCareRosterCandidate(s)).join("") || `<div class="empty">搜尋學生後，可加入課照班。</div>`}
+              </div>
+            </div>
+          </section>
+          <section class="panel">
+            <div class="panel-head">
+              <h3>課照學生名冊</h3>
+              <div class="filters">
+                <span class="pill info">目前 ${currentCount} 位</span>
+                <span class="pill info">${scheduledJoinCount} 位預計加入</span>
+                <span class="pill warn">${scheduledDropCount} 位預計退出</span>
+                <span class="pill danger">${droppedCount} 位已退出</span>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>序號</th><th>年段</th><th>班級</th><th>學生</th><th>電話</th><th>狀態</th><th>異動</th><th>加入日期</th><th>退出日期</th></tr></thead>
+                <tbody>${members.map(member => afterCareRosterRow(member)).join("")}</tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      `;
+    }
+    function isScheduledAfterCareJoin(member) {
+      const rec = afterCareMemberRecord(memberKey(member));
+      return Boolean(rec.joinDate && state.date < rec.joinDate);
+    }
+    function isScheduledAfterCareDrop(member) {
+      const rec = afterCareMemberRecord(memberKey(member));
+      return Boolean(rec.status === "dropped" && rec.dropDate && state.date < rec.dropDate);
+    }
+    function isDroppedAfterCareMember(member) {
+      const rec = afterCareMemberRecord(memberKey(member));
+      return Boolean(rec.status === "dropped" && (!rec.dropDate || state.date >= rec.dropDate));
+    }
+    function afterCareRosterCandidate(s) {
+      const key = studentKey(s);
+      const exists = effectiveAfterCareMembers().some(member => memberKey(member) === key);
+      return `
+        <div class="result">
+          <div><div class="name">${escapeHtml(s.name)}</div><div class="sub">${escapeHtml(s.className)} ${escapeHtml(s.id)} ${escapeHtml(phoneForStudentKey(key) || "")}</div></div>
+          <button class="${exists ? "secondary" : "primary"}" data-after-care-roster-add="${escapeHtml(key)}" type="button">${exists ? "已在課照班" : "加入課照班"}</button>
+        </div>
+      `;
+    }
+    function afterCareRosterRow(member) {
+      const key = memberKey(member);
+      const student = studentByMember(member);
+      const rec = afterCareMemberRecord(key);
+      const status = rec.status || "active";
+      const scheduledJoin = isScheduledAfterCareJoin(member);
+      const scheduledDrop = isScheduledAfterCareDrop(member);
+      const dropped = isDroppedAfterCareMember(member);
+      const rowClass = dropped ? "roster-transferred" : scheduledJoin || scheduledDrop ? "roster-new" : "";
+      const changePills = [
+        scheduledJoin ? statusPill("info", "預計加入") : "",
+        scheduledDrop ? statusPill("warn", "預計退出") : "",
+        dropped ? statusPill("danger", "已退出") : "",
+      ].join("");
+      return `
+        <tr class="${rowClass}">
+          <td>${escapeHtml(member.seq || "")}</td>
+          <td>${escapeHtml(member.group || "")}</td>
+          <td>${escapeHtml(member.className || "")}</td>
+          <td><div class="name">${escapeHtml(member.name || "")}</div><div class="sub">${escapeHtml(member.studentId || student?.id || key)}</div></td>
+          <td>${escapeHtml(phoneForStudentKey(key) || member.phone || "")}</td>
+          <td>
+            <select data-after-care-member-status="${escapeHtml(key)}">
+              <option value="active" ${status !== "dropped" ? "selected" : ""}>參加中</option>
+              <option value="dropped" ${status === "dropped" ? "selected" : ""}>已退出</option>
+            </select>
+          </td>
+          <td>${changePills || statusPill("ok", "參加中")}</td>
+          <td><input data-after-care-member-join="${escapeHtml(key)}" type="date" value="${escapeHtml(rec.joinDate || afterCareTermStart)}"></td>
+          <td><input data-after-care-member-drop="${escapeHtml(key)}" type="date" value="${escapeHtml(rec.dropDate || "")}"></td>
+        </tr>
+      `;
+    }
     function bindEvents() {
       document.getElementById("classSelect")?.addEventListener("change", e => { state.className = e.target.value; render(); });
       document.getElementById("markClassPresentBtn")?.addEventListener("click", markClassPresent);
       document.getElementById("clubSelect")?.addEventListener("change", e => { state.clubName = e.target.value; render(); });
       document.getElementById("markClubPresentBtn")?.addEventListener("click", markClubPresent);
+      document.getElementById("markAfterCarePresentBtn")?.addEventListener("click", markAfterCarePresent);
       document.getElementById("pickupClubSelect")?.addEventListener("change", e => { state.pickupClubName = e.target.value; render(); });
       document.getElementById("pickupClubDoneBtn")?.addEventListener("click", () => { state.pickupClubName = ""; render(); });
       document.querySelectorAll("#dashboardRange button").forEach(btn => btn.addEventListener("click", e => {
@@ -1616,6 +1931,21 @@
         state.clubRosterSearch = "";
         render();
       });
+      document.getElementById("afterCareRosterSearch")?.addEventListener("input", e => { state.afterCareRosterSearch = e.target.value; });
+      document.getElementById("afterCareRosterSearch")?.addEventListener("keydown", e => {
+        if (e.key === "Enter") {
+          state.afterCareRosterSearch = e.target.value;
+          render();
+        }
+      });
+      document.getElementById("afterCareRosterSearchBtn")?.addEventListener("click", () => {
+        state.afterCareRosterSearch = document.getElementById("afterCareRosterSearch")?.value || "";
+        render();
+      });
+      document.getElementById("afterCareRosterClearBtn")?.addEventListener("click", () => {
+        state.afterCareRosterSearch = "";
+        render();
+      });
       document.getElementById("addRosterStudentBtn")?.addEventListener("click", () => {
         const name = document.getElementById("newStudentName")?.value.trim();
         const className = document.getElementById("newStudentClass")?.value.trim();
@@ -1661,6 +1991,12 @@
         wrap.querySelectorAll("button").forEach(button => button.classList.toggle("active", button === e.target));
       }));
       document.querySelectorAll("[data-club-note]").forEach(input => input.addEventListener("change", e => setClub(e.target.dataset.clubNote, e.target.dataset.member, { note: e.target.value })));
+      document.querySelectorAll("[data-after-care] button").forEach(btn => btn.addEventListener("click", e => {
+        const wrap = e.target.closest("[data-after-care]");
+        setAfterCare(wrap.dataset.afterCare, { status: e.target.dataset.value }, false);
+        wrap.querySelectorAll("button").forEach(button => button.classList.toggle("active", button === e.target));
+      }));
+      document.querySelectorAll("[data-after-care-note]").forEach(input => input.addEventListener("change", e => setAfterCare(e.target.dataset.afterCareNote, { note: e.target.value })));
       document.querySelectorAll("[data-follow-status]").forEach(input => input.addEventListener("change", e => setFollow(e.target.dataset.followStatus, e.target.dataset.member, { status: e.target.value })));
       document.querySelectorAll("[data-follow-note]").forEach(input => input.addEventListener("change", e => setFollow(e.target.dataset.followNote, e.target.dataset.member, { note: e.target.value })));
       document.querySelectorAll("[data-pickup-add]").forEach(btn => btn.addEventListener("click", e => {
@@ -1688,6 +2024,7 @@
       document.querySelectorAll("[data-roster-entry]").forEach(input => input.addEventListener("change", e => setRosterStudent(e.target.dataset.rosterEntry, { entryDate: e.target.value })));
       document.querySelectorAll("[data-roster-leave]").forEach(input => input.addEventListener("change", e => setRosterStudent(e.target.dataset.rosterLeave, { leaveDate: e.target.value })));
       document.querySelectorAll("[data-club-roster-add]").forEach(btn => btn.addEventListener("click", e => addClubRosterMember(state.clubRosterName, e.target.dataset.clubRosterAdd)));
+      document.querySelectorAll("[data-after-care-roster-add]").forEach(btn => btn.addEventListener("click", e => addAfterCareRosterMember(e.target.dataset.afterCareRosterAdd)));
       document.querySelectorAll("[data-club-member-status]").forEach(input => input.addEventListener("change", e => {
         const patch = { status: e.target.value };
         if (e.target.value === "dropped" && !clubMemberRecord(e.target.dataset.clubMemberStatus, e.target.dataset.member).dropDate) patch.dropDate = state.date;
@@ -1696,6 +2033,14 @@
       }));
       document.querySelectorAll("[data-club-member-join]").forEach(input => input.addEventListener("change", e => setClubMemberRoster(e.target.dataset.clubMemberJoin, e.target.dataset.member, { joinDate: e.target.value })));
       document.querySelectorAll("[data-club-member-drop]").forEach(input => input.addEventListener("change", e => setClubMemberRoster(e.target.dataset.clubMemberDrop, e.target.dataset.member, { dropDate: e.target.value })));
+      document.querySelectorAll("[data-after-care-member-status]").forEach(input => input.addEventListener("change", e => {
+        const patch = { status: e.target.value };
+        if (e.target.value === "dropped" && !afterCareMemberRecord(e.target.dataset.afterCareMemberStatus).dropDate) patch.dropDate = state.date;
+        if (e.target.value === "active") patch.dropDate = "";
+        setAfterCareMemberRoster(e.target.dataset.afterCareMemberStatus, patch);
+      }));
+      document.querySelectorAll("[data-after-care-member-join]").forEach(input => input.addEventListener("change", e => setAfterCareMemberRoster(e.target.dataset.afterCareMemberJoin, { joinDate: e.target.value })));
+      document.querySelectorAll("[data-after-care-member-drop]").forEach(input => input.addEventListener("change", e => setAfterCareMemberRoster(e.target.dataset.afterCareMemberDrop, { dropDate: e.target.value })));
     }
     function render() {
       if (currentUser.role === "guest") {
@@ -1712,6 +2057,9 @@
       }
       if (currentUser.role === "clubTeacher") {
         state.view = "club";
+      }
+      if (currentUser.role === "afterCareTeacher") {
+        state.view = "afterCare";
       }
       buildNav();
       const view = views.find(v => v.id === state.view) || views[0];
@@ -1736,6 +2084,7 @@
       const app = document.getElementById("app");
       if (state.view === "morning") app.innerHTML = renderMorning();
       else if (state.view === "leave") app.innerHTML = renderLeave();
+      else if (state.view === "afterCare") app.innerHTML = renderAfterCare();
       else if (state.view === "club") app.innerHTML = renderClub();
       else if (state.view === "follow") app.innerHTML = renderFollow();
       else if (state.view === "pickup") app.innerHTML = renderPickupPanel(true);
@@ -1743,6 +2092,7 @@
       else if (state.view === "pickup19") app.innerHTML = renderPickupPanel(true, [state.date], { bucket: "pickup19", title: "19:00 未接回學生", searchProp: "pickup19Search", defaultTime: "19:00" });
       else if (state.view === "classRoster") app.innerHTML = renderClassRoster();
       else if (state.view === "clubRoster") app.innerHTML = renderClubRoster();
+      else if (state.view === "afterCareRoster") app.innerHTML = renderAfterCareRoster();
       else app.innerHTML = renderDashboard();
       bindEvents();
     }
