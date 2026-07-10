@@ -425,6 +425,39 @@
       color: #ffffff;
       font-size: 14px;
     }
+    .mobile-nav-bar,
+    .mobile-menu-backdrop {
+      display: none;
+    }
+    .mobile-nav-current {
+      min-width: 0;
+      display: grid;
+      gap: 2px;
+    }
+    .mobile-nav-current span {
+      color: #cbd5e1;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .mobile-nav-current strong {
+      color: #ffffff;
+      font-size: 17px;
+      line-height: 1.25;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .mobile-menu-toggle {
+      flex: 0 0 auto;
+      min-height: 42px;
+      border: 1px solid rgba(255, 255, 255, .18);
+      border-radius: 10px;
+      padding: 8px 14px;
+      color: #ffffff;
+      background: #2563eb;
+      font-weight: 800;
+      box-shadow: 0 10px 24px rgba(37, 99, 235, .28);
+    }
     main {
       width: 100%;
       min-width: 0;
@@ -769,22 +802,74 @@
     @media (max-width: 980px) {
       .shell { grid-template-columns: 1fr; }
       aside {
-        position: static;
+        position: sticky;
+        top: 0;
+        z-index: 60;
         min-height: auto;
-        padding: 16px;
+        padding: 10px 12px;
+        display: block;
+        border-right: 0;
+        border-bottom: 1px solid rgba(255, 255, 255, .12);
+        box-shadow: 0 10px 28px rgba(15, 23, 42, .16);
+      }
+      aside .brand,
+      .side-card {
+        display: none;
+      }
+      .mobile-nav-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      body.mobile-menu-open {
+        overflow: hidden;
+      }
+      body.mobile-menu-open .mobile-menu-backdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, .55);
+        z-index: 70;
       }
       nav {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-        gap: 6px;
+        display: none;
       }
-      .nav-group, .nav-group-box { grid-column: 1 / -1; }
+      body.mobile-menu-open nav {
+        display: grid;
+        position: fixed;
+        top: 66px;
+        left: 12px;
+        right: 12px;
+        max-height: calc(100dvh - 82px);
+        overflow-y: auto;
+        grid-template-columns: 1fr;
+        gap: 8px;
+        margin-top: 0;
+        padding: 12px;
+        border: 1px solid rgba(255, 255, 255, .12);
+        border-radius: 16px;
+        background: #17202b;
+        box-shadow: 0 24px 60px rgba(15, 23, 42, .36);
+        z-index: 80;
+      }
+      .nav-group, .nav-group-box {
+        grid-column: 1 / -1;
+        display: grid;
+        gap: 8px;
+        margin: 0;
+        padding: 10px;
+        border: 1px solid rgba(255, 255, 255, .10);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, .045);
+      }
       .nav-group-label {
         display: block;
-        margin: 8px 2px 4px;
+        margin: 0 2px 2px;
       }
       .nav-btn {
         justify-content: flex-start;
+        width: 100%;
       }
       .nav-btn span:last-child {
         display: inline;
@@ -959,11 +1044,19 @@
   </div>
   <div class="shell" id="appShell" style="display: grid;">
     <aside>
+      <div class="mobile-nav-bar">
+        <div class="mobile-nav-current">
+          <span>目前頁面</span>
+          <strong id="mobileViewTitle">總覽</strong>
+        </div>
+        <button class="mobile-menu-toggle" id="mobileMenuToggle" type="button" aria-controls="nav" aria-expanded="false">功能</button>
+      </div>
+      <div class="mobile-menu-backdrop" id="mobileMenuBackdrop"></div>
       <div class="brand">
         <h1>博嘉點名系統</h1>
         <p id="termLabel">115學年度上學期｜2026-08-17 - 2026-12-31</p>
       </div>
-      <nav id="nav">
+      <nav id="nav" aria-label="主要功能">
         <button class="nav-btn " data-view="dashboard" type="button">
           <span class="icon">▦</span><span>總覽</span>
         </button>
@@ -1182,6 +1275,7 @@
     }
     const state = {
       view: currentUser.role === "teacher" ? "morning" : currentUser.role === "clubTeacher" ? "club" : currentUser.role === "afterCareTeacher" ? "afterCare" : "dashboard",
+      mobileMenuOpen: false,
       date: initialAttendanceDate(),
       className: currentUser.className || data.classes.find(c => !excludedClasses.has(c.name))?.name || "",
       clubName: data.clubs[0]?.name || "",
@@ -2052,6 +2146,18 @@
       }
       return "";
     }
+    function updateMobileMenuState() {
+      document.body.classList.toggle("mobile-menu-open", state.mobileMenuOpen);
+      const toggle = document.getElementById("mobileMenuToggle");
+      if (toggle) {
+        toggle.textContent = state.mobileMenuOpen ? "關閉" : "功能";
+        toggle.setAttribute("aria-expanded", String(state.mobileMenuOpen));
+      }
+    }
+    function closeMobileMenu() {
+      state.mobileMenuOpen = false;
+      updateMobileMenuState();
+    }
     function buildNav() {
       const teacherViews = new Set(["morning", "classRoster"]);
       const visibleViews = currentUser.role === "teacher"
@@ -2085,8 +2191,12 @@
         }).join("");
       }
       document.querySelectorAll(".nav-btn").forEach(btn => btn.addEventListener("click", () => {
-        state.view = btn.dataset.view;
+        const nextView = btn.dataset.view;
+        const changed = state.view !== nextView;
+        state.view = nextView;
+        state.mobileMenuOpen = false;
         render();
+        if (changed) requestAnimationFrame(() => window.scrollTo({ top: 0, left: 0, behavior: "auto" }));
       }));
     }
     function clubEnrollmentCountForMeta() {
@@ -2270,6 +2380,8 @@
       return classNames.map(name => `<option value="${escapeHtml(name)}" ${state.className === name ? "selected" : ""}>${escapeHtml(name)}（${counts.get(name) || 0}）</option>`).join("");
     }
     function renderLogin() {
+      state.mobileMenuOpen = false;
+      updateMobileMenuState();
       document.getElementById("loginScreen").style.display = "flex";
       document.getElementById("appShell").style.display = "none";
       const accountInput = document.getElementById("loginAccount");
@@ -3625,6 +3737,9 @@
       const viewTitle = document.getElementById("viewTitle");
       const viewMeta = document.getElementById("viewMeta");
       const metaText = baseMeta();
+      const mobileViewTitle = document.getElementById("mobileViewTitle");
+      if (mobileViewTitle) mobileViewTitle.textContent = view.navTitle || view.title;
+      updateMobileMenuState();
       viewTitle.classList.toggle("club-main-title", state.view === "pickup");
       if (state.view === "pickup") {
         viewTitle.innerHTML = `115-1課外社團<span class="club-subtitle">${escapeHtml(metaText)}</span>`;
@@ -3664,6 +3779,14 @@
         });
       }
     }
+    document.getElementById("mobileMenuToggle")?.addEventListener("click", () => {
+      state.mobileMenuOpen = !state.mobileMenuOpen;
+      updateMobileMenuState();
+    });
+    document.getElementById("mobileMenuBackdrop")?.addEventListener("click", closeMobileMenu);
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape" && state.mobileMenuOpen) closeMobileMenu();
+    });
     document.getElementById("dateInput").min = data.term.start;
     document.getElementById("dateInput").max = data.term.end;
     document.getElementById("dateInput").addEventListener("change", e => {
@@ -3681,6 +3804,7 @@
       localStorage.removeItem(userStorageKey);
       currentUser = { role: "guest", className: "" };
       state.view = "dashboard";
+      state.mobileMenuOpen = false;
       render();
     });
     document.getElementById("exportBtn").addEventListener("click", () => {
