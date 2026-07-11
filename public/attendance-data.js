@@ -4209,7 +4209,7 @@ window.ATTENDANCE_DATA = {
     },
     {
       "name": "弦樂B團-中大提琴",
-      "weekday": "",
+      "weekday": "四",
       "dates": [
         "2026-03-05",
         "2026-03-12",

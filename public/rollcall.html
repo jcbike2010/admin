@@ -397,6 +397,12 @@
       background: #2563eb;
       box-shadow: 0 10px 22px rgba(37, 99, 235, .28);
     }
+    .nav-action-btn {
+      font-weight: 800;
+    }
+    .mobile-menu-only {
+      display: none;
+    }
     .nav-btn .icon {
       width: 10px;
       height: 10px;
@@ -485,6 +491,9 @@
       color: var(--muted);
       font-size: 13px;
     }
+    body.hide-page-topbar .topbar {
+      display: none;
+    }
     .controls {
       display: flex;
       flex-wrap: wrap;
@@ -496,6 +505,27 @@
       font-size: 12px;
       font-weight: 800;
       gap: 5px;
+    }
+    .topbar-controls {
+      align-items: flex-end;
+    }
+    .date-control {
+      min-width: 220px;
+      color: #101828;
+      font-size: 16px;
+      font-weight: 900;
+    }
+    .date-control input {
+      min-height: 50px;
+      border: 2px solid #2563eb;
+      border-radius: 10px;
+      color: #101828;
+      font-size: 18px;
+      font-weight: 850;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, .08);
+    }
+    .desktop-logout-btn {
+      align-self: flex-end;
     }
     input, select, textarea {
       min-height: 44px;
@@ -551,6 +581,10 @@
       grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));
       gap: 14px;
     }
+    .morning-stats-grid {
+      grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+      gap: 8px;
+    }
     .stat {
       min-height: 108px;
       border: 1px solid #d9e2ef;
@@ -579,6 +613,20 @@
       color: #475467;
       font-size: 13px;
       font-weight: 800;
+    }
+    .morning-stats-grid .stat {
+      min-height: 66px;
+      padding: 10px 12px 10px 16px;
+      border-radius: 10px;
+    }
+    .morning-stats-grid .stat strong {
+      font-size: 21px;
+      line-height: 1;
+    }
+    .morning-stats-grid .stat span {
+      margin-top: 3px;
+      font-size: 14px;
+      line-height: 1.2;
     }
     .stat.stat-class {
       background: linear-gradient(180deg, #eff6ff 0%, #ffffff 100%);
@@ -764,6 +812,199 @@
     .compact-empty {
       padding: 12px;
     }
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 120;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      background: rgba(15, 23, 42, .55);
+    }
+    .modal-backdrop.open {
+      display: flex;
+    }
+    .modal-panel {
+      width: min(520px, 100%);
+      border: 1px solid #d9e2ef;
+      border-radius: 16px;
+      background: #ffffff;
+      box-shadow: 0 24px 70px rgba(15, 23, 42, .24);
+      overflow: hidden;
+    }
+    .modal-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 18px 20px;
+      border-bottom: 1px solid #e4eaf3;
+      background: #f8fafc;
+    }
+    .modal-head h3 {
+      margin: 0;
+      color: #101828;
+      font-size: 20px;
+      font-weight: 850;
+    }
+    .modal-body {
+      display: grid;
+      gap: 14px;
+      padding: 18px 20px;
+    }
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 0 20px 20px;
+    }
+    .panel-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .meta-detail-btn {
+      min-height: auto;
+      display: inline-flex;
+      align-items: center;
+      border: 0;
+      border-bottom: 2px solid rgba(220, 38, 38, .45);
+      border-radius: 0;
+      padding: 1px 2px;
+      background: transparent;
+      color: var(--danger);
+      font: inherit;
+      font-weight: 900;
+      cursor: pointer;
+    }
+    .meta-detail-btn:hover,
+    .meta-detail-btn:focus-visible {
+      border-bottom-color: var(--danger);
+      outline: none;
+    }
+    .meta-detail-static {
+      color: #667085;
+      font-weight: 800;
+    }
+    .absence-detail-table {
+      table-layout: fixed;
+    }
+    .absence-detail-table th,
+    .absence-detail-table td {
+      padding: 10px 12px;
+    }
+    .absence-detail-table th:nth-child(1),
+    .absence-detail-table td:nth-child(1) { width: 35%; }
+    .teacher-leave-grid {
+      display: grid;
+      grid-template-columns: minmax(160px, .9fr) minmax(200px, 1.15fr) minmax(180px, 1fr);
+      gap: 12px;
+      align-items: start;
+    }
+    .teacher-leave-page {
+      width: min(1040px, 100%);
+      margin: 0 auto;
+    }
+    .teacher-leave-page .panel + .panel {
+      margin-top: 28px;
+    }
+    .teacher-leave-page .teacher-leave-grid {
+      padding: 20px 20px 0;
+    }
+    .teacher-leave-page .panel-actions {
+      justify-content: center;
+      margin: 18px 20px 20px;
+    }
+    .teacher-leave-history-panel .table-wrap {
+      padding: 18px 20px 20px;
+    }
+    .panel-head h3.teacher-leave-page-title {
+      color: #0f3d75;
+      font-size: 30px;
+      font-weight: 950;
+      line-height: 1.2;
+    }
+    .teacher-leave-grid .control {
+      color: #101828;
+      font-size: 15px;
+      font-weight: 900;
+      gap: 7px;
+    }
+    .teacher-leave-grid input,
+    .teacher-leave-grid select,
+    .teacher-leave-grid textarea {
+      min-height: 52px;
+      color: #101828;
+      font-size: 16px;
+      font-weight: 760;
+      line-height: 1.45;
+    }
+    .teacher-leave-grid .reason-field textarea {
+      min-height: 52px;
+    }
+    .teacher-leave-grid .course-field select {
+      min-width: 100%;
+    }
+    .teacher-leave-grid input[readonly] {
+      background: #f8fafc;
+      color: #475467;
+    }
+    .teacher-leave-field-hint {
+      display: block;
+      margin-top: 5px;
+      color: #667085;
+      font-size: 12px;
+      font-weight: 750;
+      line-height: 1.35;
+    }
+    .teacher-leave-field-hint.makeup {
+      color: #b42318;
+      font-weight: 900;
+    }
+    .teacher-leave-notice {
+      margin: 0 0 12px;
+      padding: 12px 14px;
+      border: 1px solid #fed7aa;
+      border-radius: 12px;
+      background: #fff7ed;
+      color: #9a3412;
+      font-weight: 800;
+      line-height: 1.5;
+    }
+    .teacher-leave-review-table {
+      table-layout: fixed;
+    }
+    .teacher-leave-review-table th,
+    .teacher-leave-review-table td {
+      padding: 10px 8px;
+      line-height: 1.35;
+    }
+    .teacher-leave-review-table th:nth-child(1),
+    .teacher-leave-review-table td:nth-child(1) { width: 92px; }
+    .teacher-leave-review-table th:nth-child(2),
+    .teacher-leave-review-table td:nth-child(2) { width: 150px; }
+    .teacher-leave-review-table th:nth-child(3),
+    .teacher-leave-review-table td:nth-child(3) { width: 96px; }
+    .teacher-leave-review-table th:nth-child(7),
+    .teacher-leave-review-table td:nth-child(7) { width: 104px; }
+    .teacher-leave-review-table th:nth-child(8),
+    .teacher-leave-review-table td:nth-child(8) { width: 116px; }
+    .export-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .export-location {
+      padding: 12px 14px;
+      border: 1px solid #d9e2ef;
+      border-radius: 12px;
+      background: #f8fafc;
+      color: #475467;
+      font-size: 14px;
+      line-height: 1.5;
+    }
     .login {
       min-height: 100dvh;
       display: grid;
@@ -871,12 +1112,19 @@
         justify-content: flex-start;
         width: 100%;
       }
+      .mobile-menu-only {
+        display: flex;
+        margin-top: 4px;
+        border-top: 1px solid rgba(255, 255, 255, .12);
+        border-radius: 0 0 9px 9px;
+      }
       .nav-btn span:last-child {
         display: inline;
       }
       main { padding: 16px; }
       .topbar { align-items: stretch; }
       .controls { justify-content: flex-start; }
+      .desktop-logout-btn { display: none; }
     }
     @media (max-width: 640px) {
       body { font-size: 14px; }
@@ -891,6 +1139,50 @@
         padding: 14px 12px 14px 16px;
       }
       .stat strong { font-size: 26px; }
+      .morning-stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+      .morning-stats-grid .stat {
+        min-height: 62px;
+        padding: 9px 10px 9px 14px;
+      }
+      .morning-stats-grid .stat strong {
+        font-size: 20px;
+      }
+      .morning-stats-grid .stat span {
+        font-size: 13px;
+      }
+      .modal-backdrop {
+        align-items: flex-start;
+        padding: 12px;
+        overflow-y: auto;
+      }
+      .modal-panel {
+        margin-top: 24px;
+      }
+      .modal-head,
+      .modal-body,
+      .modal-actions {
+        padding-left: 14px;
+        padding-right: 14px;
+      }
+      .export-grid {
+        grid-template-columns: 1fr;
+      }
+      .teacher-leave-grid {
+        grid-template-columns: 1fr;
+      }
+      .teacher-leave-grid .full,
+      .teacher-leave-grid .two-span {
+        grid-column: 1 / -1;
+      }
+      .panel-actions {
+        flex-direction: column;
+      }
+      .modal-actions {
+        flex-direction: column-reverse;
+      }
       th, td { padding: 9px 7px; font-size: 13px; }
       .table-wrap {
         overflow-x: auto;
@@ -1104,13 +1396,11 @@
           <h2 id="viewTitle">19:00 未接回學生</h2>
           <div class="meta" id="viewMeta">115學年度上學期｜2026-08-17 到 2026-12-31｜有效學生 225 位｜今日社團 0 個</div>
         </div>
-        <div class="controls">
-          <label class="control">點名日期
+        <div class="controls topbar-controls">
+          <label class="control date-control">點名日期
             <input id="dateInput" type="date" min="2026-08-17" max="2026-12-31">
           </label>
-          <button class="secondary" id="exportBtn" type="button">匯出今日紀錄</button>
-          <button class="danger-btn" id="clearBtn" type="button">清除今日紀錄</button>
-          <button class="secondary" id="logoutBtn" type="button">登出</button>
+          <button class="secondary desktop-logout-btn" id="logoutBtn" type="button">登出</button>
         </div>
       </div>
       <section id="app">
@@ -1158,10 +1448,52 @@
     </main>
   </div>
 
+  <div class="modal-backdrop" id="exportModal" aria-hidden="true">
+    <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="exportModalTitle">
+      <div class="modal-head">
+        <h3 id="exportModalTitle">匯出完整記錄</h3>
+        <button class="secondary" id="exportModalClose" type="button">關閉</button>
+      </div>
+      <div class="modal-body">
+        <div class="export-grid">
+          <label class="control">開始日期
+            <input id="exportStartDate" type="date">
+          </label>
+          <label class="control">結束日期
+            <input id="exportEndDate" type="date">
+          </label>
+        </div>
+        <div class="export-location">
+          <strong>儲存位置</strong><br>
+          按下「選擇位置並匯出」後，瀏覽器會開啟儲存視窗。若目前瀏覽器不支援選擇位置，系統會改以下載檔案的方式儲存。
+        </div>
+        <div class="pill danger" id="exportModalError" style="display:none"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="secondary" id="exportModalCancel" type="button">取消</button>
+        <button class="primary" id="exportModalConfirm" type="button">選擇位置並匯出</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="modal-backdrop" id="absenceDetailModal" aria-hidden="true">
+    <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="absenceDetailTitle">
+      <div class="modal-head">
+        <h3 id="absenceDetailTitle">今日缺席明細</h3>
+        <button class="secondary" id="absenceDetailClose" type="button">關閉</button>
+      </div>
+      <div class="modal-body" id="absenceDetailBody"></div>
+      <div class="modal-actions">
+        <button class="primary" id="absenceDetailDone" type="button">完成</button>
+      </div>
+    </section>
+  </div>
+
   <script>
     const data = window.ATTENDANCE_DATA;
     const clubTermStart = data.term.clubStart || "2026-08-31";
     const clubTermEnd = data.term.clubEnd || "2026-12-24";
+    const clubTermMakeupEnd = "2026-12-31";
     const afterCareTermStart = data.term.start || "2026-08-17";
     const afterCareTermEnd = data.term.end || "2026-12-31";
     const nationalHolidayDates = new Set([
@@ -1196,6 +1528,32 @@
       "601": "六甲",
       "602": "六乙",
     };
+    const clubTeacherByAccount = {
+      "12101": { clubName: "桌球社（週一）", teacherName: "桌球老師" },
+      "12102": { clubName: "陶藝（週一）", teacherName: "陶藝老師" },
+      "12103": { clubName: "烏克麗麗（週一）", teacherName: "烏克麗麗老師" },
+      "12104": { clubName: "籃球社（週一）", teacherName: "籃球老師" },
+      "12201": { clubName: "縫紉社(二)", teacherName: "縫紉老師" },
+      "12202": { clubName: "跆拳道(二)", teacherName: "跆拳道老師" },
+      "12203": { clubName: "足球社(二)", teacherName: "足球老師" },
+      "12204": { clubName: "創意點心（週二）", teacherName: "創意點心老師" },
+      "12205": { clubName: "兒童美術(二)", teacherName: "兒童美術老師" },
+      "12301": { clubName: "直排輪社（週三）", teacherName: "直排輪老師" },
+      "12302": { clubName: "打擊樂(三)", teacherName: "打擊樂老師" },
+      "12303": { clubName: "街舞社（週三A）", teacherName: "街舞老師A" },
+      "12304": { clubName: "街舞社（週三B）", teacherName: "街舞老師B" },
+      "12305": { clubName: "游泳社（週三）", teacherName: "游泳老師（週三）" },
+      "12306": { clubName: "弦樂A團(三) (合)", teacherName: "弦樂A團老師（週三）" },
+      "12401": { clubName: "創意點心（週四）", teacherName: "創意點心老師（週四）" },
+      "12402": { clubName: "游泳社（週四）", teacherName: "游泳老師（週四）" },
+      "12403": { clubName: "弦樂A團(四)", teacherName: "弦樂A團老師（週四）" },
+      "12404": { clubName: "弦樂A團(四) (小)", teacherName: "弦樂A團老師（週四小）" },
+      "12405": { clubName: "弦樂A團(四) (大)", teacherName: "弦樂A團老師（週四大）" },
+      "12406": { clubName: "弦樂A團(四)(小中)", teacherName: "弦樂A團老師（週四小中）" },
+      "12407": { clubName: "弦樂B團-中大提琴", teacherName: "弦樂B團中大提琴老師" },
+      "12501": { clubName: "創意捏塑(五)", teacherName: "創意捏塑老師" },
+      "12502": { clubName: "無人機（週五）", teacherName: "無人機老師" },
+    };
     const urlParams = new URLSearchParams(window.location.search);
     const userStorageKey = "bojia-attendance-user-v1";
     function loadCurrentUser() {
@@ -1206,7 +1564,9 @@
       const urlRole = urlParams.get("role");
       if (urlRole) return { role: urlRole, className: urlParams.get("class") || "" };
       try {
-        return JSON.parse(localStorage.getItem(userStorageKey)) || { role: "guest", className: "" };
+        const stored = JSON.parse(localStorage.getItem(userStorageKey)) || { role: "guest", className: "" };
+        if (stored.role === "clubTeacher" && !clubTeacherByAccount[stored.account]) return { role: "guest", className: "" };
+        return stored;
       } catch {
         return { role: "guest", className: "" };
       }
@@ -1216,8 +1576,8 @@
       if (account === "159" && password === "159") {
         return { role: "admin", className: "", account };
       }
-      if (account === "121" && password === "121") {
-        return { role: "clubTeacher", className: "", account };
+      if (clubTeacherByAccount[account] && password === account) {
+        return { role: "clubTeacher", className: "", account, ...clubTeacherByAccount[account] };
       }
       if (account === "111" && password === "111") {
         return { role: "afterCareTeacher", className: "", account };
@@ -1233,6 +1593,7 @@
       { id: "leave", title: "請假登記", navTitle: "行政端 請假登記", icon: "☎" },
       { id: "afterCare", title: "課照班點名", icon: "◍" },
       { id: "club", title: "16:10 社團點名", icon: "◉" },
+      { id: "clubTeacherLeave", title: "社團老師請假", icon: "▣" },
       { id: "teachingFollow", title: "課照班異常缺席", icon: "◎" },
       { id: "follow", title: "活動組追蹤", icon: "⌕" },
       { id: "pickup", title: "17:40 社團未接回學生", navTitle: "17:40 未接回學生", icon: "⏱" },
@@ -1278,7 +1639,7 @@
       mobileMenuOpen: false,
       date: initialAttendanceDate(),
       className: currentUser.className || data.classes.find(c => !excludedClasses.has(c.name))?.name || "",
-      clubName: data.clubs[0]?.name || "",
+      clubName: currentUser.clubName || data.clubs[0]?.name || "",
       search: "",
       adminSource: "學輔處電話",
       adminFlash: "",
@@ -1296,6 +1657,18 @@
       clubRosterName: data.clubs[0]?.name || "",
       afterCareGroupId: afterCareGradeGroups[0]?.id || "",
       afterCareRosterSearch: "",
+      teacherLeaveDate: clubTermStart,
+      teacherLeaveClubName: "",
+      teacherLeaveFlash: "",
+      teacherLeaveEditingId: "",
+      teacherLeaveDraft: {
+        teacherName: currentUser.teacherName || "",
+        reason: "",
+        substituteTeacher: "",
+        substitutePhone: "",
+        coursePlan: "substitute",
+        note: "",
+      },
       dashboardRange: "today",
       morningRange: "today",
       morningDetailStatus: "",
@@ -1385,6 +1758,13 @@
     function dayRecord(dateText) {
       return records[dateText] || { morning: {}, club: {}, afterCare: {}, follow: {}, afterCareFollow: {}, pickup: {} };
     }
+    function clubTeacherLeaves() {
+      return Array.isArray(records._clubTeacherLeaves) ? records._clubTeacherLeaves : [];
+    }
+    function mutableClubTeacherLeaves() {
+      if (!Array.isArray(records._clubTeacherLeaves)) records._clubTeacherLeaves = [];
+      return records._clubTeacherLeaves;
+    }
     function formatDate(date) {
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -1397,6 +1777,21 @@
     }
     function slashDate(dateText) {
       return dateText.replaceAll("-", "/");
+    }
+    function addDays(dateText, days) {
+      const date = parseDate(dateText);
+      date.setDate(date.getDate() + days);
+      return formatDate(date);
+    }
+    function nextWeekdayAfter(dateText, weekdayIndex) {
+      let current = addDays(dateText, 1);
+      while (parseDate(current).getDay() !== weekdayIndex) current = addDays(current, 1);
+      return current;
+    }
+    function termEndMakeupDate(dateText) {
+      const weekdayIndex = parseDate(dateText).getDay();
+      if (weekdayIndex < 1 || weekdayIndex > 4) return "";
+      return addDays(nextWeekdayAfter(clubTermEnd, 1), weekdayIndex - 1);
     }
     function dateRangeList(startText, endText) {
       const dates = [];
@@ -1863,13 +2258,29 @@
       return (club.weekday || club.name).includes(weekday);
     }
     function clubsForDate(dateText = state.date) {
-      return data.clubs.filter(club => clubMeetsOnDate(club, dateText));
+      const clubs = data.clubs.filter(club => clubMeetsOnDate(club, dateText));
+      const names = new Set(clubs.map(club => club.name));
+      clubTeacherLeaves()
+        .filter(item => item.status === "approvedMakeup" && item.makeupDate === dateText)
+        .forEach(item => {
+          if (names.has(item.clubName)) return;
+          const club = data.clubs.find(candidate => candidate.name === item.clubName);
+          if (!club) return;
+          clubs.push(club);
+          names.add(club.name);
+        });
+      return clubs;
     }
     function ensureSelectedClubForDate() {
-      const clubs = clubsForDate();
+      const clubs = clubsForCurrentClubTeacher();
       if (!clubs.length) return null;
       if (!clubs.some(club => club.name === state.clubName)) state.clubName = clubs[0].name;
       return clubs.find(club => club.name === state.clubName) || clubs[0];
+    }
+    function clubsForCurrentClubTeacher(dateText = state.date) {
+      const clubs = clubsForDate(dateText);
+      if (currentUser.role !== "clubTeacher" || !currentUser.clubName) return clubs;
+      return clubs.filter(club => club.name === currentUser.clubName);
     }
     function escapeHtml(value) {
       return String(value ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
@@ -2158,39 +2569,190 @@
       state.mobileMenuOpen = false;
       updateMobileMenuState();
     }
+    function setExportError(message = "") {
+      const error = document.getElementById("exportModalError");
+      if (!error) return;
+      error.textContent = message;
+      error.style.display = message ? "inline-flex" : "none";
+    }
+    function openExportModal() {
+      const modal = document.getElementById("exportModal");
+      const start = document.getElementById("exportStartDate");
+      const end = document.getElementById("exportEndDate");
+      if (start) {
+        start.min = data.term.start;
+        start.max = data.term.end;
+        start.value = state.date;
+      }
+      if (end) {
+        end.min = data.term.start;
+        end.max = data.term.end;
+        end.value = state.date;
+      }
+      setExportError("");
+      modal?.classList.add("open");
+      modal?.setAttribute("aria-hidden", "false");
+      setTimeout(() => start?.focus(), 0);
+    }
+    function closeExportModal() {
+      const modal = document.getElementById("exportModal");
+      modal?.classList.remove("open");
+      modal?.setAttribute("aria-hidden", "true");
+      setExportError("");
+    }
+    function exportPayloadForRange(startDate, endDate) {
+      const dates = dateRangeList(startDate, endDate);
+      const recordsByDate = {};
+      dates.forEach(dateText => {
+        recordsByDate[dateText] = dayRecord(dateText);
+      });
+      return {
+        system: "博嘉點名系統",
+        exportedAt: new Date().toISOString(),
+        term: {
+          label: data.term.label,
+          start: data.term.start,
+          end: data.term.end,
+        },
+        range: {
+          start: startDate,
+          end: endDate,
+          dates,
+        },
+        clubTeacherLeaves: clubTeacherLeaves().filter(item => item.date >= startDate && item.date <= endDate),
+        records: recordsByDate,
+      };
+    }
+    function fallbackDownloadJson(jsonText, filename) {
+      const blob = new Blob([jsonText], { type: "application/json;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+    async function saveExportJson(payload, filename) {
+      const jsonText = JSON.stringify(payload, null, 2);
+      if (window.showSaveFilePicker) {
+        const handle = await window.showSaveFilePicker({
+          suggestedName: filename,
+          types: [
+            {
+              description: "JSON 檔案",
+              accept: { "application/json": [".json"] },
+            },
+          ],
+        });
+        const writable = await handle.createWritable();
+        await writable.write(new Blob([jsonText], { type: "application/json;charset=utf-8" }));
+        await writable.close();
+        return;
+      }
+      fallbackDownloadJson(jsonText, filename);
+    }
+    async function confirmExportRecords() {
+      const start = document.getElementById("exportStartDate")?.value || "";
+      const end = document.getElementById("exportEndDate")?.value || "";
+      if (!start || !end) {
+        setExportError("請先選擇開始日期與結束日期。");
+        return;
+      }
+      if (start > end) {
+        setExportError("開始日期不能晚於結束日期。");
+        return;
+      }
+      if (start < data.term.start || end > data.term.end) {
+        setExportError(`請選擇 ${data.term.start} 到 ${data.term.end} 之間的日期。`);
+        return;
+      }
+      const payload = exportPayloadForRange(start, end);
+      const filename = `bojia-attendance-${start}-${end}.json`;
+      try {
+        await saveExportJson(payload, filename);
+        closeExportModal();
+      } catch (error) {
+        if (error?.name === "AbortError") return;
+        console.warn("Export failed", error);
+        setExportError("匯出失敗，請再試一次。");
+      }
+    }
+    function logoutCurrentUser() {
+      localStorage.removeItem(userStorageKey);
+      currentUser = { role: "guest", className: "" };
+      state.view = "dashboard";
+      state.mobileMenuOpen = false;
+      render();
+    }
+    function clubPageTitle() {
+      return currentUser.role === "clubTeacher" ? "16:10 社團老師點名" : "16:10 社團點名";
+    }
+    function afterCarePageTitle() {
+      return currentUser.role === "afterCareTeacher" ? "課照班老師點名" : "課照班點名";
+    }
+    function viewNavLabel(view) {
+      if (view.id === "club") return clubPageTitle();
+      if (view.id === "afterCare") return afterCarePageTitle();
+      return view.navTitle || view.title;
+    }
+    function viewPageTitle(view) {
+      if (view.id === "club") return clubPageTitle();
+      if (view.id === "afterCare") return afterCarePageTitle();
+      return view.title;
+    }
     function buildNav() {
       const teacherViews = new Set(["morning", "classRoster"]);
+      const clubTeacherViews = new Set(["club", "clubTeacherLeave"]);
       const visibleViews = currentUser.role === "teacher"
         ? views.filter(v => teacherViews.has(v.id))
         : currentUser.role === "clubTeacher"
-          ? views.filter(v => v.id === "club")
+          ? views.filter(v => clubTeacherViews.has(v.id))
           : currentUser.role === "afterCareTeacher"
             ? views.filter(v => v.id === "afterCare")
-            : views;
+            : views.filter(v => v.id !== "clubTeacherLeave");
       const navGroups = [
         { label: "每日點名流程", ids: ["morning", "leave", "afterCare", "club"] },
         { label: "行政端追蹤", ids: ["teachingFollow", "follow", "pickup", "pickup19"] },
+        { label: "學生維護", ids: ["classRoster", "clubRoster", "afterCareRoster", "rosterImport"], actions: ["export-day"] },
       ];
       const grouped = new Set(navGroups.flatMap(group => group.ids));
       const buttonHtml = v => `
         <button class="nav-btn ${state.view === v.id ? "active" : ""}" data-view="${v.id}" type="button">
-          <span class="icon">${v.icon}</span><span>${v.navTitle || v.title}</span>
+          <span class="icon">${v.icon}</span><span>${viewNavLabel(v)}</span>
         </button>
       `;
+      const actionHtml = action => {
+        if (action === "export-day") {
+          return `
+            <button class="nav-btn nav-action-btn" data-nav-action="export-day" type="button">
+              <span class="icon">⇩</span><span>匯出完整記錄</span>
+            </button>
+          `;
+        }
+        if (action === "logout") {
+          return `
+            <button class="nav-btn nav-action-btn mobile-menu-only" data-nav-action="logout" type="button">
+              <span class="icon">↥</span><span>登出</span>
+            </button>
+          `;
+        }
+        return "";
+      };
       if (currentUser.role === "teacher" || currentUser.role === "clubTeacher" || currentUser.role === "afterCareTeacher") {
-        document.getElementById("nav").innerHTML = visibleViews.map(buttonHtml).join("");
+        document.getElementById("nav").innerHTML = `${visibleViews.map(buttonHtml).join("")}${actionHtml("logout")}`;
       } else {
-        document.getElementById("nav").innerHTML = visibleViews.map(v => {
+        document.getElementById("nav").innerHTML = `${visibleViews.map(v => {
           const navGroup = navGroups.find(group => group.ids.includes(v.id));
           if (navGroup && v.id === navGroup.ids[0]) {
             const groupItems = visibleViews.filter(item => navGroup.ids.includes(item.id)).map(buttonHtml).join("");
-            return `<div class="nav-group"><div class="nav-group-label">${navGroup.label}</div>${groupItems}</div>`;
+            const groupActions = (navGroup.actions || []).map(actionHtml).join("");
+            return `<div class="nav-group"><div class="nav-group-label">${navGroup.label}</div>${groupItems}${groupActions}</div>`;
           }
           if (grouped.has(v.id)) return "";
           return buttonHtml(v);
-        }).join("");
+        }).join("")}${actionHtml("logout")}`;
       }
-      document.querySelectorAll(".nav-btn").forEach(btn => btn.addEventListener("click", () => {
+      document.querySelectorAll(".nav-btn[data-view]").forEach(btn => btn.addEventListener("click", () => {
         const nextView = btn.dataset.view;
         const changed = state.view !== nextView;
         state.view = nextView;
@@ -2198,9 +2760,357 @@
         render();
         if (changed) requestAnimationFrame(() => window.scrollTo({ top: 0, left: 0, behavior: "auto" }));
       }));
+      document.querySelectorAll("[data-nav-action]").forEach(btn => btn.addEventListener("click", () => {
+        const action = btn.dataset.navAction;
+        state.mobileMenuOpen = false;
+        updateMobileMenuState();
+        if (action === "export-day") openExportModal();
+        if (action === "logout") logoutCurrentUser();
+      }));
     }
     function clubEnrollmentCountForMeta() {
       return data.clubs.reduce((sum, club) => sum + clubMembersForDisplay(club).length, 0);
+    }
+    function afterCareAbsentRows(dateText = state.date) {
+      const record = dayRecord(dateText);
+      return afterCareMembersForDisplay(dateText)
+        .filter(member => record.afterCare?.[memberKey(member)]?.status === "absent")
+        .map(member => {
+          const student = studentByMember(member);
+          return {
+            group: member.group || "課照",
+            className: student?.className || member.className || "",
+            name: student?.name || member.name || "",
+            status: "未到",
+          };
+        })
+        .sort((a, b) => a.group.localeCompare(b.group, "zh-Hant") || a.className.localeCompare(b.className, "zh-Hant") || a.name.localeCompare(b.name, "zh-Hant"));
+    }
+    function clubAbsentRows(clubs = clubsForDate(), dateText = state.date) {
+      const record = dayRecord(dateText);
+      const rows = [];
+      clubs.forEach(club => {
+        clubMembersForDisplay(club, dateText).forEach(member => {
+          const key = memberKey(member);
+          if (record.club?.[club.name]?.[key]?.status !== "absent") return;
+          const student = studentByMember(member);
+          rows.push({
+            club: club.name,
+            className: student?.className || member.className || "",
+            name: student?.name || member.name || "",
+            status: "未到",
+          });
+        });
+      });
+      return rows.sort((a, b) => a.club.localeCompare(b.club, "zh-Hant") || a.className.localeCompare(b.className, "zh-Hant") || a.name.localeCompare(b.name, "zh-Hant"));
+    }
+    function teacherLeaveStatusPill(status) {
+      if (status === "approvedSubstitute") return statusPill("ok", "核准代課");
+      if (status === "approvedMakeup") return statusPill("info", "核准期末補課");
+      if (status === "rejected") return statusPill("danger", "退回");
+      return statusPill("warn", "待行政審核");
+    }
+    function teacherLeaveCourseText(item) {
+      if (item.coursePlan === "makeup") return "本日課程延後至期末補課週";
+      return "安排代課";
+    }
+    function teacherLeaveSubstituteText(item) {
+      if (item.substituteTeacher) return `已安排：${item.substituteTeacher}`;
+      if (item.substituteArranged === "yes") return "已安排";
+      return "尚未安排";
+    }
+    function teacherLeaveForClubDate(clubName, dateText) {
+      return clubTeacherLeaves()
+        .filter(item => item.clubName === clubName && item.date === dateText && item.status !== "rejected")
+        .sort((a, b) => (b.requestedAt || "").localeCompare(a.requestedAt || ""))[0] || null;
+    }
+    function makeupTeacherLeaveForClubDate(clubName, dateText) {
+      return clubTeacherLeaves()
+        .filter(item => item.clubName === clubName && item.makeupDate === dateText && item.status === "approvedMakeup")
+        .sort((a, b) => (b.reviewedAt || b.requestedAt || "").localeCompare(a.reviewedAt || a.requestedAt || ""))[0] || null;
+    }
+    function teacherLeaveReviewItems() {
+      const statusOrder = { pending: 0, approvedMakeup: 1, approvedSubstitute: 1, rejected: 2 };
+      return clubTeacherLeaves().slice().sort((a, b) => {
+        const order = (statusOrder[a.status || "pending"] ?? 0) - (statusOrder[b.status || "pending"] ?? 0);
+        if (order) return order;
+        return (b.date || "").localeCompare(a.date || "") || (a.clubName || "").localeCompare(b.clubName || "", "zh-Hant");
+      });
+    }
+    function setTeacherLeaveError(message = "") {
+      const error = document.getElementById("teacherLeaveError");
+      if (!error) return;
+      error.textContent = message;
+      error.style.display = message ? "inline-flex" : "none";
+    }
+    function updateTeacherLeaveMakeupHint() {
+      const dateText = document.getElementById("teacherLeaveDate")?.value || state.teacherLeaveDate;
+      const coursePlanSelect = document.getElementById("teacherLeaveCoursePlan");
+      const makeupOption = coursePlanSelect?.querySelector('option[value="makeup"]');
+      const fieldLabel = document.getElementById("teacherLeaveCourseDetailLabel");
+      const dateInput = document.getElementById("teacherLeaveMakeupDate");
+      const hint = document.getElementById("teacherLeaveMakeupHint");
+      const makeupDate = termEndMakeupDate(dateText);
+      if (makeupOption) makeupOption.disabled = !makeupDate;
+      if (!makeupDate && coursePlanSelect?.value === "makeup") coursePlanSelect.value = "substitute";
+      if (coursePlanSelect?.value !== "makeup") {
+        if (fieldLabel) fieldLabel.textContent = "課程安排";
+        if (dateInput) dateInput.value = "不需補課";
+        if (hint) {
+          hint.textContent = "已選擇安排代課，不需補課。";
+          hint.classList.remove("makeup");
+        }
+        return;
+      }
+      if (!makeupDate) {
+        if (fieldLabel) fieldLabel.textContent = "課程安排";
+        if (dateInput) dateInput.value = "不適用";
+        if (hint) {
+          hint.textContent = "星期五社團無法期末補課，建議以代課安排。";
+          hint.classList.remove("makeup");
+        }
+        return;
+      }
+      if (fieldLabel) fieldLabel.textContent = "期末補課日期";
+      if (dateInput) dateInput.value = slashDate(makeupDate);
+      if (hint) {
+        hint.textContent = `若選擇期末補課，建議補課日期：${slashDate(makeupDate)}。`;
+        hint.classList.add("makeup");
+      }
+    }
+    function teacherLeaveDateClubs(dateText = state.teacherLeaveDate) {
+      return clubsForCurrentClubTeacher(dateText);
+    }
+    function ensureTeacherLeaveClubForDate(dateText = state.teacherLeaveDate) {
+      const clubs = teacherLeaveDateClubs(dateText);
+      if (!clubs.length) {
+        state.teacherLeaveClubName = "";
+        return null;
+      }
+      if (!clubs.some(club => club.name === state.teacherLeaveClubName)) state.teacherLeaveClubName = clubs[0].name;
+      return clubs.find(club => club.name === state.teacherLeaveClubName) || clubs[0];
+    }
+    function teacherLeaveClubOptions(dateText = state.teacherLeaveDate) {
+      return teacherLeaveDateClubs(dateText)
+        .map(club => `<option value="${escapeHtml(club.name)}" ${state.teacherLeaveClubName === club.name ? "selected" : ""}>${escapeHtml(club.name)}（${clubMembersForDisplay(club, dateText).length}）</option>`)
+        .join("");
+    }
+    function teacherLeaveHistoryItems() {
+      const account = currentUser.account || "";
+      return clubTeacherLeaves()
+        .filter(item => currentUser.role !== "clubTeacher" || !account || item.requestedBy === account)
+        .sort((a, b) => (b.date || "").localeCompare(a.date || "") || (a.clubName || "").localeCompare(b.clubName || "", "zh-Hant"));
+    }
+    function canTeacherModifyLeave(item) {
+      return ["pending", "rejected"].includes(item.status || "pending");
+    }
+    function resetTeacherLeaveDraft() {
+      state.teacherLeaveEditingId = "";
+      state.teacherLeaveDraft = {
+        teacherName: currentUser.teacherName || "",
+        reason: "",
+        substituteTeacher: "",
+        substitutePhone: "",
+        coursePlan: "substitute",
+        note: "",
+      };
+    }
+    function captureTeacherLeaveDraft() {
+      state.teacherLeaveDraft = {
+        teacherName: document.getElementById("teacherLeaveTeacher")?.value ?? state.teacherLeaveDraft.teacherName ?? "",
+        reason: document.getElementById("teacherLeaveReason")?.value ?? state.teacherLeaveDraft.reason ?? "",
+        substituteTeacher: document.getElementById("teacherLeaveSubstituteTeacher")?.value ?? state.teacherLeaveDraft.substituteTeacher ?? "",
+        substitutePhone: document.getElementById("teacherLeaveSubstitutePhone")?.value ?? state.teacherLeaveDraft.substitutePhone ?? "",
+        coursePlan: document.getElementById("teacherLeaveCoursePlan")?.value ?? state.teacherLeaveDraft.coursePlan ?? "substitute",
+        note: document.getElementById("teacherLeaveNote")?.value ?? state.teacherLeaveDraft.note ?? "",
+      };
+    }
+    function editTeacherLeaveRequest(id) {
+      const item = mutableClubTeacherLeaves().find(entry => entry.id === id);
+      if (!item) return;
+      if (!canTeacherModifyLeave(item)) {
+        alert("已核准的請假申請不能由老師端編輯。");
+        return;
+      }
+      state.teacherLeaveEditingId = id;
+      state.teacherLeaveDate = item.date || state.teacherLeaveDate;
+      state.teacherLeaveClubName = item.clubName || "";
+      state.teacherLeaveDraft = {
+        teacherName: item.teacherName || "",
+        reason: item.reason || "",
+        substituteTeacher: item.substituteTeacher || "",
+        substitutePhone: item.substitutePhone || "",
+        coursePlan: item.coursePlan || "substitute",
+        note: item.note || "",
+      };
+      state.teacherLeaveFlash = "正在編輯這筆請假申請。";
+      render();
+    }
+    function deleteTeacherLeaveRequest(id) {
+      const leaves = mutableClubTeacherLeaves();
+      const index = leaves.findIndex(entry => entry.id === id);
+      if (index < 0) return;
+      const item = leaves[index];
+      if (!canTeacherModifyLeave(item)) {
+        alert("已核准的請假申請不能由老師端刪除。");
+        return;
+      }
+      if (!confirm(`確定刪除 ${item.clubName || ""} ${slashDate(item.date || "")} 的請假申請？`)) return;
+      leaves.splice(index, 1);
+      if (state.teacherLeaveEditingId === id) resetTeacherLeaveDraft();
+      state.teacherLeaveFlash = "已刪除請假申請。";
+      saveRecords();
+      render();
+    }
+    function submitTeacherLeaveRequest() {
+      const dateText = document.getElementById("teacherLeaveDate")?.value || state.teacherLeaveDate;
+      const clubName = document.getElementById("teacherLeaveClub")?.value || state.teacherLeaveClubName;
+      const teacherName = document.getElementById("teacherLeaveTeacher")?.value.trim() || "";
+      const reason = document.getElementById("teacherLeaveReason")?.value.trim() || "";
+      const substituteTeacher = document.getElementById("teacherLeaveSubstituteTeacher")?.value.trim() || "";
+      const substitutePhone = document.getElementById("teacherLeaveSubstitutePhone")?.value.trim() || "";
+      const substituteArranged = substituteTeacher ? "yes" : "no";
+      const coursePlan = document.getElementById("teacherLeaveCoursePlan")?.value || "substitute";
+      const note = document.getElementById("teacherLeaveNote")?.value.trim() || "";
+      const makeupDate = coursePlan === "makeup" ? termEndMakeupDate(dateText) : "";
+      const validClub = teacherLeaveDateClubs(dateText).find(club => club.name === clubName);
+      if (dateText < clubTermStart || dateText > clubTermEnd) {
+        setTeacherLeaveError(`請假日期需在社團期程內：${clubTermStart} 到 ${clubTermEnd}。`);
+        return;
+      }
+      if (!clubName || !validClub) {
+        setTeacherLeaveError("請先選擇社團。");
+        return;
+      }
+      if (!teacherName) {
+        setTeacherLeaveError("請輸入請假老師姓名。");
+        return;
+      }
+      if (!reason) {
+        setTeacherLeaveError("請填寫請假原因。");
+        return;
+      }
+      if (coursePlan === "makeup" && !makeupDate) {
+        setTeacherLeaveError("星期五社團無法期末補課，建議以代課安排。");
+        return;
+      }
+      state.teacherLeaveDate = dateText;
+      state.teacherLeaveClubName = clubName;
+      const editingItem = state.teacherLeaveEditingId
+        ? mutableClubTeacherLeaves().find(entry => entry.id === state.teacherLeaveEditingId)
+        : null;
+      if (state.teacherLeaveEditingId && (!editingItem || !canTeacherModifyLeave(editingItem))) {
+        setTeacherLeaveError("這筆請假申請已無法編輯，請重新整理後再確認。");
+        return;
+      }
+      const patch = {
+        date: dateText,
+        clubName,
+        weekday: weekdayOf(dateText),
+        teacherName,
+        reason,
+        substituteArranged,
+        substituteTeacher,
+        substitutePhone,
+        coursePlan,
+        makeupDate,
+        note,
+      };
+      if (editingItem) {
+        Object.assign(editingItem, patch, {
+          status: "pending",
+          reviewNote: "",
+          reviewedAt: "",
+          reviewedBy: "",
+          updatedAt: new Date().toISOString(),
+        });
+        state.teacherLeaveFlash = `${clubName} ${teacherName} 的請假申請已更新，重新送出等待行政審核。`;
+        resetTeacherLeaveDraft();
+        saveRecords();
+        render();
+        return;
+      }
+      const item = {
+        id: `ctl-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        ...patch,
+        status: "pending",
+        requestedBy: currentUser.account || "clubTeacher",
+        requestedAt: new Date().toISOString(),
+      };
+      mutableClubTeacherLeaves().push(item);
+      state.teacherLeaveFlash = `${clubName} ${teacherName} 的請假申請已送出，等待行政審核。`;
+      resetTeacherLeaveDraft();
+      saveRecords();
+      render();
+    }
+    function reviewTeacherLeave(id, action) {
+      const item = mutableClubTeacherLeaves().find(entry => entry.id === id);
+      if (!item) return;
+      const requestedMakeup = item.coursePlan === "makeup";
+      if (action === "approvedSubstitute" && requestedMakeup) {
+        alert("這筆申請選擇期末補課，請核准補課或退回請老師調整。");
+        return;
+      }
+      if (action === "approvedMakeup" && !requestedMakeup) {
+        alert("這筆申請選擇安排代課，請核准代課或退回請老師調整。");
+        return;
+      }
+      if (action === "approvedSubstitute" && (!item.substituteTeacher || !item.substitutePhone)) {
+        alert("核准代課前，請先退回請老師補齊代課老師姓名與連絡電話。");
+        return;
+      }
+      if (action === "approvedMakeup" && !item.makeupDate) {
+        alert("此社團無法自動安排期末補課，建議核准代課或退回調整。");
+        return;
+      }
+      let reviewNote = item.reviewNote || "";
+      if (action === "rejected") {
+        reviewNote = prompt("請輸入退回原因：", item.reviewNote || "") || "";
+      }
+      item.status = action;
+      item.reviewNote = reviewNote;
+      item.reviewedAt = new Date().toISOString();
+      item.reviewedBy = currentUser.account || "admin";
+      saveRecords();
+      render();
+    }
+    function teacherLeaveNotice(club, item = teacherLeaveForClubDate(club.name, state.date), makeupItem = makeupTeacherLeaveForClubDate(club.name, state.date)) {
+      if (makeupItem) {
+        return `<div class="teacher-leave-notice">本日為期末補課，原請假日：${escapeHtml(slashDate(makeupItem.date))}。</div>`;
+      }
+      if (!item) return "";
+      const detail = item.status === "approvedMakeup"
+        ? `本日課程延後至期末補課週，補課日：${slashDate(item.makeupDate)}。`
+        : item.status === "approvedSubstitute"
+          ? `請假已核准，${teacherLeaveSubstituteText(item)}。`
+          : `老師請假申請待行政審核，${teacherLeaveCourseText(item)}。`;
+      return `<div class="teacher-leave-notice">${escapeHtml(detail)}</div>`;
+    }
+    function clubAbsentCount(clubs, dateText = state.date) {
+      return clubAbsentRows(clubs, dateText).length;
+    }
+    function afterCareAbsentCountForMembers(members, dateText = state.date) {
+      const record = dayRecord(dateText);
+      return members.filter(member => record.afterCare?.[memberKey(member)]?.status === "absent").length;
+    }
+    function absenceDetailControl(kind, count) {
+      const label = `今日總缺席 ${count} 位`;
+      if (count <= 0) return `<span class="meta-detail-static">${escapeHtml(label)}</span>`;
+      return `<button class="meta-detail-btn" data-absence-detail="${escapeHtml(kind)}" type="button" aria-label="查看${escapeHtml(label)}名單">${escapeHtml(label)}</button>`;
+    }
+    function baseMetaHtml() {
+      if (state.view === "club" && currentUser.role !== "clubTeacher") {
+        const todayClubs = clubsForDate();
+        const totalMembers = todayClubs.reduce((sum, club) => sum + clubMembersForDisplay(club).length, 0);
+        const absentCount = clubAbsentRows(todayClubs).length;
+        return `${escapeHtml(data.term.label)}｜${escapeHtml(clubTermStart)} 到 ${escapeHtml(clubTermEnd)}｜今日社團 ${todayClubs.length} 個 ${totalMembers} 位｜${absenceDetailControl("club", absentCount)}`;
+      }
+      if (state.view === "afterCare" && currentUser.role !== "afterCareTeacher") {
+        const members = afterCareMembersForDisplay();
+        const absentCount = afterCareAbsentRows().length;
+        return `${escapeHtml(data.term.label)}｜${escapeHtml(afterCareTermStart)} 到 ${escapeHtml(afterCareTermEnd)}｜課照 ${afterCareGradeGroups.length} 班 ${members.length} 位｜${absenceDetailControl("afterCare", absentCount)}`;
+      }
+      return escapeHtml(baseMeta());
     }
     function baseMeta() {
       const todayClubs = clubsForDate();
@@ -2214,17 +3124,42 @@
         const absentCount = activeStudents().filter(s => ["personal", "sick", "unknown"].includes(morningRecordForKey(studentKey(s)).status)).length;
         return `${data.term.label}｜${data.term.start} 到 ${data.term.end}｜應到學生 ${activeStudents().length} 位｜今日缺席學生 ${absentCount} 個`;
       }
+      if (state.view === "clubTeacherLeave") {
+        const pendingCount = clubTeacherLeaves().filter(item => (item.status || "pending") === "pending").length;
+        return `${data.term.label}｜${clubTermStart} 到 ${clubTermEnd}｜已送出待審 ${pendingCount} 筆｜期末補課週 ${nextWeekdayAfter(clubTermEnd, 1)} 到 ${clubTermMakeupEnd}`;
+      }
       if (state.view === "morning") {
         const students = classAttendanceStudents();
         const absentCount = students.filter(s => ["personal", "sick", "unknown"].includes(morningRecordForKey(studentKey(s)).status)).length;
         return `${data.term.label}｜${data.term.start} 到 ${data.term.end}｜班級應到學生 ${students.length} 位｜今日缺席 ${absentCount} 個`;
       }
-      if (state.view === "afterCare" || state.view === "afterCareRoster") {
+      if (state.view === "club") {
+        if (currentUser.role === "clubTeacher") {
+          const club = todayClubs.find(item => item.name === state.clubName) || todayClubs[0];
+          if (!club) return `${data.term.label}｜${clubTermStart} 到 ${clubTermEnd}｜今日社團 0 個｜今日缺席 0 位`;
+          const members = clubMembersForDisplay(club);
+          const absentCount = clubAbsentCount([club]);
+          return `${data.term.label}｜${clubTermStart} 到 ${clubTermEnd}｜${club.name} ${members.length} 位｜今日缺席 ${absentCount} 位`;
+        }
+        const totalMembers = todayClubs.reduce((sum, club) => sum + clubMembersForDisplay(club).length, 0);
+        const absentCount = clubAbsentCount(todayClubs);
+        return `${data.term.label}｜${clubTermStart} 到 ${clubTermEnd}｜今日社團 ${todayClubs.length} 個 ${totalMembers} 位｜今日總缺席 ${absentCount} 位`;
+      }
+      if (state.view === "afterCare") {
         const group = selectedAfterCareGroup();
-        const members = state.view === "afterCare" ? afterCareMembersForDisplay(state.date, state.afterCareGroupId) : afterCareMembersForDisplay();
-        const absentCount = members.filter(member => afterCareRecord(memberKey(member)).status === "absent").length;
-        const label = state.view === "afterCare" ? `${group.label}課照學生` : "課照學生";
-        return `${data.term.label}｜${afterCareTermStart} 到 ${afterCareTermEnd}｜${label} ${members.length} 位｜今日缺席 ${absentCount} 位`;
+        if (currentUser.role === "afterCareTeacher") {
+          const members = afterCareMembersForDisplay(state.date, state.afterCareGroupId);
+          const absentCount = afterCareAbsentCountForMembers(members);
+          return `${data.term.label}｜${afterCareTermStart} 到 ${afterCareTermEnd}｜${group.label}課照學生 ${members.length} 位｜今日缺席 ${absentCount} 位`;
+        }
+        const members = afterCareMembersForDisplay();
+        const absentCount = afterCareAbsentRows().length;
+        return `${data.term.label}｜${afterCareTermStart} 到 ${afterCareTermEnd}｜課照 ${afterCareGradeGroups.length} 班 ${members.length} 位｜今日總缺席 ${absentCount} 位`;
+      }
+      if (state.view === "afterCareRoster") {
+        const members = afterCareMembersForDisplay();
+        const absentCount = afterCareAbsentRows().length;
+        return `${data.term.label}｜${afterCareTermStart} 到 ${afterCareTermEnd}｜課照學生 ${members.length} 位｜今日缺席 ${absentCount} 位`;
       }
       return `${data.term.label}｜${data.term.start} 到 ${data.term.end}｜有效學生 ${activeStudents().length} 位｜今日社團 ${todayClubs.length} 個`;
     }
@@ -2409,7 +3344,7 @@
       accountInput.focus();
     }
     function clubOptions() {
-      return clubsForDate().map(c => `<option value="${escapeHtml(c.name)}" ${state.clubName === c.name ? "selected" : ""}>${escapeHtml(c.name)}（${clubMembersForDisplay(c).length}）</option>`).join("");
+      return clubsForCurrentClubTeacher().map(c => `<option value="${escapeHtml(c.name)}" ${state.clubName === c.name ? "selected" : ""}>${escapeHtml(c.name)}（${clubMembersForDisplay(c).length}）</option>`).join("");
     }
     function selectedAfterCareGroup() {
       return afterCareGradeGroups.find(group => group.id === state.afterCareGroupId) || afterCareGradeGroups[0];
@@ -2493,7 +3428,7 @@
             </div>
           </div>
           <div class="panel-body">
-            <div class="grid stats">
+            <div class="grid stats morning-stats-grid">
               ${defs.map(item => `
                 <button class="stat ${detailStatus === item.value ? "active" : ""}" data-morning-stat="${escapeHtml(item.value)}" type="button" aria-label="查看${escapeHtml(item.label)}名單">
                   <strong>${(itemsByStatus[item.value] || []).length}</strong>
@@ -2720,32 +3655,39 @@
     }
     function renderClub() {
       const club = ensureSelectedClubForDate();
+      const title = clubPageTitle();
       if (!club) {
         return `
           <section class="panel">
-            <div class="panel-head"><h3>16:10 社團點名</h3><span class="pill warn">${escapeHtml(state.date)} 無社團課</span></div>
+            <div class="panel-head"><h3>${escapeHtml(title)}</h3><span class="pill warn">${escapeHtml(state.date)} 無社團課</span></div>
             <div class="empty">社團從 ${clubTermStart} 開始上課；此日期沒有需要社團老師點名的社團。</div>
           </section>
         `;
       }
       state.clubName = club.name;
+      const leaveItem = teacherLeaveForClubDate(club.name, state.date);
+      const makeupItem = makeupTeacherLeaveForClubDate(club.name, state.date);
+      const postponedToMakeup = leaveItem?.status === "approvedMakeup";
       return `
         <section class="panel">
           <div class="panel-head">
-            <h3>16:10 社團點名</h3>
+            <h3>${escapeHtml(title)}</h3>
             <div class="filters">
               <label class="control">社團<select id="clubSelect">${clubOptions()}</select></label>
-              <button class="primary" id="markClubPresentBtn" type="button">全到</button>
+              ${postponedToMakeup ? "" : `<button class="primary" id="markClubPresentBtn" type="button">全到</button>`}
               <span class="pill info">${escapeHtml(state.date)} 星期${weekdayOf(state.date)}</span>
               <span class="pill info">${club.dates.length} 次課程</span>
             </div>
           </div>
-          <div class="table-wrap">
-            <table class="attendance-table club-table">
-              <thead><tr><th>序號</th><th>學生</th><th>電話</th><th>社團點名</th><th>早上狀態</th><th>課照班點名</th><th>備註</th></tr></thead>
-              <tbody>${clubMembersForDisplay(club).map(m => clubRow(club, m)).join("")}</tbody>
-            </table>
-          </div>
+          ${teacherLeaveNotice(club, leaveItem, makeupItem)}
+          ${postponedToMakeup ? `<div class="empty">本日課程已延後至 ${escapeHtml(slashDate(leaveItem.makeupDate))}，今天不需社團點名。</div>` : `
+            <div class="table-wrap">
+              <table class="attendance-table club-table">
+                <thead><tr><th>序號</th><th>學生</th><th>電話</th><th>社團點名</th><th>早上狀態</th><th>課照班點名</th><th>備註</th></tr></thead>
+                <tbody>${clubMembersForDisplay(club).map(m => clubRow(club, m)).join("")}</tbody>
+              </table>
+            </div>
+          `}
         </section>
       `;
     }
@@ -2774,11 +3716,169 @@
         </tr>
       `;
     }
+    function renderClubTeacherLeavePage() {
+      if (state.teacherLeaveDate < clubTermStart || state.teacherLeaveDate > clubTermEnd) state.teacherLeaveDate = clubTermStart;
+      const selectedClub = ensureTeacherLeaveClubForDate(state.teacherLeaveDate);
+      const clubs = teacherLeaveDateClubs(state.teacherLeaveDate);
+      const makeupDate = termEndMakeupDate(state.teacherLeaveDate);
+      const draft = state.teacherLeaveDraft || {};
+      const effectiveCoursePlan = makeupDate ? (draft.coursePlan || "substitute") : "substitute";
+      const isMakeupPlan = effectiveCoursePlan === "makeup";
+      const courseDetailLabel = isMakeupPlan && makeupDate ? "期末補課日期" : "課程安排";
+      const courseDetailValue = isMakeupPlan && makeupDate ? slashDate(makeupDate) : "不需補課";
+      const makeupHint = isMakeupPlan && makeupDate
+        ? `若選擇期末補課，建議補課日期：${slashDate(makeupDate)}。`
+        : "已選擇安排代課，不需補課。";
+      const isEditing = Boolean(state.teacherLeaveEditingId);
+      const history = teacherLeaveHistoryItems();
+      const historyRows = history.map(item => `
+        <tr>
+          <td>${escapeHtml(slashDate(item.date || ""))}</td>
+          <td>${escapeHtml(item.clubName || "")}<div class="sub">星期${escapeHtml(item.weekday || "")}</div></td>
+          <td>${escapeHtml(item.teacherName || "")}</td>
+          <td>${escapeHtml(teacherLeaveCourseText(item))}</td>
+          <td>${item.makeupDate ? escapeHtml(slashDate(item.makeupDate)) : `<span class="sub">${item.coursePlan === "makeup" ? "無適合補課日" : "不需補課"}</span>`}</td>
+          <td>${teacherLeaveStatusPill(item.status || "pending")}${item.reviewNote ? `<div class="sub">${escapeHtml(item.reviewNote)}</div>` : ""}</td>
+          <td>
+            ${canTeacherModifyLeave(item) ? `
+              <button class="secondary" data-edit-teacher-leave="${escapeHtml(item.id)}" type="button">編輯</button>
+              <button class="danger-btn" data-delete-teacher-leave="${escapeHtml(item.id)}" type="button">刪除</button>
+            ` : `<span class="sub">已核准</span>`}
+          </td>
+        </tr>
+      `).join("");
+      return `
+        <div class="teacher-leave-page">
+        <section class="panel">
+          <div class="panel-head">
+            <h3 class="teacher-leave-page-title">社團老師請假（請於兩周前提出申請）</h3>
+            <div class="filters">
+              ${state.teacherLeaveFlash ? `<span class="pill ok">${escapeHtml(state.teacherLeaveFlash)}</span>` : ""}
+            </div>
+          </div>
+          <div class="teacher-leave-grid">
+            <label class="control">請假日期
+              <input id="teacherLeaveDate" type="date" min="${escapeHtml(clubTermStart)}" max="${escapeHtml(clubTermEnd)}" value="${escapeHtml(state.teacherLeaveDate)}">
+            </label>
+            <label class="control">社團名稱
+              <select id="teacherLeaveClub" ${clubs.length ? "" : "disabled"}>${teacherLeaveClubOptions(state.teacherLeaveDate)}</select>
+            </label>
+            <label class="control">請假老師
+              <input id="teacherLeaveTeacher" value="${escapeHtml(draft.teacherName || "")}" placeholder="請輸入老師姓名">
+            </label>
+            <label class="control reason-field">請假原因
+              <textarea id="teacherLeaveReason" placeholder="請簡要說明請假原因">${escapeHtml(draft.reason || "")}</textarea>
+            </label>
+            <label class="control course-field">課程處理方式
+              <select id="teacherLeaveCoursePlan">
+                <option value="substitute" ${effectiveCoursePlan === "substitute" ? "selected" : ""}>安排代課</option>
+                <option value="makeup" ${effectiveCoursePlan === "makeup" ? "selected" : ""} ${makeupDate ? "" : "disabled"}>本日課程延後至期末補課週</option>
+              </select>
+            </label>
+            <label class="control"><span id="teacherLeaveCourseDetailLabel">${escapeHtml(courseDetailLabel)}</span>
+              <input id="teacherLeaveMakeupDate" value="${escapeHtml(courseDetailValue)}" readonly>
+              <span class="teacher-leave-field-hint ${isMakeupPlan && makeupDate ? "makeup" : ""}" id="teacherLeaveMakeupHint">${escapeHtml(makeupHint)}</span>
+            </label>
+            <label class="control">代課老師姓名
+              <input id="teacherLeaveSubstituteTeacher" value="${escapeHtml(draft.substituteTeacher || "")}" placeholder="例如：王老師">
+            </label>
+            <label class="control">連絡電話
+              <input id="teacherLeaveSubstitutePhone" type="tel" inputmode="tel" value="${escapeHtml(draft.substitutePhone || "")}" placeholder="例如：0912-345-678">
+            </label>
+            <label class="control">備註
+              <input id="teacherLeaveNote" value="${escapeHtml(draft.note || "")}" placeholder="其他行政需要知道的事項">
+            </label>
+          </div>
+          ${clubs.length ? "" : `<div class="empty">${escapeHtml(state.teacherLeaveDate)} 沒有可請假的社團課程，請改選其他日期。</div>`}
+          <div class="pill danger" id="teacherLeaveError" style="display:none"></div>
+          <div class="panel-actions">
+            ${isEditing ? `<button class="secondary" id="teacherLeaveCancelEdit" type="button">取消編輯</button>` : ""}
+            <button class="primary" id="teacherLeaveSubmit" type="button" ${selectedClub ? "" : "disabled"}>${isEditing ? "更新請假申請" : "送出請假申請"}</button>
+          </div>
+        </section>
+        <section class="panel teacher-leave-history-panel">
+          <div class="panel-head">
+            <h3>我的請假申請</h3>
+            <span class="pill info">${history.length} 筆</span>
+          </div>
+          <div class="table-wrap">
+            ${historyRows ? `
+              <table class="teacher-leave-review-table">
+                <thead><tr><th>日期</th><th>社團</th><th>請假老師</th><th>課程處理</th><th>補課日</th><th>狀態</th><th>操作</th></tr></thead>
+                <tbody>${historyRows}</tbody>
+              </table>
+            ` : `<div class="empty">尚未送出社團老師請假申請。</div>`}
+          </div>
+        </section>
+        </div>
+      `;
+    }
+    function renderTeacherLeaveReview() {
+      const items = teacherLeaveReviewItems();
+      const pendingCount = items.filter(item => (item.status || "pending") === "pending").length;
+      if (!items.length) {
+        return `
+          <section class="panel">
+            <div class="panel-head">
+              <h3>社團老師請假審核</h3>
+              <span class="pill ok">目前沒有待審資料</span>
+            </div>
+            <div class="empty">社團老師送出的請假申請會顯示在這裡。</div>
+          </section>
+        `;
+      }
+      return `
+        <section class="panel">
+          <div class="panel-head">
+            <h3>社團老師請假審核</h3>
+            <div class="filters">
+              <span class="pill warn">待審 ${pendingCount} 筆</span>
+              <span class="pill info">期末補課週：2026/12/28-2026/12/31</span>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="teacher-leave-review-table">
+              <thead>
+                <tr><th>日期</th><th>社團</th><th>請假老師</th><th>原因</th><th>代課</th><th>課程處理</th><th>補課日</th><th>狀態</th><th>審核</th></tr>
+              </thead>
+              <tbody>
+                ${items.map(item => {
+                  const pending = (item.status || "pending") === "pending";
+                  const requestedMakeup = item.coursePlan === "makeup";
+                  const canApproveMakeup = Boolean(item.makeupDate);
+                  return `
+                    <tr>
+                      <td>${escapeHtml(slashDate(item.date || ""))}</td>
+                      <td>${escapeHtml(item.clubName || "")}<div class="sub">星期${escapeHtml(item.weekday || "")}</div></td>
+                      <td>${escapeHtml(item.teacherName || "")}</td>
+                      <td>${escapeHtml(item.reason || "")}${item.note ? `<div class="sub">${escapeHtml(item.note)}</div>` : ""}</td>
+                      <td>${escapeHtml(teacherLeaveSubstituteText(item))}${item.substitutePhone ? `<div class="sub">${escapeHtml(item.substitutePhone)}</div>` : ""}</td>
+                      <td>${escapeHtml(teacherLeaveCourseText(item))}</td>
+                      <td>${item.makeupDate ? escapeHtml(slashDate(item.makeupDate)) : `<span class="sub">${item.coursePlan === "makeup" ? "星期五社團建議代課" : "不需補課"}</span>`}</td>
+                      <td>${teacherLeaveStatusPill(item.status || "pending")}${item.reviewNote ? `<div class="sub">${escapeHtml(item.reviewNote)}</div>` : ""}</td>
+                      <td>
+                        ${pending ? `
+                          ${requestedMakeup
+                            ? `<button class="secondary" data-teacher-leave-action="approvedMakeup" data-teacher-leave-id="${escapeHtml(item.id)}" type="button" ${canApproveMakeup ? "" : "disabled"}>核准補課</button>`
+                            : `<button class="secondary" data-teacher-leave-action="approvedSubstitute" data-teacher-leave-id="${escapeHtml(item.id)}" type="button">核准代課</button>`}
+                          <button class="danger-btn" data-teacher-leave-action="rejected" data-teacher-leave-id="${escapeHtml(item.id)}" type="button">退回</button>
+                        ` : `<span class="sub">已審核</span>`}
+                      </td>
+                    </tr>
+                  `;
+                }).join("")}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      `;
+    }
     function renderAfterCare() {
+      const title = afterCarePageTitle();
       if (state.date < afterCareTermStart || state.date > afterCareTermEnd) {
         return `
           <section class="panel">
-            <div class="panel-head"><h3>課照班點名</h3><span class="pill warn">${escapeHtml(state.date)} 非課照班點名期間</span></div>
+            <div class="panel-head"><h3>${escapeHtml(title)}</h3><span class="pill warn">${escapeHtml(state.date)} 非課照班點名期間</span></div>
             <div class="empty">課照班點名期間為 ${afterCareTermStart} 到 ${afterCareTermEnd}。</div>
           </section>
         `;
@@ -2788,7 +3888,7 @@
       return `
         <section class="panel">
           <div class="panel-head">
-            <h3>課照班點名</h3>
+            <h3>${escapeHtml(title)}</h3>
             <div class="filters">
               <label class="control">年段<select id="afterCareGroupSelect">${afterCareGroupOptions()}</select></label>
               <button class="primary" id="markAfterCarePresentBtn" type="button">全到</button>
@@ -2804,6 +3904,45 @@
           </div>
         </section>
       `;
+    }
+    function absenceDetailTable(kind, rows) {
+      const firstHeader = kind === "afterCare" ? "課照" : "社團";
+      const firstKey = kind === "afterCare" ? "group" : "club";
+      if (!rows.length) return `<div class="empty">今日沒有缺席學生。</div>`;
+      return `
+        <div class="table-wrap">
+          <table class="absence-detail-table">
+            <thead><tr><th>${firstHeader}</th><th>班級</th><th>學生</th><th>狀態</th></tr></thead>
+            <tbody>
+              ${rows.map(row => `
+                <tr>
+                  <td>${escapeHtml(row[firstKey] || "")}</td>
+                  <td>${escapeHtml(row.className || "")}</td>
+                  <td><span class="name">${escapeHtml(row.name || "")}</span></td>
+                  <td>${statusPill("danger", row.status || "未到")}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+    function openAbsenceDetail(kind) {
+      const modal = document.getElementById("absenceDetailModal");
+      const title = document.getElementById("absenceDetailTitle");
+      const body = document.getElementById("absenceDetailBody");
+      const isAfterCare = kind === "afterCare";
+      const rows = isAfterCare ? afterCareAbsentRows() : clubAbsentRows(clubsForDate());
+      if (title) title.textContent = isAfterCare ? "課照今日缺席明細" : "社團今日缺席明細";
+      if (body) body.innerHTML = absenceDetailTable(kind, rows);
+      modal?.classList.add("open");
+      modal?.setAttribute("aria-hidden", "false");
+      setTimeout(() => document.getElementById("absenceDetailDone")?.focus(), 0);
+    }
+    function closeAbsenceDetail() {
+      const modal = document.getElementById("absenceDetailModal");
+      modal?.classList.remove("open");
+      modal?.setAttribute("aria-hidden", "true");
     }
     function afterCareRow(member) {
       const key = memberKey(member);
@@ -2855,6 +3994,7 @@
           <div class="table-wrap">${followTable(items, true)}</div>
         </section>
         ${renderPickupPanel(false)}
+        ${renderTeacherLeaveReview()}
       `;
     }
     function renderTeachingFollowPanel(editable = true, dateList = [state.date]) {
@@ -3465,6 +4605,23 @@
       document.getElementById("markClassPresentBtn")?.addEventListener("click", markClassPresent);
       document.getElementById("clubSelect")?.addEventListener("change", e => { state.clubName = e.target.value; render(); });
       document.getElementById("markClubPresentBtn")?.addEventListener("click", markClubPresent);
+      document.getElementById("teacherLeaveDate")?.addEventListener("change", e => {
+        captureTeacherLeaveDraft();
+        state.teacherLeaveDate = e.target.value;
+        state.teacherLeaveFlash = "";
+        ensureTeacherLeaveClubForDate(state.teacherLeaveDate);
+        render();
+      });
+      document.getElementById("teacherLeaveClub")?.addEventListener("change", e => { state.teacherLeaveClubName = e.target.value; });
+      document.getElementById("teacherLeaveCoursePlan")?.addEventListener("change", updateTeacherLeaveMakeupHint);
+      document.getElementById("teacherLeaveSubmit")?.addEventListener("click", submitTeacherLeaveRequest);
+      document.getElementById("teacherLeaveCancelEdit")?.addEventListener("click", () => {
+        resetTeacherLeaveDraft();
+        state.teacherLeaveFlash = "";
+        render();
+      });
+      document.querySelectorAll("[data-edit-teacher-leave]").forEach(button => button.addEventListener("click", e => editTeacherLeaveRequest(e.currentTarget.dataset.editTeacherLeave)));
+      document.querySelectorAll("[data-delete-teacher-leave]").forEach(button => button.addEventListener("click", e => deleteTeacherLeaveRequest(e.currentTarget.dataset.deleteTeacherLeave)));
       document.getElementById("afterCareGroupSelect")?.addEventListener("change", e => { state.afterCareGroupId = e.target.value; render(); });
       document.getElementById("markAfterCarePresentBtn")?.addEventListener("click", markAfterCarePresent);
       document.getElementById("pickupClubSelect")?.addEventListener("change", e => { state.pickupClubName = e.target.value; render(); });
@@ -3706,11 +4863,14 @@
       }));
       document.querySelectorAll("[data-after-care-member-join]").forEach(input => input.addEventListener("change", e => setAfterCareMemberRoster(e.target.dataset.afterCareMemberJoin, { joinDate: e.target.value })));
       document.querySelectorAll("[data-after-care-member-drop]").forEach(input => input.addEventListener("change", e => setAfterCareMemberRoster(e.target.dataset.afterCareMemberDrop, { dropDate: e.target.value })));
+      document.querySelectorAll("[data-absence-detail]").forEach(button => button.addEventListener("click", e => openAbsenceDetail(e.currentTarget.dataset.absenceDetail)));
+      document.querySelectorAll("[data-teacher-leave-action]").forEach(button => button.addEventListener("click", e => reviewTeacherLeave(e.currentTarget.dataset.teacherLeaveId, e.currentTarget.dataset.teacherLeaveAction)));
     }
     function render(options = {}) {
       const preserveScroll = options.preserveScroll === true;
       const scrollState = preserveScroll ? captureScrollState() : null;
       if (currentUser.role === "guest") {
+        document.body.classList.remove("hide-page-topbar");
         renderLogin();
         return;
       }
@@ -3723,7 +4883,8 @@
         state.className = currentUser.className || state.className;
       }
       if (currentUser.role === "clubTeacher") {
-        state.view = "club";
+        const allowedClubTeacherViews = new Set(["club", "clubTeacherLeave"]);
+        if (!allowedClubTeacherViews.has(state.view)) state.view = "club";
       }
       if (currentUser.role === "afterCareTeacher") {
         state.view = "afterCare";
@@ -3732,26 +4893,27 @@
         const availableClasses = [...new Set(activeStudents().map(student => student.className))];
         if (availableClasses.length && !availableClasses.includes(state.className)) state.className = availableClasses[0];
       }
+      document.body.classList.toggle("hide-page-topbar", state.view === "clubTeacherLeave");
       buildNav();
       const view = views.find(v => v.id === state.view) || views[0];
       const viewTitle = document.getElementById("viewTitle");
       const viewMeta = document.getElementById("viewMeta");
       const metaText = baseMeta();
       const mobileViewTitle = document.getElementById("mobileViewTitle");
-      if (mobileViewTitle) mobileViewTitle.textContent = view.navTitle || view.title;
+      if (mobileViewTitle) mobileViewTitle.textContent = viewNavLabel(view);
       updateMobileMenuState();
       viewTitle.classList.toggle("club-main-title", state.view === "pickup");
       if (state.view === "pickup") {
         viewTitle.innerHTML = `115-1課外社團<span class="club-subtitle">${escapeHtml(metaText)}</span>`;
       } else {
-        viewTitle.textContent = view.title;
+        viewTitle.textContent = viewPageTitle(view);
       }
       if (state.view === "pickup") {
         viewMeta.textContent = "";
       } else if (state.view === "morning") {
         viewMeta.innerHTML = morningMetaHtml();
       } else {
-        viewMeta.textContent = metaText;
+        viewMeta.innerHTML = baseMetaHtml();
       }
       document.getElementById("dateInput").value = state.date;
       document.getElementById("termLabel").textContent = `${data.term.label}｜${data.term.start} - ${data.term.end}`;
@@ -3760,6 +4922,7 @@
       else if (state.view === "leave") app.innerHTML = renderLeave();
       else if (state.view === "afterCare") app.innerHTML = renderAfterCare();
       else if (state.view === "club") app.innerHTML = renderClub();
+      else if (state.view === "clubTeacherLeave") app.innerHTML = renderClubTeacherLeavePage();
       else if (state.view === "follow") app.innerHTML = renderFollow();
       else if (state.view === "pickup") app.innerHTML = renderPickupPanel(true);
       else if (state.view === "teachingFollow") app.innerHTML = renderTeachingFollowPanel(true);
@@ -3785,7 +4948,21 @@
     });
     document.getElementById("mobileMenuBackdrop")?.addEventListener("click", closeMobileMenu);
     document.addEventListener("keydown", event => {
-      if (event.key === "Escape" && state.mobileMenuOpen) closeMobileMenu();
+      if (event.key !== "Escape") return;
+      if (state.mobileMenuOpen) closeMobileMenu();
+      else if (document.getElementById("exportModal")?.classList.contains("open")) closeExportModal();
+      else if (document.getElementById("absenceDetailModal")?.classList.contains("open")) closeAbsenceDetail();
+    });
+    document.getElementById("exportModalClose")?.addEventListener("click", closeExportModal);
+    document.getElementById("exportModalCancel")?.addEventListener("click", closeExportModal);
+    document.getElementById("exportModal")?.addEventListener("click", event => {
+      if (event.target.id === "exportModal") closeExportModal();
+    });
+    document.getElementById("exportModalConfirm")?.addEventListener("click", confirmExportRecords);
+    document.getElementById("absenceDetailClose")?.addEventListener("click", closeAbsenceDetail);
+    document.getElementById("absenceDetailDone")?.addEventListener("click", closeAbsenceDetail);
+    document.getElementById("absenceDetailModal")?.addEventListener("click", event => {
+      if (event.target.id === "absenceDetailModal") closeAbsenceDetail();
     });
     document.getElementById("dateInput").min = data.term.start;
     document.getElementById("dateInput").max = data.term.end;
@@ -3794,29 +4971,7 @@
       warnForNonSchoolDate(state.date);
       render();
     });
-    document.getElementById("clearBtn").addEventListener("click", () => {
-      if (!confirm(`確定清除 ${state.date} 的點名紀錄？名冊資料不會被刪除。`)) return;
-      delete records[state.date];
-      saveRecordsImmediately();
-      render();
-    });
-    document.getElementById("logoutBtn").addEventListener("click", () => {
-      localStorage.removeItem(userStorageKey);
-      currentUser = { role: "guest", className: "" };
-      state.view = "dashboard";
-      state.mobileMenuOpen = false;
-      render();
-    });
-    document.getElementById("exportBtn").addEventListener("click", () => {
-      const payload = { date: state.date, records: day(), exportedAt: new Date().toISOString() };
-      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `attendance-${state.date}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-    });
+    document.getElementById("logoutBtn")?.addEventListener("click", logoutCurrentUser);
     render();
     setupCloudSync();
   </script>
