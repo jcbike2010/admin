@@ -29,6 +29,7 @@ label{display:block;font-size:.86rem;color:#475569;font-weight:800;margin-bottom
 .repeat-box{background:#f8fafc;border:1px dashed #cbd5e1;border-radius:12px;padding:12px}
 .report{display:grid;grid-template-columns:360px 1fr;gap:16px}.preview{background:#fff;border:1px solid var(--l);border-radius:14px;padding:24px;min-height:760px}.ph{display:flex;gap:12px;align-items:center;border-bottom:3px solid #111;padding-bottom:12px;margin-bottom:14px}.plogo{width:58px;height:58px;border-radius:14px;background:#e0f2fe;display:grid;place-items:center;font-weight:900}.step{border-bottom:1px solid #e5e7eb;padding:7px 0}.admin{font-size:1.15rem;font-weight:900;border-left:4px solid #9ca3af;background:#f9fafb;padding:6px 10px;margin:4px 0}.act{font-weight:900;padding:10px;border:2px solid #111;border-radius:10px;background:#fef08a;margin:9px 0}.script{font-weight:500;white-space:pre-wrap;background:#ffffffaa;border-top:1px dashed #999;margin-top:8px;padding:8px;border-radius:6px}
 .progress{height:14px;background:#e2e8f0;border-radius:999px;overflow:hidden;min-width:120px}.bar{height:100%;background:linear-gradient(90deg,#2563eb,#059669);border-radius:999px}.summary-note{color:#475569;line-height:1.8}.summary-note b{color:#0f172a}
+.project-link-row{cursor:pointer;touch-action:manipulation;transition:background-color .18s ease}.project-link-row:hover{background:#eff6ff}.project-link-row:focus-visible{outline:3px solid var(--b);outline-offset:-3px}.project-link-row:active{background:#dbeafe}.project-focus{outline:3px solid var(--b);outline-offset:2px;box-shadow:0 10px 28px #2563eb28}
 
 .trip-form-card{
   background:#f0f9ff;
@@ -93,7 +94,7 @@ label{display:block;font-size:.86rem;color:#475569;font-weight:800;margin-bottom
   <button class="nav active" data-s="dash">Topview</button>
   <button class="nav" data-s="projects">Project</button>
   <button class="nav" data-s="tasks">To-do</button>
-  <button class="nav" data-s="events">Activity Log</button>
+  <button class="nav" data-s="events">校內活動紀錄</button>
   <button class="nav" data-s="trips">校外教學</button>
   <button class="nav" data-s="assembly">朝會司儀</button>
   <button class="nav" data-s="settings">設定/備份</button>
@@ -106,7 +107,7 @@ label{display:block;font-size:.86rem;color:#475569;font-weight:800;margin-bottom
   </div>
 </aside>
 <main>
-  <div class="top no"><div><h2 id="title">Topview</h2></div><div><button class="btn b" onclick="go('events')">新增活動</button> <button class="btn g" onclick="go('tasks')">新增待辦</button></div></div>
+  <div class="top no"><div><h2 id="title">Topview</h2></div><div><button id="addTripBtn" class="btn b" type="button" aria-controls="tripFormCard" aria-expanded="false" onclick="showTripForm()">新增校外教學</button></div></div>
 
   <section id="dash" class="sec on"><h1 class="pt">Topview｜活動組年度總覽</h1>
     <div class="card">
@@ -120,13 +121,19 @@ label{display:block;font-size:.86rem;color:#475569;font-weight:800;margin-bottom
     </div>
   </section>
 
-  <section id="events" class="sec"><h1 class="pt">Activity Log｜活動紀錄</h1>
+  <section id="events" class="sec"><h1 class="pt">校內活動紀錄</h1>
     <div class="card no compact-form-card"><h3>新增活動紀錄</h3><form id="eventF" class="grid g4 compact-form"><input id="eid" type="hidden"><div><label>日期</label><input id="ed" type="date" required></div><div><label>類別</label><select id="et"><option>朝會</option><option>校外教學</option><option>社團活動</option><option>節慶活動</option><option>畢業活動</option><option>防災安全</option><option>其他</option></select></div><div><label>活動名稱</label><input id="en" required></div><div><label>地點</label><input id="el"></div><div><label>時間</label><input id="etime" placeholder="08:00-10:00"></div><div><label>對象</label><input id="eg"></div><div><label>負責</label><input id="eo" value="活動組"></div><div><label>狀態</label><select id="es"><option>規劃中</option><option>進行中</option><option>已完成</option></select></div><div class="full repeat-box"><div class="grid g3"><div><label>重複</label><select id="erepeat"><option value="none">不重複</option><option value="weekly">每週</option><option value="biweekly">每兩週</option><option value="monthly">每月</option></select></div><div><label>筆數</label><input id="ecount" type="number" min="1" max="60" value="1"></div><div><label>備註</label><input id="er"></div></div></div><div class="full actions"><button class="btn b">儲存活動</button> <button type="button" class="btn s" onclick="resetEvent()">取消</button></div></form></div>
-    <div class="card"><h3>Activity Log｜活動紀錄清單</h3><div class="wrap"><table><thead><tr><th>日期</th><th>時間</th><th>活動</th><th>類別</th><th>地點</th><th>對象</th><th>負責</th><th>狀態</th><th class="no">操作</th></tr></thead><tbody id="eventRows"></tbody></table></div></div>
+    <div class="card"><h3>校內活動紀錄清單</h3><div class="wrap"><table><thead><tr><th>日期</th><th>時間</th><th>活動</th><th>類別</th><th>地點</th><th>對象</th><th>負責</th><th>狀態</th><th class="no">操作</th></tr></thead><tbody id="eventRows"></tbody></table></div></div>
   </section>
 
   <section id="trips" class="sec"><h1 class="pt">校外教學記錄表</h1>
-    <div class="card no trip-form-card"><h3>新增校外教學</h3>
+    <div class="card trip-list-card"><h3>校外教學清單</h3>
+      <div class="wrap"><table>
+        <thead><tr><th>計畫表</th><th>班級/單位</th><th>所屬 Project</th><th>日期</th><th>出發</th><th>返校</th><th>地點</th><th>學生</th><th>教師</th><th>行政</th><th>總人數</th><th>備註</th><th class="no">操作</th></tr></thead>
+        <tbody id="tripRows"></tbody>
+      </table></div>
+    </div>
+    <div id="tripFormCard" class="card no trip-form-card hide"><h3>新增校外教學</h3>
       <form id="tripF" class="trip-compact">
         <input id="tid" type="hidden">
         <div><label>班級/單位</label><input id="tc" required placeholder="例：四年級"></div>
@@ -139,14 +146,8 @@ label{display:block;font-size:.86rem;color:#475569;font-weight:800;margin-bottom
         <div><label>教師</label><input id="ttea" type="number" value="0"></div>
         <div><label>行政</label><input id="tadm" type="number" value="0"></div>
         <div class="note"><label>備註</label><input id="tn" placeholder="可輸入車輛、保險、注意事項等"></div>
-        <div class="actions"><button class="btn b">儲存</button><button type="button" class="btn s" onclick="resetTrip()">取消</button></div>
+        <div class="actions"><button class="btn b">儲存</button><button type="button" class="btn s" onclick="closeTripForm()">取消</button></div>
       </form>
-    </div>
-    <div class="card trip-list-card"><h3>校外教學清單</h3>
-      <div class="wrap"><table>
-        <thead><tr><th>計畫表</th><th>班級/單位</th><th>所屬 Project</th><th>日期</th><th>出發</th><th>返校</th><th>地點</th><th>學生</th><th>教師</th><th>行政</th><th>總人數</th><th>備註</th><th class="no">操作</th></tr></thead>
-        <tbody id="tripRows"></tbody>
-      </table></div>
     </div>
   </section>
 
@@ -231,7 +232,7 @@ async function initCloud(){
     },e=>{console.error(e);setCloudStatus('雲端連線失敗，使用本機備援')});
   }catch(e){console.error(e);setCloudStatus('雲端載入失敗，使用本機備援')}
 }
-function go(s){document.querySelectorAll('.sec').forEach(x=>x.classList.remove('on'));$(s).classList.add('on');document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.s==s));title.textContent={dash:'Topview',events:'Activity Log',trips:'校外教學',assembly:'朝會司儀',projects:'Project',tasks:'To-do',settings:'設定/備份'}[s]}
+function go(s){document.querySelectorAll('.sec').forEach(x=>x.classList.remove('on'));$(s).classList.add('on');document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.s==s));title.textContent={dash:'Topview',events:'校內活動紀錄',trips:'校外教學',assembly:'朝會司儀',projects:'Project',tasks:'To-do',settings:'設定/備份'}[s]}
 document.querySelectorAll('.nav').forEach(b=>b.onclick=()=>go(b.dataset.s));
 function tag(s){return `<span class="tag ${s=='已完成'?'done':s=='進行中'?'doing':'todo'}">${esc(s)}</span>`}
 function ptag(p){return `<span class="tag ${p=='高'?'pri-high':p=='低'?'pri-low':'pri-mid'}">${esc(p||'中')}</span>`}
@@ -307,7 +308,7 @@ function renderProjects(){
     let list=tasks.length?`<h4>To-do</h4><div class="wrap"><table><thead><tr><th>期限</th><th>待辦</th><th>優先</th><th>類別</th><th>狀態</th><th class="no">操作</th></tr></thead><tbody>${tasks.map(t=>`<tr><td>${esc(t.due)}</td><td><b>${esc(t.name)}</b></td><td>${ptag(t.priority)}</td><td>${esc(t.type)}</td><td>${tag(t.status)}</td><td class="no"><button class="mini ok" onclick="done('${t.id}')">完成</button><button class="mini edit" onclick="editTask('${t.id}');go('tasks')">編輯待辦</button></td></tr>`).join('')}</tbody></table></div>`:'<h4>To-do</h4><p class="empty">此專案尚未建立待辦。</p>';
     let trips=D.trips.filter(t=>t.projectId==p.id).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
     let tripList=trips.length?`<h4>校外教學紀錄</h4><div class="wrap"><table><thead><tr><th>日期</th><th>班級</th><th>地點</th><th>時間</th><th>總數</th></tr></thead><tbody>${trips.map(t=>{let total=+t.students+ +t.teachers+ +t.admins;return `<tr><td>${esc(t.date)}</td><td><b>${esc(t.className)}</b></td><td>${esc(t.location)}</td><td>${esc(t.start)}-${esc(t.return)}</td><td>${total}</td></tr>`}).join('')}</tbody></table></div>`:'<h4>校外教學紀錄</h4><p class="empty">此專案尚未連結校外教學紀錄。</p>';
-    return `<div class="card"><h3>${esc(p.name)} ${tag(p.status)}</h3><p><b>類別：</b>${esc(p.type)}　<b>期間：</b>${esc(p.start)} ～ ${esc(p.end)}　<b>負責：</b>${esc(p.owner)}　<b>待辦進度：</b>${done}/${tasks.length}　<b>校外教學：</b>${trips.length}筆</p><p>${esc(p.note)}</p><div class="no"><button class="mini edit" onclick="editProject('${p.id}')">編輯專案</button><button class="mini del" onclick="del('projects','${p.id}')">刪除專案</button><button class="mini ok" onclick="newTaskForProject('${p.id}')">新增此專案待辦</button><button class="mini ok" onclick="newTripForProject('${p.id}')">新增此專案校外教學</button></div>${list}${tripList}</div>`
+    return `<div class="card" data-project-id="${p.id}" tabindex="-1"><h3>${esc(p.name)} ${tag(p.status)}</h3><p><b>類別：</b>${esc(p.type)}　<b>期間：</b>${esc(p.start)} ～ ${esc(p.end)}　<b>負責：</b>${esc(p.owner)}　<b>待辦進度：</b>${done}/${tasks.length}　<b>校外教學：</b>${trips.length}筆</p><p>${esc(p.note)}</p><div class="no"><button class="mini edit" onclick="editProject('${p.id}')">編輯專案</button><button class="mini del" onclick="del('projects','${p.id}')">刪除專案</button><button class="mini ok" onclick="newTaskForProject('${p.id}')">新增此專案待辦</button><button class="mini ok" onclick="newTripForProject('${p.id}')">新增此專案校外教學</button></div>${list}${tripList}</div>`
   }).join(''):'<p class="empty">尚無專案，請先新增專案。</p>';
 }
 function render(){
@@ -325,7 +326,7 @@ function render(){
       let tasks=D.tasks.filter(t=>t.projectId==p.id);
       let done=tasks.filter(t=>t.status=='已完成').length;
       let pct=tasks.length?Math.round(done/tasks.length*100):0;
-      return `<tr><td><b>${esc(p.name)}</b></td><td>${esc(p.type)}</td><td>${esc(p.start)}～${esc(p.end)}</td><td>${esc(p.owner)}</td><td><div>${done}/${tasks.length}（${pct}%）</div><div class="progress"><div class="bar" style="width:${pct}%"></div></div></td><td>${tag(p.status)}</td></tr>`
+      return `<tr class="project-link-row" role="link" tabindex="0" aria-label="前往專案：${esc(p.name)}" onclick="openProject('${p.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openProject('${p.id}')}\"><td><b>${esc(p.name)}</b></td><td>${esc(p.type)}</td><td>${esc(p.start)}～${esc(p.end)}</td><td>${esc(p.owner)}</td><td><div>${done}/${tasks.length}（${pct}%）</div><div class="progress"><div class="bar" style="width:${pct}%"></div></div></td><td>${tag(p.status)}</td></tr>`
     }).join(''):'<tr><td colspan=6 class="empty">尚無專案。可到「專案」頁面新增大型活動專案。</td></tr>';
   }
 
@@ -364,15 +365,18 @@ function render(){
 eventF.onsubmit=e=>{e.preventDefault();let id=eid.value,base={date:ed.value,type:et.value,name:en.value,location:el.value,time:etime.value,target:eg.value,owner:eo.value,status:es.value,note:er.value};if(id){let i=D.events.findIndex(x=>x.id==id);if(i>-1)D.events[i]={...D.events[i],...base};else D.events.push({id,...base})}else{let rule=erepeat.value,count=rule=='none'?1:Math.max(1,Math.min(60,+ecount.value||1)),group=count>1?uid():'';for(let n=0;n<count;n++)D.events.push({id:uid(),...base,date:repeatDate(base.date,rule,n),repeatRule:rule,repeatGroup:group,repeatIndex:n+1})}resetEvent();save()};
 function editEvent(id){let x=D.events.find(y=>y.id==id);eid.value=x.id;ed.value=x.date;et.value=x.type;en.value=x.name;el.value=x.location;etime.value=x.time;eg.value=x.target;eo.value=x.owner;es.value=x.status;er.value=x.note;erepeat.value='none';ecount.value=1;go('events');scrollTo(0,0)}
 function resetEvent(){eventF.reset();eid.value='';ed.value=today();eo.value='活動組';erepeat.value='none';ecount.value=1}
-tripF.onsubmit=e=>{e.preventDefault();let id=tid.value||uid(),o={id,planStatus:'已納入',className:tc.value,projectId:tp.value,date:td.value,start:ts.value,return:tr.value,location:tl.value,students:+tstu.value||0,teachers:+ttea.value||0,admins:+tadm.value||0,note:tn.value};let i=D.trips.findIndex(x=>x.id==id);i>-1?D.trips[i]=o:D.trips.push(o);resetTrip();save()};
-function editTrip(id){let x=D.trips.find(y=>y.id==id);tid.value=x.id;tc.value=x.className;projectOptions(x.projectId||'');tp.value=x.projectId||'';td.value=x.date;ts.value=x.start;tr.value=x.return;tl.value=x.location;tstu.value=x.students;ttea.value=x.teachers;tadm.value=x.admins;tn.value=x.note;go('trips');scrollTo(0,0)}
+tripF.onsubmit=e=>{e.preventDefault();let id=tid.value||uid(),o={id,planStatus:'已納入',className:tc.value,projectId:tp.value,date:td.value,start:ts.value,return:tr.value,location:tl.value,students:+tstu.value||0,teachers:+ttea.value||0,admins:+tadm.value||0,note:tn.value};let i=D.trips.findIndex(x=>x.id==id);i>-1?D.trips[i]=o:D.trips.push(o);closeTripForm();save()};
+function showTripForm(){go('trips');tripFormCard.classList.remove('hide');addTripBtn.setAttribute('aria-expanded','true');requestAnimationFrame(()=>{tripFormCard.scrollIntoView({behavior:'smooth',block:'start'});tc.focus()})}
+function closeTripForm(){resetTrip();tripFormCard.classList.add('hide');addTripBtn.setAttribute('aria-expanded','false')}
+function editTrip(id){let x=D.trips.find(y=>y.id==id);tid.value=x.id;tc.value=x.className;projectOptions(x.projectId||'');tp.value=x.projectId||'';td.value=x.date;ts.value=x.start;tr.value=x.return;tl.value=x.location;tstu.value=x.students;ttea.value=x.teachers;tadm.value=x.admins;tn.value=x.note;showTripForm()}
 function resetTrip(){tripF.reset();tid.value='';projectOptions('');td.value=today();ts.value='08:50';tr.value='12:00';tstu.value=0;ttea.value=0;tadm.value=0}
 
 projectF.onsubmit=e=>{e.preventDefault();let id=pid.value||uid(),o={id,name:pn.value,type:py.value,start:psd.value,end:ped.value,owner:powner.value,status:pstatus.value,note:pnote.value};let i=D.projects.findIndex(x=>x.id==id);i>-1?D.projects[i]=o:D.projects.push(o);resetProject();save()};
 function editProject(id){let x=D.projects.find(y=>y.id==id);if(!x)return;pid.value=x.id;pn.value=x.name;py.value=x.type;psd.value=x.start;ped.value=x.end;powner.value=x.owner;pstatus.value=x.status;pnote.value=x.note;go('projects');scrollTo(0,0)}
+function openProject(id){go('projects');requestAnimationFrame(()=>{let card=document.querySelector(`[data-project-id="${CSS.escape(id)}"]`);if(!card)return;document.querySelectorAll('.project-focus').forEach(x=>x.classList.remove('project-focus'));card.classList.add('project-focus');card.scrollIntoView({behavior:'smooth',block:'center'});card.focus({preventScroll:true});setTimeout(()=>card.classList.remove('project-focus'),1800)})}
 function resetProject(){projectF.reset();pid.value='';powner.value='活動組'}
 function newTaskForProject(id){let p=D.projects.find(x=>x.id==id);resetTask();kp.value=id;kpri.value='中';kt.value=p&&p.type?p.type:'其他';ko.value=p&&p.owner?p.owner:'活動組';go('tasks');scrollTo(0,0)}
-function newTripForProject(id){resetTrip();tp.value=id;go('trips');scrollTo(0,0)}
+function newTripForProject(id){resetTrip();tp.value=id;showTripForm()}
 
 taskF.onsubmit=e=>{e.preventDefault();let id=kid.value||uid(),o={id,due:kd.value,type:kt.value,projectId:kp.value,priority:kpri.value,owner:ko.value,status:ks.value,name:kn.value,note:kr.value};let i=D.tasks.findIndex(x=>x.id==id);i>-1?D.tasks[i]=o:D.tasks.push(o);resetTask();save()};function editTask(id){let x=D.tasks.find(y=>y.id==id);kid.value=x.id;kd.value=x.due;kt.value=x.type;kpri.value=x.priority||'中';projectOptions(x.projectId||'');kp.value=x.projectId||'';ko.value=x.owner;ks.value=x.status;kn.value=x.name;kr.value=x.note;go('tasks');scrollTo(0,0)}function resetTask(){taskF.reset();kid.value='';kd.value=today();kpri.value='中';ko.value='活動組';projectOptions('')}function done(id){let x=D.tasks.find(y=>y.id==id);x.status='已完成';save()}
 function renderA(){D.assembly={date:ad.value,sem:as.value,reports:ar.value,future:af.value};adp.textContent=ad.value;asp.textContent=as.value;let lines=ar.value.split('\n'),i=0,h='';function hc(s){return s.endsWith(':')||s.endsWith('：')}while(i<lines.length){let line=lines[i].trim();if(!line){i++;continue}if(hc(line)){let title=line.slice(0,-1),script='';i++;while(i<lines.length&&lines[i].trim()&&!hc(lines[i].trim())&&!['主席報告','師長報告'].includes(lines[i].trim())&&!lines[i].includes('中心報告')){script+=lines[i]+'\n';i++}h+=`<div class="act">${esc(title)}${script.trim()?`<div class="script">${esc(script.trim())}</div>`:''}</div>`;continue}if(['主席報告','師長報告'].includes(line)){h+=`<div class="admin">${esc(line)}</div>`}else if(line.includes('中心報告')){h+=`<div style="padding-left:24px;font-weight:800;color:#6b7280">● ${esc(line)}</div>`}else h+=`<div class="act">${esc(line)}</div>`;i++}dyn.innerHTML=h;localStorage.setItem('bojia_director_site',JSON.stringify(D))}
