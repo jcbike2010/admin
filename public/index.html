@@ -19,16 +19,18 @@ main{padding:24px;max-width:1500px;width:100%}.top{display:flex;justify-content:
 h3{margin:0 0 14px}.grid{display:grid;gap:12px}.g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}.full{grid-column:1/-1}
 label{display:block;font-size:.86rem;color:#475569;font-weight:800;margin-bottom:5px}input,select,textarea{width:100%;border:1px solid var(--l);border-radius:10px;padding:10px;font:inherit}textarea{resize:vertical}
 .compact-form-card{padding:12px 14px}.compact-form-card h3{margin-bottom:8px;font-size:1rem}.compact-form{gap:8px;align-items:end}.compact-form label{font-size:.76rem;margin-bottom:2px}.compact-form input,.compact-form select,.compact-form textarea{padding:7px 8px;border-radius:9px;font-size:.9rem}.compact-form textarea{min-height:38px}.compact-form .actions{display:flex;gap:6px;justify-content:flex-end;align-items:center}.compact-form .btn{padding:8px 12px}.compact-form .repeat-box{padding:8px 10px}
+.task-compact{display:grid;grid-template-columns:1fr 1fr 1.1fr .65fr .85fr 1.5fr;gap:8px;align-items:end}.task-note{grid-column:1 / 5}.task-compact .actions{grid-column:5 / 7;display:flex;gap:6px;justify-content:flex-end}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.stat{border-radius:16px;padding:16px;border:1px solid var(--l);background:#fff}.stat small{color:var(--m);font-weight:800}.stat strong{display:block;font-size:2rem}.blue{background:#eff6ff}.green{background:#ecfdf5}.amber{background:#fffbeb}.pink{background:#fdf2f8}
 .wrap{overflow:auto;border:1px solid var(--l);border-radius:14px}table{width:100%;border-collapse:collapse}th,td{border-bottom:1px solid var(--l);padding:10px;vertical-align:top;text-align:left}th{background:#f8fafc;color:#475569}
-.tag{display:inline-block;border-radius:999px;padding:4px 9px;margin:2px;font-size:.78rem;font-weight:900;background:#e2e8f0}.done{background:#dcfce7;color:#166534}.doing{background:#fef3c7;color:#92400e}.todo{background:#fee2e2;color:#991b1b}.pri-high,.pri-mid,.pri-low{background:#fff;color:#000;border:1px solid #111;font-weight:900;font-size:.92rem;letter-spacing:.08em}
-.mini{border:0;border-radius:8px;padding:6px 9px;font-weight:800;margin:2px;cursor:pointer}.edit{background:#fef3c7;color:#92400e}.del{background:#fee2e2;color:#991b1b}.ok{background:#dcfce7;color:#166534}
+.tag{display:inline-block;border-radius:999px;padding:4px 9px;margin:2px;font-size:.78rem;font-weight:900;background:#e2e8f0}.done{background:#dcfce7;color:#166534}.doing{background:#fef3c7;color:#92400e}.todo{background:#fee2e2;color:#991b1b}.pri-high{background:#dc2626;color:#fff;border:2px solid #991b1b;font-size:1rem;box-shadow:0 2px 6px #991b1b45}.pri-mid,.pri-low{background:#fff;color:#000;border:1px solid #64748b;font-size:.86rem}.pri-high,.pri-mid,.pri-low{font-weight:900;letter-spacing:.08em}
+.mini{border:0;border-radius:8px;padding:6px 9px;font-weight:800;margin:2px;cursor:pointer}.task-actions{display:flex;align-items:center;gap:4px;min-width:170px;white-space:nowrap}.task-actions .mini{flex:1;margin:0}.edit{background:#fef3c7;color:#92400e}.del{background:#fee2e2;color:#991b1b}.ok{background:#dcfce7;color:#166534}
 .months{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.month{background:#fff;border:1px solid var(--l);border-radius:16px;padding:14px;min-height:160px}.month h4{margin:0 0 8px}.empty{color:#94a3b8}
 .hint{font-size:.8rem;color:var(--m);line-height:1.6;margin-top:5px}
 .month-items{list-style:none;padding:0;margin:6px 0 0;display:grid;gap:6px}.month-items li{background:#f8fafc;border-left:4px solid #cbd5e1;border-radius:8px;padding:7px 9px;cursor:pointer}.month-items li:hover{background:#eff6ff}.month-items li.event{border-left-color:#2563eb}.month-items li.task{border-left-color:#d97706}.month-items li.trip{border-left-color:#059669}.month-line{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.month-line small{color:var(--m)}
 .repeat-box{background:#f8fafc;border:1px dashed #cbd5e1;border-radius:12px;padding:12px}
 .report{display:grid;grid-template-columns:360px 1fr;gap:16px}.preview{background:#fff;border:1px solid var(--l);border-radius:14px;padding:24px;min-height:760px}.ph{display:flex;gap:12px;align-items:center;border-bottom:3px solid #111;padding-bottom:12px;margin-bottom:14px}.plogo{width:58px;height:58px;border-radius:14px;background:#e0f2fe;display:grid;place-items:center;font-weight:900}.step{border-bottom:1px solid #e5e7eb;padding:7px 0}.admin{font-size:1.15rem;font-weight:900;border-left:4px solid #9ca3af;background:#f9fafb;padding:6px 10px;margin:4px 0}.act{font-weight:900;padding:10px;border:2px solid #111;border-radius:10px;background:#fef08a;margin:9px 0}.script{font-weight:500;white-space:pre-wrap;background:#ffffffaa;border-top:1px dashed #999;margin-top:8px;padding:8px;border-radius:6px}
 .progress{height:14px;background:#e2e8f0;border-radius:999px;overflow:hidden;min-width:120px}.bar{height:100%;background:linear-gradient(90deg,#2563eb,#059669);border-radius:999px}.summary-note{color:#475569;line-height:1.8}.summary-note b{color:#0f172a}
+.project-link-row{cursor:pointer;touch-action:manipulation;transition:background-color .18s ease}.project-link-row:hover{background:#eff6ff}.project-link-row:focus-visible{outline:3px solid var(--b);outline-offset:-3px}.project-link-row:active{background:#dbeafe}.project-focus{outline:3px solid var(--b);outline-offset:2px;box-shadow:0 10px 28px #2563eb28}
 
 .trip-form-card{
   background:#f0f9ff;
@@ -42,6 +44,7 @@ label{display:block;font-size:.86rem;color:#475569;font-weight:800;margin-bottom
 .trip-form-card h3,.trip-list-card h3{
   margin-bottom:8px;
 }
+.plan-check{width:28px;height:28px;accent-color:var(--g);cursor:pointer;vertical-align:middle}.trip-plan-toggle{display:flex;align-items:center;gap:9px;min-height:46px;margin-bottom:9px;padding:7px 10px;border:2px solid #86efac;border-radius:11px;background:#ecfdf5;color:#166534;font-weight:900;cursor:pointer}.trip-plan-toggle .plan-check{width:30px;height:30px;flex:0 0 auto}.trip-mobile-list{display:none}.trip-mobile-item{background:#fff;border:1px solid #fed7aa;border-radius:14px;padding:13px}.trip-mobile-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;margin-bottom:8px}.trip-mobile-head strong{font-size:1rem}.trip-mobile-date{color:var(--m);font-weight:800;white-space:nowrap}.trip-mobile-place{font-size:1.02rem;font-weight:900;color:#0f172a;margin-bottom:7px}.trip-mobile-meta{display:grid;gap:5px;color:#475569;line-height:1.5}.trip-mobile-meta b{color:#0f172a}.trip-mobile-note{margin-top:8px;padding-top:8px;border-top:1px dashed #fed7aa;color:#475569}.trip-mobile-actions{display:flex;gap:8px;margin-top:10px}.trip-mobile-actions .mini{flex:1;min-height:44px;margin:0}
 .trip-compact{
   display:grid;
   grid-template-columns:1.1fr 1.2fr .9fr .7fr .7fr 1.2fr .55fr .55fr .55fr;
@@ -75,15 +78,22 @@ label{display:block;font-size:.86rem;color:#475569;font-weight:800;margin-bottom
   .trip-compact{grid-template-columns:repeat(3,1fr)}
   .trip-compact .note{grid-column:1 / 3}
   .trip-compact .actions{grid-column:3 / 4}
+  .task-compact{grid-template-columns:repeat(3,1fr)}
+  .task-note{grid-column:1 / 3}
+  .task-compact .actions{grid-column:3 / 4}
 }
 @media(max-width:760px){
   .trip-compact{grid-template-columns:1fr}
   .trip-compact .note,.trip-compact .actions{grid-column:auto}
+  .task-compact{grid-template-columns:1fr}
+  .task-note,.task-compact .actions{grid-column:auto}
 }
 
-.hide{display:none!important}.pt{display:none}
-@media(max-width:980px){.app{grid-template-columns:1fr}.side{position:relative;height:auto}.g2,.g3,.g4,.stats,.months,.report{grid-template-columns:1fr}.top{display:block}main{padding:16px}}
-@page{size:A4 landscape;margin:12mm}@media print{.side,.top,.no{display:none!important}.app{display:block}main{padding:0}.sec{display:none!important}.sec.on{display:block!important}.card{box-shadow:none;border:0;padding:0}.pt{display:block;text-align:center;font-size:22pt;font-weight:900;margin:0 0 12px}th,td{border:1px solid #333;padding:6px;font-size:10pt}.wrap{border:0}.months{grid-template-columns:repeat(4,1fr)}.preview{border:0;padding:0;min-height:auto}}
+.hide{display:none!important}.pt,.mobile-head{display:none}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(max-width:980px){
+  .app{grid-template-columns:1fr}.side{display:none}.mobile-head{display:block;position:sticky;top:0;z-index:100;background:#0f172a;color:#fff;padding:7px 12px 9px;box-shadow:0 4px 14px #0f172a30}.mobile-brand{display:flex;align-items:baseline;gap:7px;margin-bottom:5px;color:#cbd5e1;font-size:.78rem;font-weight:800}.mobile-brand-main{color:#fff;font-size:1.12rem;font-weight:900;letter-spacing:.06em}.mobile-controls{display:flex;gap:8px;align-items:center}.mobile-controls label{flex:1;margin:0;min-width:0}.mobile-controls select{min-height:44px;background:#fff;color:var(--t);font-weight:900;border:0;padding:8px 10px}.mobile-actions{flex:0 0 auto}.mobile-actions .btn{min-height:44px;padding:8px 11px;white-space:nowrap}.top{display:none}.g2,.g3,.g4,.stats,.months,.report{grid-template-columns:1fr}main{padding:12px}.card{margin-bottom:12px}.trip-list-card>.wrap{display:none}.trip-mobile-list{display:grid;gap:10px}
+}
+@page{size:A4 landscape;margin:12mm}@media print{.side,.mobile-head,.top,.no{display:none!important}.app{display:block}main{padding:0}.sec{display:none!important}.sec.on{display:block!important}.card{box-shadow:none;border:0;padding:0}.pt{display:block;text-align:center;font-size:22pt;font-weight:900;margin:0 0 12px}th,td{border:1px solid #333;padding:6px;font-size:10pt}.wrap{border:0}.months{grid-template-columns:repeat(4,1fr)}.preview{border:0;padding:0;min-height:auto}}
 </style>
 </head>
 <body>
@@ -93,7 +103,7 @@ label{display:block;font-size:.86rem;color:#475569;font-weight:800;margin-bottom
   <button class="nav active" data-s="dash">Topview</button>
   <button class="nav" data-s="projects">Project</button>
   <button class="nav" data-s="tasks">To-do</button>
-  <button class="nav" data-s="events">Activity Log</button>
+  <button class="nav" data-s="events">校內活動</button>
   <button class="nav" data-s="trips">校外教學</button>
   <button class="nav" data-s="assembly">朝會司儀</button>
   <button class="nav" data-s="settings">設定/備份</button>
@@ -105,8 +115,15 @@ label{display:block;font-size:.86rem;color:#475569;font-weight:800;margin-bottom
     <input id="importFile" type="file" accept=".json" class="hide">
   </div>
 </aside>
+<header class="mobile-head no">
+  <div class="mobile-brand"><strong class="mobile-brand-main">活動組</strong><span>115 學年度工作計畫</span></div>
+  <div class="mobile-controls">
+    <label><span class="sr-only">切換功能頁面</span><select id="mobileNav" onchange="go(this.value)"><option value="dash">Topview</option><option value="projects">Project</option><option value="tasks">To-do</option><option value="events">校內活動</option><option value="trips">校外教學</option><option value="assembly">朝會司儀</option><option value="settings">設定／備份</option></select></label>
+    <div class="mobile-actions"><button id="mobileAddEventBtn" class="btn b hide" type="button" onclick="showEventForm()">新增活動</button><button id="mobileAddProjectBtn" class="btn b hide" type="button" onclick="showProjectForm()">新增專案</button><button id="mobileAddTaskBtn" class="btn b hide" type="button" onclick="showTaskForm()">新增待辦</button><button id="mobileAddTripBtn" class="btn b hide" type="button" onclick="showTripForm()">新增校外教學</button></div>
+  </div>
+</header>
 <main>
-  <div class="top no"><div><h2 id="title">Topview</h2></div><div><button class="btn b" onclick="go('events')">新增活動</button> <button class="btn g" onclick="go('tasks')">新增待辦</button></div></div>
+  <div class="top no"><div><h2 id="title">Topview</h2></div><div><button id="addEventBtn" class="btn b hide" type="button" onclick="showEventForm()">新增活動</button><button id="addProjectBtn" class="btn b hide" type="button" aria-controls="projectFormCard" aria-expanded="false" onclick="showProjectForm()">新增專案</button><button id="addTaskBtn" class="btn b hide" type="button" aria-controls="taskFormCard" aria-expanded="false" onclick="showTaskForm()">新增待辦</button><button id="addTripBtn" class="btn b hide" type="button" aria-controls="tripFormCard" aria-expanded="false" onclick="showTripForm()">新增校外教學</button></div></div>
 
   <section id="dash" class="sec on"><h1 class="pt">Topview｜活動組年度總覽</h1>
     <div class="card">
@@ -120,13 +137,20 @@ label{display:block;font-size:.86rem;color:#475569;font-weight:800;margin-bottom
     </div>
   </section>
 
-  <section id="events" class="sec"><h1 class="pt">Activity Log｜活動紀錄</h1>
-    <div class="card no compact-form-card"><h3>新增活動紀錄</h3><form id="eventF" class="grid g4 compact-form"><input id="eid" type="hidden"><div><label>日期</label><input id="ed" type="date" required></div><div><label>類別</label><select id="et"><option>朝會</option><option>校外教學</option><option>社團活動</option><option>節慶活動</option><option>畢業活動</option><option>防災安全</option><option>其他</option></select></div><div><label>活動名稱</label><input id="en" required></div><div><label>地點</label><input id="el"></div><div><label>時間</label><input id="etime" placeholder="08:00-10:00"></div><div><label>對象</label><input id="eg"></div><div><label>負責</label><input id="eo" value="活動組"></div><div><label>狀態</label><select id="es"><option>規劃中</option><option>進行中</option><option>已完成</option></select></div><div class="full repeat-box"><div class="grid g3"><div><label>重複</label><select id="erepeat"><option value="none">不重複</option><option value="weekly">每週</option><option value="biweekly">每兩週</option><option value="monthly">每月</option></select></div><div><label>筆數</label><input id="ecount" type="number" min="1" max="60" value="1"></div><div><label>備註</label><input id="er"></div></div></div><div class="full actions"><button class="btn b">儲存活動</button> <button type="button" class="btn s" onclick="resetEvent()">取消</button></div></form></div>
-    <div class="card"><h3>Activity Log｜活動紀錄清單</h3><div class="wrap"><table><thead><tr><th>日期</th><th>時間</th><th>活動</th><th>類別</th><th>地點</th><th>對象</th><th>負責</th><th>狀態</th><th class="no">操作</th></tr></thead><tbody id="eventRows"></tbody></table></div></div>
+  <section id="events" class="sec"><h1 class="pt">校內活動</h1>
+    <div class="card"><h3>校內活動清單</h3><div class="wrap"><table><thead><tr><th>日期</th><th>時間</th><th>活動</th><th>類別</th><th>地點</th><th>對象</th><th>負責</th><th>狀態</th><th class="no">操作</th></tr></thead><tbody id="eventRows"></tbody></table></div></div>
+    <div id="eventFormCard" class="card no compact-form-card hide"><h3>新增活動</h3><form id="eventF" class="grid g4 compact-form"><input id="eid" type="hidden"><div><label>日期</label><input id="ed" type="date" required></div><div><label>類別</label><select id="et"><option>朝會</option><option>校外教學</option><option>社團活動</option><option>節慶活動</option><option>畢業活動</option><option>防災安全</option><option>其他</option></select></div><div><label>活動名稱</label><input id="en" required></div><div><label>地點</label><input id="el"></div><div><label>時間</label><input id="etime" placeholder="08:00-10:00"></div><div><label>對象</label><input id="eg"></div><div><label>負責</label><input id="eo" value="活動組"></div><div><label>狀態</label><select id="es"><option>規劃中</option><option>進行中</option><option>已完成</option></select></div><div class="full repeat-box"><div class="grid g3"><div><label>重複</label><select id="erepeat"><option value="none">不重複</option><option value="weekly">每週</option><option value="biweekly">每兩週</option><option value="monthly">每月</option></select></div><div><label>筆數</label><input id="ecount" type="number" min="1" max="60" value="1"></div><div><label>備註</label><input id="er"></div></div></div><div class="full actions"><button class="btn b">儲存活動</button> <button type="button" class="btn s" onclick="closeEventForm()">取消</button></div></form></div>
   </section>
 
   <section id="trips" class="sec"><h1 class="pt">校外教學記錄表</h1>
-    <div class="card no trip-form-card"><h3>新增校外教學</h3>
+    <div class="card trip-list-card"><h3>校外教學清單</h3>
+      <div class="wrap"><table>
+        <thead><tr><th>計畫表</th><th>班級/單位</th><th>所屬 Project</th><th>日期</th><th>出發</th><th>返校</th><th>地點</th><th>學生</th><th>教師</th><th>行政</th><th>總人數</th><th>備註</th><th class="no">操作</th></tr></thead>
+        <tbody id="tripRows"></tbody>
+      </table></div>
+      <div id="tripCards" class="trip-mobile-list"></div>
+    </div>
+    <div id="tripFormCard" class="card no trip-form-card hide"><h3>新增校外教學</h3>
       <form id="tripF" class="trip-compact">
         <input id="tid" type="hidden">
         <div><label>班級/單位</label><input id="tc" required placeholder="例：四年級"></div>
@@ -139,14 +163,8 @@ label{display:block;font-size:.86rem;color:#475569;font-weight:800;margin-bottom
         <div><label>教師</label><input id="ttea" type="number" value="0"></div>
         <div><label>行政</label><input id="tadm" type="number" value="0"></div>
         <div class="note"><label>備註</label><input id="tn" placeholder="可輸入車輛、保險、注意事項等"></div>
-        <div class="actions"><button class="btn b">儲存</button><button type="button" class="btn s" onclick="resetTrip()">取消</button></div>
+        <div class="actions"><button class="btn b">儲存</button><button type="button" class="btn s" onclick="closeTripForm()">取消</button></div>
       </form>
-    </div>
-    <div class="card trip-list-card"><h3>校外教學清單</h3>
-      <div class="wrap"><table>
-        <thead><tr><th>計畫表</th><th>班級/單位</th><th>所屬 Project</th><th>日期</th><th>出發</th><th>返校</th><th>地點</th><th>學生</th><th>教師</th><th>行政</th><th>總人數</th><th>備註</th><th class="no">操作</th></tr></thead>
-        <tbody id="tripRows"></tbody>
-      </table></div>
     </div>
   </section>
 
@@ -167,13 +185,13 @@ label{display:block;font-size:.86rem;color:#475569;font-weight:800;margin-bottom
 
 
   <section id="projects" class="sec"><h1 class="pt">Project｜專案管理</h1>
-    <div class="card no compact-form-card"><h3>新增專案</h3><form id="projectF" class="grid g4 compact-form"><input id="pid" type="hidden"><div><label>專案名稱</label><input id="pn" required placeholder="例：53屆畢業活動"></div><div><label>類別</label><select id="py"><option>53屆畢業活動</option><option>54屆畢業活動</option><option>校外教學</option><option>社團活動</option><option>節慶活動</option><option>朝會</option><option>其他</option></select></div><div><label>開始日期</label><input id="psd" type="date"></div><div><label>結束日期</label><input id="ped" type="date"></div><div><label>負責</label><input id="powner" value="活動組"></div><div><label>狀態</label><select id="pstatus"><option>規劃中</option><option>進行中</option><option>已完成</option></select></div><div class="full"><label>專案說明</label><input id="pnote" placeholder="例：流程、座位表、司儀稿、頒獎名單、場佈與彩排"></div><div class="full actions"><button class="btn b">儲存專案</button> <button type="button" class="btn s" onclick="resetProject()">取消</button></div></form></div>
     <div class="card"><h3>專案清單與待辦</h3><div id="projectRows"></div></div>
+    <div id="projectFormCard" class="card no compact-form-card hide"><h3>新增專案</h3><form id="projectF" class="grid g4 compact-form"><input id="pid" type="hidden"><div><label>專案名稱</label><input id="pn" required placeholder="例：53屆畢業活動"></div><div><label>類別</label><select id="py"><option>53屆畢業活動</option><option>54屆畢業活動</option><option>校外教學</option><option>社團活動</option><option>節慶活動</option><option>朝會</option><option>其他</option></select></div><div><label>開始日期</label><input id="psd" type="date"></div><div><label>結束日期</label><input id="ped" type="date"></div><div><label>負責</label><input id="powner" value="活動組"></div><div><label>狀態</label><select id="pstatus"><option>規劃中</option><option>進行中</option><option>已完成</option></select></div><div class="full"><label>專案說明</label><input id="pnote" placeholder="例：流程、座位表、司儀稿、頒獎名單、場佈與彩排"></div><div class="full actions"><button class="btn b">儲存專案</button> <button type="button" class="btn s" onclick="closeProjectForm()">取消</button></div></form></div>
   </section>
 
   <section id="tasks" class="sec"><h1 class="pt">To-do｜待辦追蹤</h1>
-    <div class="card no compact-form-card"><h3>新增待辦</h3><form id="taskF" class="grid g4 compact-form"><input id="kid" type="hidden"><div><label>期限</label><input id="kd" type="date" required></div><div><label>類別</label><select id="kt"><option>朝會</option><option>校外教學</option><option>社團</option><option>節慶</option><option>53屆畢業活動</option><option>54屆畢業活動</option><option>通知單</option><option>其他</option></select></div><div><label>專案</label><select id="kp"><option value="">不指定專案</option></select></div><div><label>優先</label><select id="kpri"><option>高</option><option selected>中</option><option>低</option></select></div><div><label>負責</label><input id="ko" value="活動組"></div><div><label>狀態</label><select id="ks"><option>未開始</option><option>進行中</option><option>已完成</option></select></div><div><label>工作項目</label><input id="kn" required></div><div><label>備註</label><input id="kr"></div><div class="full actions"><button class="btn b">儲存待辦</button> <button type="button" class="btn s" onclick="resetTask()">取消</button></div></form></div>
-    <div class="card"><h3>待辦清單</h3><div class="wrap"><table><thead><tr><th>期限</th><th>工作</th><th>優先</th><th>專案</th><th>類別</th><th>負責</th><th>狀態</th><th>備註</th><th class="no">操作</th></tr></thead><tbody id="taskRows"></tbody></table></div></div>
+    <div class="card"><h3>待辦清單</h3><div class="wrap"><table><thead><tr><th>期限</th><th>工作</th><th>優先</th><th>專案</th><th>類別</th><th>狀態</th><th>備註</th><th class="no">操作</th></tr></thead><tbody id="taskRows"></tbody></table></div></div>
+    <div id="taskFormCard" class="card no compact-form-card hide"><h3>新增待辦</h3><form id="taskF" class="task-compact compact-form"><input id="kid" type="hidden"><div><label>期限</label><input id="kd" type="date" required></div><div><label>類別</label><select id="kt"><option>朝會</option><option>校外教學</option><option>社團</option><option>節慶</option><option>53屆畢業活動</option><option>54屆畢業活動</option><option>通知單</option><option>其他</option></select></div><div><label>專案</label><select id="kp"><option value="">不指定專案</option></select></div><div><label>優先</label><select id="kpri"><option>高</option><option selected>中</option><option>低</option></select></div><div><label>狀態</label><select id="ks"><option>未開始</option><option>進行中</option><option>已完成</option></select></div><div><label>工作項目</label><input id="kn" required></div><div class="task-note"><label>備註</label><input id="kr"></div><div class="actions"><button class="btn b">儲存待辦</button> <button type="button" class="btn s" onclick="closeTaskForm()">取消</button></div></form></div>
   </section>
 
   <section id="settings" class="sec"><div class="card"><h3>設定與備份</h3><p>資料會同步到 Firebase 雲端資料庫；本機瀏覽器也會保留一份備援資料。</p><p id="cloudStatusSettings" class="summary-note">雲端連線中...</p><button class="btn b" onclick="backup()">資料備份 JSON</button> <button class="btn s" onclick="importFile.click()">匯入還原</button> <button class="btn r" onclick="clearAll()">清空資料</button><br><br><button class="btn g" onclick="csv('events')">匯出活動 CSV</button> <button class="btn g" onclick="csv('trips')">匯出校外教學 CSV</button> <button class="btn g" onclick="csv('projects')">匯出專案 CSV</button> <button class="btn g" onclick="csv('tasks')">匯出待辦 CSV</button></div></section>
@@ -231,7 +249,7 @@ async function initCloud(){
     },e=>{console.error(e);setCloudStatus('雲端連線失敗，使用本機備援')});
   }catch(e){console.error(e);setCloudStatus('雲端載入失敗，使用本機備援')}
 }
-function go(s){document.querySelectorAll('.sec').forEach(x=>x.classList.remove('on'));$(s).classList.add('on');document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.s==s));title.textContent={dash:'Topview',events:'Activity Log',trips:'校外教學',assembly:'朝會司儀',projects:'Project',tasks:'To-do',settings:'設定/備份'}[s]}
+function go(s){document.querySelectorAll('.sec').forEach(x=>x.classList.remove('on'));$(s).classList.add('on');document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.s==s));title.textContent={dash:'Topview',events:'校內活動',trips:'校外教學',assembly:'朝會司儀',projects:'Project',tasks:'To-do',settings:'設定/備份'}[s];mobileNav.value=s;addEventBtn.classList.toggle('hide',s!='events');addProjectBtn.classList.toggle('hide',s!='projects');addTripBtn.classList.toggle('hide',s!='trips');addTaskBtn.classList.toggle('hide',s!='tasks');mobileAddEventBtn.classList.toggle('hide',s!='events');mobileAddProjectBtn.classList.toggle('hide',s!='projects');mobileAddTripBtn.classList.toggle('hide',s!='trips');mobileAddTaskBtn.classList.toggle('hide',s!='tasks')}
 document.querySelectorAll('.nav').forEach(b=>b.onclick=()=>go(b.dataset.s));
 function tag(s){return `<span class="tag ${s=='已完成'?'done':s=='進行中'?'doing':'todo'}">${esc(s)}</span>`}
 function ptag(p){return `<span class="tag ${p=='高'?'pri-high':p=='低'?'pri-low':'pri-mid'}">${esc(p||'中')}</span>`}
@@ -307,7 +325,7 @@ function renderProjects(){
     let list=tasks.length?`<h4>To-do</h4><div class="wrap"><table><thead><tr><th>期限</th><th>待辦</th><th>優先</th><th>類別</th><th>狀態</th><th class="no">操作</th></tr></thead><tbody>${tasks.map(t=>`<tr><td>${esc(t.due)}</td><td><b>${esc(t.name)}</b></td><td>${ptag(t.priority)}</td><td>${esc(t.type)}</td><td>${tag(t.status)}</td><td class="no"><button class="mini ok" onclick="done('${t.id}')">完成</button><button class="mini edit" onclick="editTask('${t.id}');go('tasks')">編輯待辦</button></td></tr>`).join('')}</tbody></table></div>`:'<h4>To-do</h4><p class="empty">此專案尚未建立待辦。</p>';
     let trips=D.trips.filter(t=>t.projectId==p.id).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
     let tripList=trips.length?`<h4>校外教學紀錄</h4><div class="wrap"><table><thead><tr><th>日期</th><th>班級</th><th>地點</th><th>時間</th><th>總數</th></tr></thead><tbody>${trips.map(t=>{let total=+t.students+ +t.teachers+ +t.admins;return `<tr><td>${esc(t.date)}</td><td><b>${esc(t.className)}</b></td><td>${esc(t.location)}</td><td>${esc(t.start)}-${esc(t.return)}</td><td>${total}</td></tr>`}).join('')}</tbody></table></div>`:'<h4>校外教學紀錄</h4><p class="empty">此專案尚未連結校外教學紀錄。</p>';
-    return `<div class="card"><h3>${esc(p.name)} ${tag(p.status)}</h3><p><b>類別：</b>${esc(p.type)}　<b>期間：</b>${esc(p.start)} ～ ${esc(p.end)}　<b>負責：</b>${esc(p.owner)}　<b>待辦進度：</b>${done}/${tasks.length}　<b>校外教學：</b>${trips.length}筆</p><p>${esc(p.note)}</p><div class="no"><button class="mini edit" onclick="editProject('${p.id}')">編輯專案</button><button class="mini del" onclick="del('projects','${p.id}')">刪除專案</button><button class="mini ok" onclick="newTaskForProject('${p.id}')">新增此專案待辦</button><button class="mini ok" onclick="newTripForProject('${p.id}')">新增此專案校外教學</button></div>${list}${tripList}</div>`
+    return `<div class="card" data-project-id="${p.id}" tabindex="-1"><h3>${esc(p.name)} ${tag(p.status)}</h3><p><b>類別：</b>${esc(p.type)}　<b>期間：</b>${esc(p.start)} ～ ${esc(p.end)}　<b>負責：</b>${esc(p.owner)}　<b>待辦進度：</b>${done}/${tasks.length}　<b>校外教學：</b>${trips.length}筆</p><p>${esc(p.note)}</p><div class="no"><button class="mini edit" onclick="editProject('${p.id}')">編輯專案</button><button class="mini del" onclick="del('projects','${p.id}')">刪除專案</button><button class="mini ok" onclick="newTaskForProject('${p.id}')">新增此專案待辦</button><button class="mini ok" onclick="newTripForProject('${p.id}')">新增此專案校外教學</button></div>${list}${tripList}</div>`
   }).join(''):'<p class="empty">尚無專案，請先新增專案。</p>';
 }
 function render(){
@@ -325,7 +343,7 @@ function render(){
       let tasks=D.tasks.filter(t=>t.projectId==p.id);
       let done=tasks.filter(t=>t.status=='已完成').length;
       let pct=tasks.length?Math.round(done/tasks.length*100):0;
-      return `<tr><td><b>${esc(p.name)}</b></td><td>${esc(p.type)}</td><td>${esc(p.start)}～${esc(p.end)}</td><td>${esc(p.owner)}</td><td><div>${done}/${tasks.length}（${pct}%）</div><div class="progress"><div class="bar" style="width:${pct}%"></div></div></td><td>${tag(p.status)}</td></tr>`
+      return `<tr class="project-link-row" role="link" tabindex="0" aria-label="前往專案：${esc(p.name)}" onclick="openProject('${p.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openProject('${p.id}')}\"><td><b>${esc(p.name)}</b></td><td>${esc(p.type)}</td><td>${esc(p.start)}～${esc(p.end)}</td><td>${esc(p.owner)}</td><td><div>${done}/${tasks.length}（${pct}%）</div><div class="progress"><div class="bar" style="width:${pct}%"></div></div></td><td>${tag(p.status)}</td></tr>`
     }).join(''):'<tr><td colspan=6 class="empty">尚無專案。可到「專案」頁面新增大型活動專案。</td></tr>';
   }
 
@@ -339,7 +357,7 @@ function render(){
     let total=+x.students+ +x.teachers+ +x.admins;
     let checked=(x.planStatus||'已納入')=='已納入'?'checked':'';
     return `<tr>
-      <td><input type="checkbox" ${checked} disabled></td>
+      <td><input class="plan-check" type="checkbox" ${checked} aria-label="${esc(x.className)}納入計畫表" onchange="toggleTripPlan('${x.id}',this.checked)"></td>
       <td><b>${esc(x.className)}</b></td>
       <td>${esc(projectName(x.projectId))||'<span class="empty">未指定</span>'}</td>
       <td>${esc(x.date)}</td>
@@ -354,27 +372,36 @@ function render(){
       <td class="no"><button class="mini edit" onclick="editTrip('${x.id}')">編輯</button><button class="mini del" onclick="del('trips','${x.id}')">刪除</button></td>
     </tr>`
   }).join('')||'<tr><td colspan=13 class="empty">尚無資料</td></tr>';
+  tripCards.innerHTML=D.trips.slice().sort((a,b)=>(a.date||'').localeCompare(b.date||'')).map(x=>{let total=+x.students+ +x.teachers+ +x.admins,planned=(x.planStatus||'已納入')=='已納入';return `<article class="trip-mobile-item"><div class="trip-mobile-head"><strong>${esc(x.className)}</strong><span class="trip-mobile-date">${esc(x.date)}</span></div><label class="trip-plan-toggle"><input class="plan-check" type="checkbox" ${planned?'checked':''} onchange="toggleTripPlan('${x.id}',this.checked)"><span>${planned?'已納入計畫表':'尚未納入計畫表'}</span></label><div class="trip-mobile-place">${esc(x.location)}</div><div class="trip-mobile-meta"><div><b>時間：</b>${esc(x.start)}－${esc(x.return)}</div><div><b>所屬 Project：</b>${esc(projectName(x.projectId)||'未指定專案')}</div><div><b>人數：</b>學生 ${esc(x.students)}・教師 ${esc(x.teachers)}・行政 ${esc(x.admins)}・共 ${total} 人</div></div>${x.note?`<div class="trip-mobile-note"><b>備註：</b>${esc(x.note)}</div>`:''}<div class="trip-mobile-actions no"><button class="mini edit" onclick="editTrip('${x.id}')">編輯</button><button class="mini del" onclick="del('trips','${x.id}')">刪除</button></div></article>`}).join('')||'<p class="empty">尚無資料</p>';
 
   renderProjects();
 
-  taskRows.innerHTML=D.tasks.slice().sort((a,b)=>(a.due||'').localeCompare(b.due||'')).map(x=>`<tr><td>${esc(x.due)}</td><td><b>${esc(x.name)}</b></td><td>${ptag(x.priority)}</td><td>${esc(projectName(x.projectId))||'<span class="empty">未指定</span>'}</td><td>${esc(x.type)}</td><td>${esc(x.owner)}</td><td>${tag(x.status)}</td><td>${esc(x.note)}</td><td class="no"><button class="mini ok" onclick="done('${x.id}')">完成</button><button class="mini edit" onclick="editTask('${x.id}')">編輯</button><button class="mini del" onclick="del('tasks','${x.id}')">刪除</button></td></tr>`).join('')||'<tr><td colspan=10 class="empty">尚無資料</td></tr>';
+  taskRows.innerHTML=D.tasks.slice().sort((a,b)=>(a.due||'').localeCompare(b.due||'')).map(x=>`<tr><td>${esc(x.due)}</td><td><b>${esc(x.name)}</b></td><td>${ptag(x.priority)}</td><td>${esc(projectName(x.projectId))||'<span class="empty">未指定</span>'}</td><td>${esc(x.type)}</td><td>${tag(x.status)}</td><td>${esc(x.note)}</td><td class="no task-actions"><button class="mini ok" onclick="done('${x.id}')">完成</button><button class="mini edit" onclick="editTask('${x.id}')">編輯</button><button class="mini del" onclick="del('tasks','${x.id}')">刪除</button></td></tr>`).join('')||'<tr><td colspan=8 class="empty">尚無資料</td></tr>';
 
   renderA();
 }
-eventF.onsubmit=e=>{e.preventDefault();let id=eid.value,base={date:ed.value,type:et.value,name:en.value,location:el.value,time:etime.value,target:eg.value,owner:eo.value,status:es.value,note:er.value};if(id){let i=D.events.findIndex(x=>x.id==id);if(i>-1)D.events[i]={...D.events[i],...base};else D.events.push({id,...base})}else{let rule=erepeat.value,count=rule=='none'?1:Math.max(1,Math.min(60,+ecount.value||1)),group=count>1?uid():'';for(let n=0;n<count;n++)D.events.push({id:uid(),...base,date:repeatDate(base.date,rule,n),repeatRule:rule,repeatGroup:group,repeatIndex:n+1})}resetEvent();save()};
-function editEvent(id){let x=D.events.find(y=>y.id==id);eid.value=x.id;ed.value=x.date;et.value=x.type;en.value=x.name;el.value=x.location;etime.value=x.time;eg.value=x.target;eo.value=x.owner;es.value=x.status;er.value=x.note;erepeat.value='none';ecount.value=1;go('events');scrollTo(0,0)}
+eventF.onsubmit=e=>{e.preventDefault();let id=eid.value,base={date:ed.value,type:et.value,name:en.value,location:el.value,time:etime.value,target:eg.value,owner:eo.value,status:es.value,note:er.value};if(id){let i=D.events.findIndex(x=>x.id==id);if(i>-1)D.events[i]={...D.events[i],...base};else D.events.push({id,...base})}else{let rule=erepeat.value,count=rule=='none'?1:Math.max(1,Math.min(60,+ecount.value||1)),group=count>1?uid():'';for(let n=0;n<count;n++)D.events.push({id:uid(),...base,date:repeatDate(base.date,rule,n),repeatRule:rule,repeatGroup:group,repeatIndex:n+1})}closeEventForm();save()};
+function showEventForm(){go('events');eventFormCard.classList.remove('hide');requestAnimationFrame(()=>{eventFormCard.scrollIntoView({behavior:'smooth',block:'start'});ed.focus()})}
+function closeEventForm(){resetEvent();eventFormCard.classList.add('hide')}
+function editEvent(id){let x=D.events.find(y=>y.id==id);eid.value=x.id;ed.value=x.date;et.value=x.type;en.value=x.name;el.value=x.location;etime.value=x.time;eg.value=x.target;eo.value=x.owner;es.value=x.status;er.value=x.note;erepeat.value='none';ecount.value=1;showEventForm()}
 function resetEvent(){eventF.reset();eid.value='';ed.value=today();eo.value='活動組';erepeat.value='none';ecount.value=1}
-tripF.onsubmit=e=>{e.preventDefault();let id=tid.value||uid(),o={id,planStatus:'已納入',className:tc.value,projectId:tp.value,date:td.value,start:ts.value,return:tr.value,location:tl.value,students:+tstu.value||0,teachers:+ttea.value||0,admins:+tadm.value||0,note:tn.value};let i=D.trips.findIndex(x=>x.id==id);i>-1?D.trips[i]=o:D.trips.push(o);resetTrip();save()};
-function editTrip(id){let x=D.trips.find(y=>y.id==id);tid.value=x.id;tc.value=x.className;projectOptions(x.projectId||'');tp.value=x.projectId||'';td.value=x.date;ts.value=x.start;tr.value=x.return;tl.value=x.location;tstu.value=x.students;ttea.value=x.teachers;tadm.value=x.admins;tn.value=x.note;go('trips');scrollTo(0,0)}
+tripF.onsubmit=e=>{e.preventDefault();let id=tid.value||uid(),i=D.trips.findIndex(x=>x.id==id),o={id,planStatus:i>-1?(D.trips[i].planStatus||'已納入'):'已納入',className:tc.value,projectId:tp.value,date:td.value,start:ts.value,return:tr.value,location:tl.value,students:+tstu.value||0,teachers:+ttea.value||0,admins:+tadm.value||0,note:tn.value};i>-1?D.trips[i]=o:D.trips.push(o);closeTripForm();save()};
+function toggleTripPlan(id,checked){let x=D.trips.find(y=>y.id==id);if(!x)return;x.planStatus=checked?'已納入':'未納入';save()}
+function showTripForm(){go('trips');tripFormCard.classList.remove('hide');addTripBtn.setAttribute('aria-expanded','true');requestAnimationFrame(()=>{tripFormCard.scrollIntoView({behavior:'smooth',block:'start'});tc.focus()})}
+function closeTripForm(){resetTrip();tripFormCard.classList.add('hide');addTripBtn.setAttribute('aria-expanded','false')}
+function editTrip(id){let x=D.trips.find(y=>y.id==id);tid.value=x.id;tc.value=x.className;projectOptions(x.projectId||'');tp.value=x.projectId||'';td.value=x.date;ts.value=x.start;tr.value=x.return;tl.value=x.location;tstu.value=x.students;ttea.value=x.teachers;tadm.value=x.admins;tn.value=x.note;showTripForm()}
 function resetTrip(){tripF.reset();tid.value='';projectOptions('');td.value=today();ts.value='08:50';tr.value='12:00';tstu.value=0;ttea.value=0;tadm.value=0}
 
-projectF.onsubmit=e=>{e.preventDefault();let id=pid.value||uid(),o={id,name:pn.value,type:py.value,start:psd.value,end:ped.value,owner:powner.value,status:pstatus.value,note:pnote.value};let i=D.projects.findIndex(x=>x.id==id);i>-1?D.projects[i]=o:D.projects.push(o);resetProject();save()};
-function editProject(id){let x=D.projects.find(y=>y.id==id);if(!x)return;pid.value=x.id;pn.value=x.name;py.value=x.type;psd.value=x.start;ped.value=x.end;powner.value=x.owner;pstatus.value=x.status;pnote.value=x.note;go('projects');scrollTo(0,0)}
+projectF.onsubmit=e=>{e.preventDefault();let id=pid.value||uid(),o={id,name:pn.value,type:py.value,start:psd.value,end:ped.value,owner:powner.value,status:pstatus.value,note:pnote.value};let i=D.projects.findIndex(x=>x.id==id);i>-1?D.projects[i]=o:D.projects.push(o);closeProjectForm();save()};
+function showProjectForm(){go('projects');projectFormCard.classList.remove('hide');addProjectBtn.setAttribute('aria-expanded','true');requestAnimationFrame(()=>{projectFormCard.scrollIntoView({behavior:'smooth',block:'start'});pn.focus()})}
+function closeProjectForm(){resetProject();projectFormCard.classList.add('hide');addProjectBtn.setAttribute('aria-expanded','false')}
+function editProject(id){let x=D.projects.find(y=>y.id==id);if(!x)return;pid.value=x.id;pn.value=x.name;py.value=x.type;psd.value=x.start;ped.value=x.end;powner.value=x.owner;pstatus.value=x.status;pnote.value=x.note;showProjectForm()}
+function openProject(id){go('projects');requestAnimationFrame(()=>{let card=document.querySelector(`[data-project-id="${CSS.escape(id)}"]`);if(!card)return;document.querySelectorAll('.project-focus').forEach(x=>x.classList.remove('project-focus'));card.classList.add('project-focus');card.scrollIntoView({behavior:'smooth',block:'center'});card.focus({preventScroll:true});setTimeout(()=>card.classList.remove('project-focus'),1800)})}
 function resetProject(){projectF.reset();pid.value='';powner.value='活動組'}
-function newTaskForProject(id){let p=D.projects.find(x=>x.id==id);resetTask();kp.value=id;kpri.value='中';kt.value=p&&p.type?p.type:'其他';ko.value=p&&p.owner?p.owner:'活動組';go('tasks');scrollTo(0,0)}
-function newTripForProject(id){resetTrip();tp.value=id;go('trips');scrollTo(0,0)}
+function newTaskForProject(id){let p=D.projects.find(x=>x.id==id);resetTask();kp.value=id;kpri.value='中';kt.value=p&&p.type?p.type:'其他';showTaskForm()}
+function newTripForProject(id){resetTrip();tp.value=id;showTripForm()}
 
-taskF.onsubmit=e=>{e.preventDefault();let id=kid.value||uid(),o={id,due:kd.value,type:kt.value,projectId:kp.value,priority:kpri.value,owner:ko.value,status:ks.value,name:kn.value,note:kr.value};let i=D.tasks.findIndex(x=>x.id==id);i>-1?D.tasks[i]=o:D.tasks.push(o);resetTask();save()};function editTask(id){let x=D.tasks.find(y=>y.id==id);kid.value=x.id;kd.value=x.due;kt.value=x.type;kpri.value=x.priority||'中';projectOptions(x.projectId||'');kp.value=x.projectId||'';ko.value=x.owner;ks.value=x.status;kn.value=x.name;kr.value=x.note;go('tasks');scrollTo(0,0)}function resetTask(){taskF.reset();kid.value='';kd.value=today();kpri.value='中';ko.value='活動組';projectOptions('')}function done(id){let x=D.tasks.find(y=>y.id==id);x.status='已完成';save()}
+taskF.onsubmit=e=>{e.preventDefault();let id=kid.value||uid(),i=D.tasks.findIndex(x=>x.id==id),o={id,due:kd.value,type:kt.value,projectId:kp.value,priority:kpri.value,owner:i>-1?(D.tasks[i].owner||'活動組'):'活動組',status:ks.value,name:kn.value,note:kr.value};i>-1?D.tasks[i]=o:D.tasks.push(o);closeTaskForm();save()};function showTaskForm(){go('tasks');taskFormCard.classList.remove('hide');addTaskBtn.setAttribute('aria-expanded','true');requestAnimationFrame(()=>{taskFormCard.scrollIntoView({behavior:'smooth',block:'start'});kd.focus()})}function closeTaskForm(){resetTask();taskFormCard.classList.add('hide');addTaskBtn.setAttribute('aria-expanded','false')}function editTask(id){let x=D.tasks.find(y=>y.id==id);kid.value=x.id;kd.value=x.due;kt.value=x.type;kpri.value=x.priority||'中';projectOptions(x.projectId||'');kp.value=x.projectId||'';ks.value=x.status;kn.value=x.name;kr.value=x.note;showTaskForm()}function resetTask(){taskF.reset();kid.value='';kd.value=today();kpri.value='中';projectOptions('')}function done(id){let x=D.tasks.find(y=>y.id==id);x.status='已完成';save()}
 function renderA(){D.assembly={date:ad.value,sem:as.value,reports:ar.value,future:af.value};adp.textContent=ad.value;asp.textContent=as.value;let lines=ar.value.split('\n'),i=0,h='';function hc(s){return s.endsWith(':')||s.endsWith('：')}while(i<lines.length){let line=lines[i].trim();if(!line){i++;continue}if(hc(line)){let title=line.slice(0,-1),script='';i++;while(i<lines.length&&lines[i].trim()&&!hc(lines[i].trim())&&!['主席報告','師長報告'].includes(lines[i].trim())&&!lines[i].includes('中心報告')){script+=lines[i]+'\n';i++}h+=`<div class="act">${esc(title)}${script.trim()?`<div class="script">${esc(script.trim())}</div>`:''}</div>`;continue}if(['主席報告','師長報告'].includes(line)){h+=`<div class="admin">${esc(line)}</div>`}else if(line.includes('中心報告')){h+=`<div style="padding-left:24px;font-weight:800;color:#6b7280">● ${esc(line)}</div>`}else h+=`<div class="act">${esc(line)}</div>`;i++}dyn.innerHTML=h;localStorage.setItem('bojia_director_site',JSON.stringify(D))}
 [ad,as,ar,af].forEach(x=>x.oninput=()=>{renderA();save()});
 function seed(){if(!confirm('載入常用年度範本？'))return;D.events.push({id:uid(),date:'115-09-28',type:'節慶活動',name:'教師節敬師活動',location:'校園',time:'08:00-08:40',target:'全校',owner:'活動組',status:'規劃中',note:''},{id:uid(),date:'116-04-03',type:'節慶活動',name:'兒童節慶祝活動',location:'校園',time:'08:00-10:00',target:'全校',owner:'活動組',status:'規劃中',note:''});D.tasks.push({id:uid(),due:'115-09-15',type:'節慶',priority:'中',owner:'活動組',status:'未開始',name:'確認教師節活動流程',note:''},{id:uid(),due:'116-05-20',type:'53屆畢業活動',priority:'高',owner:'活動組',status:'未開始',name:'畢業典禮流程與司儀稿初稿',note:''});save()}
